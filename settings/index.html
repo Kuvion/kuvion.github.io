@@ -1,0 +1,3660 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="Настройки Kuvion — профиль и аккаунт, оформление, уведомления и безопасность.">
+<meta property="og:title" content="Kuvion — настройки">
+<meta property="og:description" content="Настройки Kuvion — профиль и аккаунт, оформление, уведомления и безопасность.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%230b0b0e'/%3E%3Crect%20x='1.5'%20y='1.5'%20width='61'%20height='61'%20rx='12.5'%20fill='none'%20stroke='rgba(255,255,255,.18)'%20stroke-width='3'/%3E%3Cpath%20d='M17%2014h8v14l12-14h11l-16%2017%2016%2019h-11l-12-14v14h-8z'%20fill='%23fff'/%3E%3C/svg%3E">
+<title>Kuvion — настройки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@300;400;500;600;700;800;900&family=Rubik:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/kuvion-common.css">
+<style>
+
+/* ================================================================
+   KUVION — «Настройки», дизайн-макет v1 (собран из
+   дизайн-системы v4; черновой, для просмотра и тестов)
+   Философия та же: абсолютный чёрный, белый как главный акцент,
+   градиент — только для аккаунта и подписки. Весь цвет несут
+   постеры + семантика рейтингов и статусов.
+   Что здесь:
+   • каркас «как в старой версии»: слева липкое меню выбора
+     раздела (Профиль / Аккаунт / Уведомления — иконка-квадрат,
+     подпись и короткая подсказка), справа — форма выбранного;
+     активный раздел читается по белому квадрату-иконке, без
+     пилюль-вкладок «Моего списка» и профиля; на узких экранах
+     меню становится горизонтальной лентой под шапкой.
+     Выбор раздела пишется в адрес (#account, #notify);
+   • отдельная страница настроек: сюда ведут кнопка «Настройки»
+     в шапке профиля и пункт в меню аккаунта — на самом профиле
+     ничего не редактируется, только просматривается;
+   • блок «Профиль»: никнейм, «О себе» со счётчиком и баннер —
+     пресеты (картинки + градиенты), «без баннера» и своя
+     ссылка на картинку; превью сверху повторяет голову
+     профиля (баннер-постер, аватар с буквой, никнейм, зелёная
+     точка) — так его увидят другие пользователи;
+   • поля ввода — язык каталога: пилюля с иконкой внутри,
+     подсветка по фокусу; «О себе» той же палитры и без
+     ресайза;
+   • изменения применяются сразу и сохраняются в localStorage
+     (ключ kuvion_profile_v1) — страница профиля читает его
+     при открытии, поэтому настройки переживают переходы
+     между страницами (в продакшене — бэкенд);
+   • «Аккаунт»: почта и смена пароля (демо-заглушки);
+   • «Уведомления»: тумблеры новых серий, премьер и подборок —
+     демо-состояние в localStorage;
+   • гостю — заглушка с входом и регистрацией (открывают
+     модалку v4); переключатель «Гость / Юзер» в «Лаборатории»
+     показывает оба состояния.
+   Связи макетов: «Главная», «Каталог», «Аниме», «Случайное»,
+   «Расписание», «Мой список» и «Мой профиль» ведут на свои
+   макеты (/, /catalog/,
+   ?type=anime, ?random=1, /schedule/,
+   /mylist/, /profile/).
+   ================================================================ */
+
+:root{
+  --bg:#000;
+  --surface:rgba(255,255,255,.04);
+  --surface-2:rgba(255,255,255,.07);
+  --surface-3:rgba(255,255,255,.11);
+  --border:rgba(255,255,255,.08);
+  --border-2:rgba(255,255,255,.14);
+  --border-3:rgba(255,255,255,.24);
+  --text:#fff;
+  --text-2:rgba(255,255,255,.62);
+  --text-3:rgba(255,255,255,.4);
+  --accent-1:#7C4DFF;
+  --accent-2:#D946EF;
+  --accent-glow:rgba(168,85,247,.35);
+  --ok:#4ADE80;
+  --warn:#FACC15;
+  --bad:#F87171;
+  --info:#60A5FA;
+  --r-s:10px;   /* радиус малый */
+  --r-m:14px;   /* радиус карточек */
+  --r-l:18px;   /* радиус панелей */
+  --font-display:'Dela Gothic One','Onest',system-ui,sans-serif;
+  --font-body:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --header-h:64px;
+  --page-x:clamp(20px,4vw,56px);
+  --rail-gap:16px;                                   /* единый шаг между карточками */
+  --card-w:clamp(168px,13.5vw,204px);                /* размер карточки M (по умолчанию) */
+}
+
+body:not([data-displayfont="dela"]) :is(.logo,.hero-title,.row-title,.pv-title,.auth-logo,.footer-logo,.soon-title,.lab-title,.sub-card .sc-name){font-weight:800}
+
+
+.nav-link{
+  position:relative;font-size:14px;font-weight:500;color:var(--text-2);
+  padding:6px 1px;transition:color .2s ease;white-space:nowrap;
+}
+
+/* ============ НАСТРОЙКИ ============
+   Отдельная страница: профилные данные (никнейм, «О себе»,
+   баннер), аккаунт и уведомления. Каркас — как в старой версии
+   сайта: слева меню выбора раздела, справа — содержание
+   выбранного. Меню липнет под шапкой и не превращается в
+   пилюли-вкладки «Моего списка» и профиля: активный раздел
+   читается по белому квадрату-иконке и белой подписи.
+   Поля ввода — язык каталога: пилюля с иконкой,
+   фон rgba(255,255,255,.06), подсветка по focus-within;
+   многострочное «О себе» той же палитры и без ресайза.
+   Превью баннера — миниатюра головы профиля: как её увидят
+   другие пользователи. Изменения применяются сразу и
+   сохраняются (в макете — localStorage, в продакшене — бэкенд). */
+
+.st{padding:calc(var(--header-h) + 30px) 0 46px}
+
+/* центрированная рамка настроек: внутри — меню, форма и её
+   зеркало (см. .st-layout), поэтому рамка шире обычной колонки;
+   поля — обычным padding (в отличие от контентных секций профиля,
+   где формула с calc живёт в margin) */
+.st-wrap{
+  max-width:calc(1256px + var(--page-x)*2);margin:0 auto;
+  padding:0 var(--page-x);
+}
+
+
+/* --- голова страницы --- */
+.st-back{
+  display:inline-flex;align-items:center;gap:7px;
+  color:var(--text-3);font-family:var(--font-body);font-size:12.5px;font-weight:700;
+  text-decoration:none;transition:color .15s;
+}
+
+.st-back:hover{color:#fff}
+
+.st-back svg{transition:transform .15s}
+
+.st-back:hover svg{transform:translateX(-2px)}
+
+.st-title{
+  margin-top:10px;font-family:var(--font-display);
+  font-size:clamp(26px,3.2vw,38px);color:#fff;line-height:1.05;
+}
+
+.st-lead{
+  margin-top:9px;font-size:13px;color:var(--text-3);line-height:1.55;
+}
+
+
+/* --- каркас: слева меню раздела, по центру — форма ---
+   Три колонки: меню, форма и пустое «зеркало» меню справа.
+   Форма стоит точно по центру страницы — в старой версии сайта
+   меню держала глобальная навигация слева, здесь его
+   уравновешивает зеркало, и настройки больше не съезжают вправо.
+   Меню липнет под шапкой — длинные разделы прокручиваются,
+   а выбор раздела всегда перед глазами. */
+.st-layout{
+  display:grid;
+  grid-template-columns:264px minmax(0,660px) 264px;
+  gap:34px;align-items:start;justify-content:center;
+  margin-top:26px;
+}
+
+
+/* --- меню разделов: вертикальный список, как в старой версии ---
+   Над ним — карточка пользователя (аватар, никнейм, почта),
+   как в первой версии сайта. Пункт — иконка-квадрат с подписью
+   и короткой подсказкой. Активный: белая иконка на белом
+   квадрате (инверсия, как пилюли вкладок, но вертикально и без
+   обводки-капсулы), белый текст и мягкая подложка. */
+.st-side{
+  position:sticky;top:calc(var(--header-h) + 22px);
+  display:flex;flex-direction:column;gap:4px;
+}
+
+.st-usercard{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 12px;margin-bottom:10px;
+  border-radius:14px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+}
+
+.st-uc-ava{
+  position:relative;flex:none;width:40px;height:40px;border-radius:12px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:#1c1c1f;border:1px solid var(--border-2);
+  font-family:var(--font-display);font-size:17px;color:#fff;
+}
+
+.st-uc-ava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+.st-uc-tx{min-width:0}
+
+.st-uc-tx b{
+  display:block;font-size:13px;font-weight:700;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.st-uc-tx small{
+  display:block;margin-top:1px;font-size:10.5px;color:var(--text-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.st-nav-item{
+  display:flex;align-items:center;gap:13px;
+  padding:8px 10px;border:0;border-radius:14px;background:none;cursor:pointer;
+  text-align:left;font-family:var(--font-body);
+  color:var(--text-2);
+  transition:background .15s,color .15s;
+}
+
+.st-nav-ic{
+  flex:none;width:36px;height:36px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);border:1px solid var(--border-2);color:var(--text-3);
+  transition:background .15s,border-color .15s,color .15s;
+}
+
+.st-nav-tx{min-width:0}
+
+.st-nav-tx b{
+  display:block;font-size:13px;font-weight:700;color:inherit;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.st-nav-tx small{
+  display:block;margin-top:1px;font-size:11px;color:var(--text-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.st-nav-item:hover{color:#fff;background:rgba(255,255,255,.03)}
+
+.st-nav-item:hover .st-nav-ic{color:var(--text-2)}
+
+.st-nav-item:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+.st-nav-item.is-cur{color:#fff;background:rgba(255,255,255,.045)}
+
+.st-nav-item.is-cur .st-nav-ic{background:#fff;border-color:#fff;color:#000}
+
+
+/* --- форма выбранного раздела ---
+   Показывается один раздел за раз; при переключении — короткое
+   появление сверху (тот же dd-in, что у строк коллекций).
+   Раздел может состоять из нескольких карточек — «Аккаунт»
+   переносит способы входа, почту, пароль и опасную зону из
+   первой версии. */
+.st-pane{min-width:0}
+
+.st-pane>.st-sec{margin-top:0;animation:dd-in .18s ease}
+
+/* отступ — только между ВИДИМЫМИ карточками: скрытые разделы
+   не должны сдвигать первый видимый вниз */
+.st-pane>.st-sec:not(.hidden)~.st-sec:not(.hidden){margin-top:14px}
+
+
+/* --- секции --- */
+.st-sec{
+  padding:22px;
+  border-radius:18px;
+  background:rgba(255,255,255,.025);
+  border:1px solid var(--border);
+}
+
+.st-sec-title{
+  font-family:var(--font-display);font-size:17px;color:#fff;
+  margin-bottom:16px;
+}
+
+.st-sub{
+  margin:18px 0 10px;font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--text-3);
+}
+
+.st-sec .st-sub:first-of-type{margin-top:0}
+
+
+/* --- карточка подписки Kuvion+ (раздел «Аккаунт») --- */
+.st-plus{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:16px;border-radius:14px;margin-bottom:6px;
+  background:
+    radial-gradient(320px 110px at 8% 0%,rgba(124,77,255,.16),transparent 70%),
+    radial-gradient(280px 100px at 95% 110%,rgba(217,70,239,.12),transparent 70%),
+    var(--surface);
+  border:1px solid rgba(168,85,247,.26);
+}
+
+.st-plus-ic{
+  flex:none;width:44px;height:44px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  color:#fff;box-shadow:0 8px 22px var(--accent-glow);
+}
+
+.st-plus-info{flex:1;min-width:200px}
+
+.st-plus-name{font-family:var(--font-display);font-size:14.5px}
+
+.st-plus-sub{font-size:12px;color:var(--text-2);margin-top:3px;line-height:1.45}
+
+.st-plus-sub b{color:#fff;font-weight:600}
+
+.st-plus-btn{
+  height:38px;padding:0 17px;border-radius:11px;border:0;
+  background:#fff;color:#000;font-size:12.5px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:transform .15s,box-shadow .15s;
+}
+
+.st-plus-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.35)}
+
+
+/* --- превью баннера: миниатюра головы профиля ---
+   Те же пропорции и затемнение, что у баннера на странице
+   профиля: картинка cover'ом, снизу градиент к чёрному,
+   на нём — аватар с буквой, никнейм и зелёная точка. */
+.st-bpreview{
+  position:relative;height:190px;border-radius:16px;overflow:hidden;
+  background:#0b0b0e;border:1px solid var(--border);
+}
+
+.st-bpreview img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center 30%;
+}
+
+.st-bpreview-shade{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to top,#000 2%,rgba(0,0,0,.85) 22%,rgba(0,0,0,.3) 55%,transparent 85%);
+}
+
+.st-bpreview-head{
+  position:absolute;left:18px;right:18px;bottom:14px;
+  display:flex;align-items:center;gap:13px;
+}
+
+.st-bpreview-avatar{
+  position:relative;flex:none;width:50px;height:50px;border-radius:14px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  background:#1c1c1f;border:1px solid var(--border-2);
+  font-family:var(--font-display);font-size:21px;color:#fff;
+  box-shadow:0 10px 26px -8px rgba(0,0,0,.7);
+}
+
+.st-bpreview-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+.st-bpreview-avatar i{display:block;font-style:normal;line-height:1}
+
+.st-bpreview-id{min-width:0}
+
+.st-bpreview-name{
+  display:block;font-family:var(--font-display);font-size:17px;color:#fff;
+  line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.st-bpreview-presence{
+  display:flex;align-items:center;gap:6px;margin-top:3px;
+  font-size:11px;font-weight:700;color:#4ade80;
+}
+
+.st-dot{
+  flex:none;width:6px;height:6px;border-radius:50%;
+  background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.6);
+}
+
+/* «без баннера»: тёмная подложка, голова — с обычным отступом */
+.st-bpreview.is-none{padding-top:0}
+
+.st-bpreview.is-none img,.st-bpreview.is-none .st-bpreview-shade{display:none}
+
+.st-bpreview.is-none .st-bpreview-head{left:18px}
+
+
+/* --- поля: язык каталога ---
+   Пилюля с иконкой внутри, как поиск каталога: фон
+   rgba(255,255,255,.06), обводка --border-2, по фокусу —
+   подсветка границы и фона. Никакого ресайза. */
+.st-field{margin-top:14px}
+
+.st-field>label{
+  display:block;font-size:11.5px;font-weight:600;color:var(--text-3);margin-bottom:7px;
+}
+
+.st-pill{
+  display:flex;align-items:center;gap:9px;
+  height:44px;padding:0 15px;border-radius:999px;
+  background:rgba(255,255,255,.06);border:1px solid var(--border-2);
+  transition:border-color .15s,background .15s;
+}
+
+.st-pill:focus-within{border-color:var(--border-3);background:rgba(255,255,255,.09)}
+
+.st-pill>svg{flex:none;color:var(--text-3)}
+
+.st-pill input{
+  flex:1 1 auto;min-width:0;height:42px;line-height:42px;   /* каретке нужен явный рост — не подрезается ни сверху, ни снизу */
+  background:none;border:0;outline:0;
+  color:#fff;font-family:var(--font-body);font-size:13px;font-weight:500;
+  padding:0 3px 0 0;               /* запас справа: мигающая каретка не упирается в край поля */
+}
+
+.st-pill input::placeholder{color:var(--text-3)}
+
+/* второй, нативный «глазок» браузера (Edge/Chrome) и кнопки
+   автозаполнения — прячем: у поля уже есть свой глазок,
+   нативный выглядит чужим и подрезает текст при вводе */
+.st-pill input::-ms-reveal,
+.st-pill input::-ms-clear,
+.st-pill input::-webkit-strong-password-auto-fill-button,
+.st-pill input::-webkit-contacts-auto-fill-button{display:none!important}
+
+.st-pill.has-err{border-color:rgba(248,113,113,.55)}
+
+.st-field .f-err{display:none;margin-top:6px;font-size:11px;color:#FCA5A5;font-weight:600}
+
+.st-field.has-err .f-err{display:block}
+
+
+/* «О себе»: той же палитры, но многострочное — без ресайза;
+   счётчик живёт в строке метки, чтобы не «прилипать» к баннерам */
+.st-label-row{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:12px;margin-bottom:7px;
+}
+
+.st-label-row>label{margin-bottom:0}
+
+#stBio{
+  width:100%;min-height:104px;resize:none;
+  border-radius:16px;padding:12px 15px;
+  background:rgba(255,255,255,.06);border:1px solid var(--border-2);color:#fff;
+  font-family:var(--font-body);font-size:13px;line-height:1.55;
+  transition:border-color .15s,background .15s;
+}
+
+#stBio:focus{outline:none;border-color:var(--border-3);background:rgba(255,255,255,.09)}
+
+#stBio::placeholder{color:var(--text-3)}
+
+.st-count{
+  font-size:11px;color:var(--text-3);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+
+
+/* --- своя аватарка: перенос из первой версии ---
+   Квадрат как в голове профиля (96px, радиус 24), буква-
+   заглушка, поверх — затемнение «Заменить» по ховеру; рядом —
+   кнопки «Выбрать файл» и «Удалить» (красная, появляется
+   только когда картинка есть). */
+.st-avrow{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+
+.st-avpick{
+  position:relative;flex:none;width:96px;height:96px;border-radius:24px;overflow:hidden;
+  cursor:pointer;display:block;
+  background:#1c1c1f;border:1px solid var(--border-2);
+  box-shadow:0 14px 34px -10px rgba(0,0,0,.7);
+}
+
+.st-avpick:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+.st-av-frame{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:40px;color:#fff;
+}
+
+.st-av-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+.st-pick-hov{
+  position:absolute;inset:0;z-index:2;
+  display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;
+  background:rgba(5,5,7,.66);backdrop-filter:blur(2px);
+  color:#fff;font-family:var(--font-body);font-size:10.5px;font-weight:700;
+  opacity:0;transition:opacity .18s;
+}
+
+.st-avpick:hover .st-pick-hov,.st-avpick:focus-visible .st-pick-hov{opacity:1}
+
+.st-filebtns{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+
+.st-filebtn{
+  display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;
+  border-radius:11px;border:1px solid var(--border-2);background:rgba(255,255,255,.04);
+  color:var(--text-2);font-family:var(--font-body);font-size:12.5px;font-weight:700;cursor:pointer;
+  transition:color .15s,border-color .15s,background .15s;
+}
+
+.st-filebtn:hover{color:#fff;border-color:var(--border-3);background:rgba(255,255,255,.07)}
+
+.st-filebtn:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+.st-filebtn--red{color:#fca5a5;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06)}
+
+.st-filebtn--red:hover{color:#f87171;border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.1)}
+
+
+/* подсказки под блоками */
+.st-hint{margin-top:10px;font-size:11.5px;color:var(--text-3);line-height:1.55}
+
+
+/* --- сетка пресетов баннера --- */
+.st-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+
+.st-tile{
+  position:relative;aspect-ratio:5/2;border-radius:11px;overflow:hidden;
+  cursor:pointer;padding:0;border:1px solid var(--border);
+  background:#0b0b0e;transition:border-color .15s,transform .15s;
+}
+
+.st-tile:hover{border-color:var(--border-3);transform:translateY(-1px)}
+
+.st-tile:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+.st-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+.st-tile-grad{position:absolute;inset:0}
+
+.st-tile-name{
+  position:absolute;left:0;right:0;bottom:0;padding:22px 8px 7px;
+  font-family:var(--font-body);font-size:10.5px;font-weight:700;color:#fff;
+  text-align:left;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-shadow:0 1px 4px rgba(0,0,0,.9);
+  background:linear-gradient(to top,rgba(0,0,0,.88) 30%,rgba(0,0,0,.45) 75%,transparent);
+}
+
+.st-tile.is-cur{border-color:#fff;box-shadow:0 0 0 2px #fff}
+
+.st-tile-check{
+  position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:7px;
+  background:#fff;color:#000;display:none;align-items:center;justify-content:center;
+}
+
+.st-tile-check svg{width:12px;height:12px}
+
+.st-tile.is-cur .st-tile-check{display:inline-flex}
+
+.st-tile--none{
+  display:flex;align-items:center;justify-content:center;
+  border-style:dashed;background:rgba(255,255,255,.02);color:var(--text-3);
+}
+
+.st-tile--none:hover{color:var(--text-2)}
+
+
+/* --- своя ссылка на картинку --- */
+.st-url{display:flex;gap:8px;margin-top:12px;align-items:center}
+
+.st-url .st-pill{flex:1 1 auto}
+
+/* кнопка загрузки файла — той же высоты, что пилюля ссылки */
+.st-upload{
+  flex:none;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;
+  border-radius:999px;border:1px solid var(--border-2);background:rgba(255,255,255,.04);
+  color:var(--text-2);font-family:var(--font-body);font-size:12.5px;font-weight:700;cursor:pointer;
+  transition:color .15s,border-color .15s,background .15s;white-space:nowrap;
+}
+
+.st-upload:hover{color:#fff;border-color:var(--border-3);background:rgba(255,255,255,.07)}
+
+.st-upload:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+.st-apply{
+  flex:none;height:44px;padding:0 18px;border-radius:999px;border:0;cursor:pointer;
+  background:none;color:var(--text-2);
+  font-family:var(--font-body);font-size:13px;font-weight:700;transition:color .15s;
+}
+
+.st-apply:hover{color:#fff}
+
+.st-apply:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+
+/* --- аккаунт: строки «подпись — значение — действие» --- */
+.st-kv{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 0;border-bottom:1px solid var(--border);
+}
+
+.st-kv:last-child{border-bottom-color:transparent;padding-bottom:2px}
+
+.st-kv-label{flex:none;width:90px;font-size:12.5px;color:var(--text-3);font-weight:600}
+
+.st-kv-val{
+  flex:1 1 auto;min-width:0;font-size:13.5px;color:#fff;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.st-kv-act{
+  flex:none;background:none;border:0;cursor:pointer;
+  color:var(--text-3);font-family:var(--font-body);font-size:12.5px;font-weight:700;
+  padding:6px 2px;border-bottom:1px solid var(--border-3);transition:.15s;
+}
+
+.st-kv-act:hover{color:#fff;border-color:#fff}
+
+.st-kv-act:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px;border-radius:6px}
+
+
+/* --- аккаунт: способы входа, пароль, опасная зона (из первой версии) --- */
+.st-warn{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:11px 13px;border-radius:12px;margin-bottom:6px;
+  background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.22);
+  color:#fcd34d;font-family:var(--font-body);font-size:12px;line-height:1.5;
+}
+
+.st-warn svg{flex:none;margin-top:1px}
+
+.st-method{
+  display:flex;align-items:center;gap:13px;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+
+.st-method:last-child{border-bottom-color:transparent;padding-bottom:4px}
+
+.st-method-ic{
+  flex:none;width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);border:1px solid var(--border-2);color:var(--text-2);
+}
+
+.st-method-tx{flex:1 1 auto;min-width:0}
+
+.st-method-tx b{display:block;font-size:13.5px;color:#fff;font-weight:700}
+
+.st-method-tx small{
+  display:block;margin-top:2px;font-size:11.5px;color:var(--text-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.st-pillx{
+  flex:none;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;
+  border-radius:8px;font-family:var(--font-body);font-size:11px;font-weight:700;
+}
+
+.st-pillx svg{flex:none}
+
+.st-pillx--ok{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.25)}
+
+.st-pillx--warn{background:rgba(255,255,255,.05);color:var(--text-3);border:1px solid var(--border-2)}
+
+.st-pillx--soon{background:rgba(124,77,255,.12);color:#b39dff;border:1px solid rgba(124,77,255,.3)}
+
+.st-linkbtn{
+  flex:none;background:none;border:0;cursor:pointer;
+  color:var(--text-2);font-family:var(--font-body);font-size:12.5px;font-weight:700;
+  padding:6px 2px;border-bottom:1px solid var(--border-3);transition:.15s;
+}
+
+.st-linkbtn:hover{color:#fff;border-color:#fff}
+
+.st-linkbtn:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px;border-radius:6px}
+
+
+/* глазок в поле пароля: показать/скрыть */
+.st-eye{
+  flex:none;background:none;border:0;cursor:pointer;padding:4px;border-radius:8px;
+  color:var(--text-3);display:inline-flex;transition:color .15s;
+}
+
+.st-eye:hover{color:#fff}
+
+.st-eye.is-on{color:#fff}
+
+.st-eye:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+
+/* ошибка валидации пароля */
+.st-error{
+  margin-top:10px;font-size:12px;color:#fca5a5;font-weight:600;line-height:1.5;
+}
+
+
+/* главная кнопка формы (смена пароля) — белая, как активные
+   пилюли: действие подтверждает, а не «призрачно» */
+.st-save{
+  margin-top:16px;height:44px;padding:0 22px;border-radius:999px;border:0;cursor:pointer;
+  background:#fff;color:#000;font-family:var(--font-body);font-size:13px;font-weight:800;
+  transition:background .15s,transform .15s;
+}
+
+.st-save:hover{background:#e9e9ee}
+
+.st-save:active{transform:scale(.98)}
+
+.st-save:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+
+/* опасная зона: приглушённый красный, действия — контурные */
+.st-sec--danger{border-color:rgba(248,113,113,.26);background:rgba(248,113,113,.03)}
+
+.st-sec--danger .st-sec-title{color:#fca5a5}
+
+.st-method-ic--red{color:#fca5a5;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.07)}
+
+.st-danger-btn{
+  flex:none;height:34px;padding:0 14px;border-radius:10px;cursor:pointer;
+  border:1px solid rgba(248,113,113,.4);background:rgba(248,113,113,.08);
+  color:#fca5a5;font-family:var(--font-body);font-size:12px;font-weight:700;
+  transition:.15s;
+}
+
+.st-danger-btn:hover{background:rgba(248,113,113,.16);color:#fecaca;border-color:rgba(248,113,113,.6)}
+
+.st-danger-btn:focus-visible{outline:2px solid rgba(252,165,165,.75);outline-offset:2px}
+
+
+/* --- уведомления: строки с тумблером --- */
+.st-tg{
+  display:flex;align-items:center;gap:14px;
+  padding:13px 0;border-bottom:1px solid var(--border);cursor:pointer;
+}
+
+.st-tg:last-child{border-bottom-color:transparent}
+
+.st-tg-info{flex:1 1 auto;min-width:0}
+
+.st-tg-info b{display:block;font-size:13.5px;color:#fff;font-weight:700}
+
+.st-tg-info small{display:block;margin-top:2px;font-size:11.5px;color:var(--text-3)}
+
+.st-tg-in{position:absolute;opacity:0;pointer-events:none}
+
+.st-switch{
+  flex:none;width:42px;height:24px;border-radius:99px;
+  background:rgba(255,255,255,.12);border:1px solid var(--border-2);
+  position:relative;transition:background .18s,border-color .18s;
+}
+
+.st-switch::after{
+  content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+  background:#fff;transition:left .18s;
+}
+
+.st-tg-in:checked+.st-switch{background:#fff;border-color:#fff}
+
+.st-tg-in:checked+.st-switch::after{left:20px;background:#000}
+
+.st-tg-in:focus-visible+.st-switch{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+/* строки без тумблера («скоро») — кликается только контрол, не вся строка */
+.st-tg--soon{cursor:default}
+
+.st-soon{
+  flex:none;display:inline-flex;align-items:center;height:24px;padding:0 11px;
+  border-radius:99px;border:1px solid var(--border-2);
+  background:rgba(255,255,255,.06);
+  font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--text-2);
+}
+
+
+/* --- размер карточек: плитки-превью S/M/L ---
+   Вместо сегмента с буквами — живой пример: мини-карточка
+   (постер + строки названия и мета) в масштабе выбранного
+   размера. Постеры стоят на одной «полке» — выровнены по
+   нижнему краю, разница размеров читается сразу. Плитки
+   делят ширину формы поровну и никуда не вылезают; клик
+   применяет размер ко всем страницам сразу. */
+.st-cards{padding:2px 0 16px;border-bottom:1px solid var(--border)}
+
+.st-cards-head b{display:block;font-size:13.5px;color:#fff;font-weight:700}
+
+.st-cards-head small{display:block;margin-top:2px;font-size:11.5px;color:var(--text-3)}
+
+.st-cards-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:13px}
+
+.st-cd{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  padding:14px 8px 13px;border-radius:14px;cursor:pointer;
+  border:1px solid var(--border-2);background:rgba(255,255,255,.03);
+  transition:border-color .15s,background .15s,transform .15s;
+}
+
+.st-cd:hover{border-color:var(--border-3);background:rgba(255,255,255,.05)}
+
+.st-cd:active{transform:scale(.98)}
+
+.st-cd:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+.st-cd.is-on{border-color:#fff;background:rgba(255,255,255,.06)}
+
+.st-cd-stage{height:124px;display:flex;align-items:flex-end}   
+/* «полка»: постеры стоят на одном уровне */
+.st-cd-mock{display:flex;flex-direction:column;width:var(--pw)}
+
+.st-cd-poster{
+  display:block;width:100%;height:calc(var(--pw)*1.5);border-radius:7px;
+  background:linear-gradient(165deg,#514a63 0%,#2a2735 58%,#16141d 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.09),0 6px 18px -8px rgba(0,0,0,.8);
+  position:relative;overflow:hidden;
+}
+
+.st-cd-poster::after{   /* блик, как у глянцевых постеров */
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.11) 50%,transparent 60%);
+}
+
+.st-cd[data-cardsize="m"] .st-cd-poster{background:linear-gradient(165deg,#5b4470 0%,#332a44 58%,#191521 100%)}
+
+.st-cd[data-cardsize="l"] .st-cd-poster{background:linear-gradient(165deg,#3f5a78 0%,#26344a 58%,#141b26 100%)}
+
+.st-cd-lines{display:flex;flex-direction:column;gap:4px;margin-top:7px}
+
+.st-cd-lines i{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.14)}
+
+.st-cd-lines i:first-child{background:rgba(255,255,255,.26)}
+
+.st-cd-lines i:last-child{width:62%}
+
+.st-cd-cap{display:flex;align-items:baseline;gap:7px}
+
+.st-cd-cap b{font-size:12.5px;font-weight:800;color:var(--text-2);transition:color .15s}
+
+.st-cd-cap small{font-size:11px;color:var(--text-3)}
+
+.st-cd.is-on .st-cd-cap b{color:#fff}
+
+
+/* --- гостевое состояние --- */
+.st-guest{display:flex;justify-content:center;margin-top:26px}
+
+.stg-card{
+  max-width:480px;padding:44px 38px;border-radius:20px;text-align:center;
+  border:1px dashed var(--border-2);background:rgba(255,255,255,.02);
+}
+
+.stg-ic{
+  width:60px;height:60px;border-radius:16px;margin:0 auto 16px;
+  background:var(--surface-2);border:1px solid var(--border-2);
+  display:flex;align-items:center;justify-content:center;color:var(--text-3);
+}
+
+.stg-card h2{font-family:var(--font-display);font-size:20px;color:#fff}
+
+.stg-lead{margin-top:9px;font-size:13px;color:var(--text-3);line-height:1.6}
+
+.stg-cta{margin-top:26px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+
+.stg-reg{
+  background:none;border:0;color:var(--text-2);
+  font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;
+  padding:6px 2px;border-bottom:1px solid var(--border-3);transition:.15s;
+}
+
+.stg-reg:hover{color:#fff;border-color:#fff}
+
+
+/* ============ КАРТОЧКА-ПОСТЕР ============ */
+.poster-card{position:relative;width:var(--card-w);transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+
+.poster-card.is-hover,.poster-card:focus-visible{transform:translateY(-5px)}
+
+.poster-wrap{
+  position:relative;aspect-ratio:2/3;border-radius:var(--r-m);overflow:hidden;
+  background:#0b0b0e;isolation:isolate;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);
+  transition:box-shadow .3s ease;
+}
+
+.poster-card.is-hover .poster-wrap{
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 18px 44px -8px rgba(0,0,0,.85);
+}
+
+.poster-wrap img.poster-img{width:100%;height:100%;object-fit:cover;transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+
+.poster-card.is-hover .poster-img{transform:scale(1.06)}
+
+.poster-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,transparent 26%,transparent 52%,rgba(0,0,0,.66) 100%);pointer-events:none}
+
+.poster-spotlight{
+  position:absolute;inset:0;opacity:0;transition:opacity .35s;pointer-events:none;
+  background:radial-gradient(180px 180px at 50% 26%,rgba(255,255,255,.1),transparent 70%);
+}
+
+.poster-card.is-hover .poster-spotlight{opacity:1}
+
+
+/* ---- бейджи: геометрия из дизайн-системы v2 («Чипы и статусы»):
+   высота 24px, паддинг 11px, радиус 8px; на постере — стекло ---- */
+/* рейтинг — семантический цвет, слева сверху */
+.rating-pill{
+  position:absolute;top:10px;left:10px;z-index:4;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:24px;padding:0 11px;border-radius:8px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;color:#fff;
+}
+
+.rating-pill svg{width:9px;height:9px}
+
+.rating-pill--hi{color:#86EFAC;border-color:rgba(74,222,128,.4)}
+
+.rating-pill--mid{color:#FDE047;border-color:rgba(250,204,21,.4)}
+
+.rating-pill--low{color:#FCA5A5;border-color:rgba(248,113,113,.38)}
+
+
+/* бейдж NEW — белый, справа сверху, текст строго по центру */
+.badge-new{
+  position:absolute;top:10px;right:10px;z-index:4;
+  display:inline-flex;align-items:center;justify-content:center;
+  height:24px;padding:0 11px;border-radius:8px;
+  background:#fff;color:#000;font-size:11px;font-weight:800;
+}
+
+.badge-new .bn-text{letter-spacing:.12em;margin-right:-.12em}
+
+
+/* статус тайтла: внизу слева (справа — меню «⋮»), точка — семантика */
+.status-chip{
+  position:absolute;bottom:10px;left:10px;z-index:4;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:24px;padding:0 11px;border-radius:8px;max-width:calc(100% - 58px);
+  background:rgba(0,0,0,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:11px;font-weight:600;color:rgba(255,255,255,.94);white-space:nowrap;
+  overflow:hidden;
+}
+
+/* геометрия и типографика — из дизайн-системы («черновик v2», блок
+   «Чипы и статусы»): высота 24px, паддинги 11px, радиус 8px, зазор 6px,
+   кегль 11/600, точка 6px, обычный регистр без трекинга. Группа
+   «точка + подпись» центрируется целиком; при нехватке места подпись
+   режется многоточием — точка остаётся видна */
+.status-chip .sc-dot{position:static;width:6px;height:6px;border-radius:50%;flex:none}
+
+.status-chip .sc-t{line-height:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+/* гость ничего не хранит — статусы пользователя не показываем */
+body.is-guest .status-chip{display:none}
+
+.status-chip--watching .sc-dot{background:var(--ok)}
+
+.status-chip--planned .sc-dot{background:var(--info)}
+
+.status-chip--watched .sc-dot{background:rgba(255,255,255,.75)}
+
+.status-chip--onhold .sc-dot{background:var(--warn)}
+
+.status-chip--dropped .sc-dot{background:var(--bad)}
+
+
+/* меню состояния тайтла — «⋮» в правом нижнем углу карточки */
+.card-dots{
+  position:absolute;right:8px;bottom:8px;z-index:6;
+  width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.22);
+  background:rgba(0,0,0,.5);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  color:#fff;display:flex;align-items:center;justify-content:center;padding:0;
+  opacity:0;transform:translateY(4px);transition:.2s ease;
+}
+
+.poster-card.is-hover .card-dots,.poster-card:focus-visible .card-dots{opacity:1;transform:none}
+
+.card-dots:hover{background:#fff;color:#000;border-color:#fff}
+
+/* гость статусы не хранит — меню состояния не показываем */
+body.is-guest .card-dots{display:none}
+
+
+/* центральная play-кнопка */
+.card-play{
+  position:absolute;top:50%;left:50%;z-index:5;
+  width:46px;height:46px;border-radius:50%;
+  transform:translate(-50%,-50%) scale(.55);
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.34);
+  backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 30px rgba(0,0,0,.5);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .22s,transform .25s cubic-bezier(.2,.7,.2,1.5);
+}
+
+.poster-card.is-hover .card-play,.poster-card:focus-visible .card-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+.card-play:hover{background:rgba(255,255,255,.28)}
+
+
+/* подпись под постером */
+.card-caption{padding:9px 2px 0}
+
+.card-caption .cc-title{
+  font-size:13.5px;font-weight:600;line-height:1.35;color:#fff;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  min-height:2.6em;
+}
+
+.card-caption .cc-meta{
+  margin-top:3px;display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;
+}
+
+.cc-meta .cm-sep{color:rgba(255,255,255,.18);flex:none}
+
+.cc-meta .cm-type{font-weight:700;flex:none;color:rgba(255,255,255,.55)}
+
+.cc-meta .cm-genres{overflow:hidden;text-overflow:ellipsis}
+
+
+/* ============ ПРЕВЬЮ-ПАНЕЛЬ КАРТОЧКИ (сбоку при наведении) ============ */
+.preview{
+  position:fixed;z-index:105;width:360px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:16px;
+  box-shadow:0 32px 80px -12px rgba(0,0,0,.95);
+  overflow:hidden;
+  opacity:0;transform:translateY(10px) scale(.97);
+  transition:opacity .22s ease,transform .22s cubic-bezier(.2,.7,.2,1);
+  pointer-events:none;
+}
+
+.preview.show{opacity:1;transform:none;pointer-events:auto}
+
+.preview.hidden{display:none}
+
+
+/* «волна»: полупрозрачная белая полоса проходит сверху вниз,
+   и только после неё проявляется содержимое превью */
+.pv-wave{position:absolute;inset:0;z-index:9;pointer-events:none;overflow:hidden;border-radius:inherit}
+
+.pv-wave::before{
+  content:'';position:absolute;left:0;right:0;top:-42%;height:34%;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.04) 28%,rgba(255,255,255,.2) 47%,rgba(255,255,255,.34) 52%,rgba(255,255,255,.04) 72%,transparent);
+  opacity:0;
+}
+
+.preview.waving .pv-wave::before{animation:pv-sweep .55s cubic-bezier(.45,0,.2,1) forwards}
+
+@keyframes pv-sweep{
+  0%{transform:translateY(0);opacity:0}
+  14%{opacity:1}
+  86%{opacity:1}
+  100%{transform:translateY(470%);opacity:0}
+}
+
+.pv-media,.pv-thumbs,.pv-body{opacity:0;transform:translateY(6px);transition:opacity .12s ease,transform .12s ease}
+
+.preview.show .pv-media,.preview.show .pv-thumbs,.preview.show .pv-body{
+  opacity:1;transform:none;
+  transition:opacity .34s ease .16s,transform .34s cubic-bezier(.2,.7,.2,1) .16s;
+}
+
+
+.pv-media{position:relative;aspect-ratio:16/9;background:#0b0b0e;overflow:hidden}
+
+.pv-media>img{width:100%;height:100%;object-fit:cover;transition:opacity .18s ease}
+
+/* мини-волна при переключении кадра */
+.pv-media::after{
+  content:'';position:absolute;left:0;right:0;top:-64%;height:55%;z-index:8;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.24) 47%,rgba(255,255,255,.38) 52%,transparent);
+  opacity:0;
+}
+
+.pv-media.waving::after{animation:pv-sweep .42s cubic-bezier(.45,0,.2,1) forwards}
+
+.pv-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.06),transparent 34%,rgba(0,0,0,.52) 90%);z-index:2}
+
+.pv-play{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.34);
+  backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  color:#fff;display:flex;align-items:center;justify-content:center;transition:.18s;padding:0;
+}
+
+.preview:hover .pv-play{background:rgba(255,255,255,.28);transform:translate(-50%,-50%) scale(1.07)}
+
+
+/* «трейлер»: имитация видео — кен-бёрнс, полоса прогресса, звук */
+.pv-video{position:absolute;inset:0;z-index:1;display:none;background:#0b0b0e;overflow:hidden}
+
+.pv-media.is-trailer .pv-video{display:block}
+
+.pv-media.is-trailer>img{opacity:0}
+
+.pv-media.is-trailer{cursor:pointer}
+
+.pv-video img{width:100%;height:100%;object-fit:cover;transition:opacity .2s ease;animation:pv-kb 6.5s ease-in-out infinite alternate}
+
+@keyframes pv-kb{from{transform:scale(1.03) translate(-1.4%,0)}to{transform:scale(1.16) translate(1.4%,0)}}
+
+.pv-vchip{
+  position:absolute;top:10px;left:10px;z-index:3;
+  display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:7px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+}
+
+.pv-vbar{position:absolute;left:12px;right:12px;bottom:12px;height:3px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden;z-index:3}
+
+.pv-vbar span{display:block;height:100%;background:#fff;border-radius:99px;transform-origin:left;transform:scaleX(0)}
+
+.pv-media.is-trailer:not(.is-paused) .pv-vbar span{animation:pv-progress 24s linear infinite}
+
+@keyframes pv-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+.pv-media.is-paused .pv-video img{animation-play-state:paused}
+
+/* громкость трейлера: кнопка + выдвижной ползунок. Поднята над
+   полосой таймлайна (bottom:26px), чтобы не наезжать на неё.
+   В проде слайдер управляет плеером YouTube (IFrame API:
+   player.setVolume(0..100)); в макете звук синтезирует WebAudio. */
+.pv-vol{
+  position:absolute;right:10px;bottom:26px;z-index:4;
+  display:flex;align-items:center;gap:7px;
+}
+
+.pv-vol-track{width:0;overflow:hidden;transition:width .28s cubic-bezier(.2,.7,.2,1)}
+
+.pv-vol:hover .pv-vol-track,.pv-vol.dragging .pv-vol-track{width:80px}
+
+.pv-vol-slider{position:relative;width:80px;height:28px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+
+.vs-rail{position:relative;display:block;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,.28);overflow:hidden}
+
+.vs-fill{position:absolute;top:0;bottom:0;left:0;width:55%;background:#fff;border-radius:99px}
+
+.pv-vol-slider:hover .vs-fill,.pv-vol.dragging .vs-fill{box-shadow:0 0 10px rgba(255,255,255,.45)}
+
+.vs-thumb{
+  position:absolute;top:50%;left:55%;width:11px;height:11px;border-radius:50%;
+  transform:translate(-50%,-50%);background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.6);
+  transition:transform .15s;pointer-events:none;
+}
+
+.pv-vol-slider:hover .vs-thumb,.pv-vol.dragging .vs-thumb{transform:translate(-50%,-50%) scale(1.3)}
+
+.pv-vol.is-muted .vs-rail{opacity:.45}
+
+.vs-bubble{
+  position:absolute;bottom:calc(100% - 2px);left:50%;transform:translateX(-50%);
+  padding:2px 7px;border-radius:7px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.18);
+  font-size:10px;font-weight:800;color:#fff;white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .15s;
+}
+
+.pv-vol:hover .vs-bubble,.pv-vol.dragging .vs-bubble{opacity:1}
+
+.pv-vmute{
+  flex:none;width:30px;height:30px;border-radius:9px;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;display:flex;align-items:center;justify-content:center;transition:.15s;padding:0;
+}
+
+.pv-vmute:hover{background:rgba(255,255,255,.22)}
+
+.pv-vmute.is-off{color:var(--text-3)}
+
+/* стрелки переключения кадров прямо на превью */
+.pv-nav{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:5;
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .18s,background .15s;padding:0;
+}
+
+.pv-nav--prev{left:8px}
+
+.pv-nav--next{right:8px}
+
+.pv-media:hover .pv-nav,.pv-media:focus-within .pv-nav{opacity:1}
+
+.pv-nav:hover{background:rgba(255,255,255,.24)}
+
+
+/* миниатюры: вручную переключаем «трейлер / кадры»; кадров может
+   быть много — полоса прокручивается, активная выезжает в центр */
+.pv-thumbs{
+  display:flex;gap:6px;padding:10px 12px 0;
+  overflow-x:auto;scrollbar-width:none;
+}
+
+.pv-thumbs::-webkit-scrollbar{display:none}
+
+.pv-thumbs.is-scrollable{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 10px),transparent);
+  mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 10px),transparent);
+}
+
+.pv-thumb{
+  position:relative;height:42px;flex:1;min-width:44px;border-radius:8px;overflow:hidden;padding:0;
+  border:1px solid var(--border-2);background:var(--surface-2);transition:.15s;
+}
+
+.pv-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+.pv-thumb:hover{border-color:var(--border-3)}
+
+.pv-thumb.is-on{border-color:#fff;box-shadow:0 0 0 1px #fff}
+
+.pv-thumb--trailer{
+  flex:1.35;min-width:66px;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:10px;font-weight:700;color:var(--text-2);white-space:nowrap;
+}
+
+.pv-thumb--trailer svg{color:#fff}
+
+.pv-thumb--trailer.is-on{color:#fff}
+
+.pv-body{padding:12px 16px 16px}
+
+.pv-title{font-family:var(--font-display);font-size:16px;line-height:1.25;letter-spacing:.2px}
+
+.pv-meta{margin-top:7px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;color:var(--text-2);font-weight:600}
+
+.pv-meta .hm-sep{color:rgba(255,255,255,.25)}
+
+.pv-desc{
+  margin-top:9px;font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.66);
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+.pv-actions{margin-top:13px;display:flex;gap:8px;align-items:center}
+
+.pv-actions .btn{height:38px;padding:0 16px;font-size:13px;border-radius:10px}
+
+.pv-ico{
+  width:38px;height:38px;border-radius:10px;
+  border:1px solid var(--border-2);background:var(--surface-2);color:var(--text-2);
+  display:inline-flex;align-items:center;justify-content:center;transition:.15s;
+}
+
+.pv-ico:hover{background:var(--surface-3);color:#fff}
+
+.pv-ico.is-on{background:#fff;color:#000;border-color:#fff}
+
+
+/* чип состояния в мета-строке превью — геометрия из дизайн-системы v2,
+   как у статусной пилюли карточек: 24px / паддинги 11px / радиус 8px,
+   кегль 11/600, точка 6px, обычный регистр без трекинга */
+.pv-status{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:24px;padding:0 11px;border-radius:8px;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.16);
+  font-size:11px;font-weight:600;
+  color:rgba(255,255,255,.94);white-space:nowrap;
+}
+
+.pv-status .sc-dot{position:static;width:6px;height:6px;border-radius:50%;flex:none}
+
+.pv-status .sc-t{line-height:1}
+
+/* гость статусы и списки не хранит */
+body.is-guest .pv-lib,body.is-guest .pv-status{display:none}
+
+
+/* ============ МЕНЮ СОСТОЯНИЯ ТИТЛА («⋮» у карточки и в превью) ============ */
+#statusMenu{
+  position:fixed;z-index:112;width:216px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:0 28px 70px -14px rgba(0,0,0,.9);
+  padding:6px;animation:dd-in .16s ease;
+}
+
+#statusMenu.hidden{display:none}
+
+.sm-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:8px 10px 6px}
+
+.sm-item{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:8px 10px;border-radius:10px;border:0;background:none;
+  color:var(--text-2);font-size:13px;font-weight:600;text-align:left;transition:.14s;
+}
+
+.sm-item:hover{background:var(--surface-2);color:#fff}
+
+.sm-item .sm-dot{width:7px;height:7px;border-radius:50%;flex:none}
+
+.sm-item .sm-label{flex:1;text-align:left}
+
+.sm-item.is-cur{background:var(--surface-2);color:#fff}
+
+.sm-item.is-cur svg{flex:none;color:#fff}
+
+.sm-sep{height:1px;background:var(--border);margin:5px 6px}
+
+.sm-x{width:7px;display:inline-flex;justify-content:center;flex:none;color:var(--text-3)}
+
+.sm-item--clear{color:var(--text-3)}
+
+.sm-item--clear:hover{color:#FCA5A5}
+
+.sm-item--clear:hover .sm-x{color:#FCA5A5}
+
+
+/* ============ АДАПТИВ ============ */
+/* настройки: зеркало не помещается — обычные две колонки,
+   форма забирает остальное */
+@media (max-width:1290px){
+  .st-layout{grid-template-columns:264px minmax(0,1fr)}
+}
+
+@media (max-width:1240px){
+  .s-kbd{display:none}
+}
+
+/* средние ширины: центрированный поиск не должен наезжать на правую
+   навигацию — «Мой список» прячется (он доступен в меню аккаунта,
+   drawer и футере), пилюля поиска сжимается до свободного места */
+@media (max-width:1560px) and (min-width:1081px){
+  .main-nav [data-nav="mylist"],#navRandom{display:none}   /* «Мой список» и «Случайное» уступают место «Подборкам» — оба доступны в бургере */
+  .search-fake{width:max(200px,min(360px,calc(100vw - 1000px)))}
+}
+
+@media (max-width:1080px){
+  .main-nav{gap:14px}
+  #navRandom,.main-nav [data-nav="mylist"],.main-nav [data-nav="colls"]{display:none}   /* второстепенные ссылки уходят в бургер */
+  .main-nav .nav-link[data-nav="manga"]{display:none}      /* раздел «Скоро» прячется первым */
+  .search-fake{width:min(300px,28vw)}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+
+@media (max-width:930px){
+  .search-fake{width:220px}
+}
+
+@media (max-width:860px){
+  .main-nav{display:none}
+  #btnBurger{display:inline-flex}
+  .header-inner{gap:10px}
+  .h-left{gap:12px}
+  .h-right{gap:10px}
+  .logo{font-size:18px}
+  .search-fake{display:none}
+  #hdrSearchIcon{display:inline-flex}
+  .bottom-nav{display:flex}
+  #toasts{bottom:84px;right:12px}
+  .lab{right:12px;bottom:78px}
+  .footer-grid{grid-template-columns:1fr}
+  footer{padding-bottom:130px}
+  .sov-panel{margin-top:6vh}
+  .preview{display:none!important} /* на тач-устройствах превью не нужно */
+
+  /* настройки: каркас в одну колонку — меню разделов становится
+     горизонтальной лентой под шапкой (иконка + подпись, без
+     обводки-капсулы — не пилюли «Моего списка»), липнет к верху;
+     секции без боковых полей, превью ниже,
+     строка ссылки — полями друг под другом */
+  .st{padding-top:calc(var(--header-h) + 20px)}
+  .st-layout{display:block;margin-top:14px}
+  .st-side{
+    position:sticky;top:var(--header-h);z-index:45;
+    flex-direction:row;gap:2px;
+    overflow-x:auto;scrollbar-width:none;
+    margin:0 calc(var(--page-x)*-1);
+    padding:9px var(--page-x) 11px;
+    background:rgba(8,8,10,.92);
+    backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
+    border-bottom:1px solid var(--border-2);
+  }
+  .st-side::-webkit-scrollbar{display:none}
+  .st-nav-item{flex:none;padding:7px 9px;border-radius:11px}
+  .st-nav-ic{width:31px;height:31px;border-radius:9px}
+  .st-nav-tx small{display:none}
+  .st-nav-tx b{font-size:12.5px}
+  .st-pane{margin-top:18px}
+  .st-sec{padding:18px 16px}
+  .st-bpreview{height:150px}
+  .st-bpreview-avatar{width:44px;height:44px;border-radius:12px;font-size:18px}
+  .st-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .st-url{flex-wrap:wrap}
+  .st-url .st-pill{flex:1 1 100%}
+  .st-apply{width:100%}
+  .st-kv-label{width:70px}
+  .stg-card{padding:36px 22px}
+
+  /* новые блоки аккаунта и аватара на узком экране: юзер-карточка
+     не нужна (меню — лента), строки методов переносятся,
+     кнопки становятся на всю ширину */
+  .st-usercard{display:none}
+  .st-method{flex-wrap:wrap;gap:10px;padding:10px 0}
+  .st-method-tx small{white-space:normal}
+  .st-kv{flex-wrap:wrap;row-gap:6px}
+  .st-avrow{align-items:flex-start}
+  .st-save{width:100%}
+  .st-upload{flex:1 1 100%;justify-content:center}
+}
+
+
+/* дисциплина движения: меньше анимации тем, кто её не просил */
+@media (prefers-reduced-motion:reduce){
+  #grain{animation:none}
+  .preview{transition:none}
+  .preview.waving .pv-wave::before,.pv-media.waving::after{animation:none}
+  .sov-panel.is-searching::after,.sov-spin,.sov-sk-img,.sov-sk-ln i,.sov-sk-side,.srs-sk-img,.srs-sk-ln i,.srs-sk-side{animation:none}
+  .pv-video img{animation:none}
+  .pv-media.is-trailer:not(.is-paused) .pv-vbar span{animation:none}
+  *{scroll-behavior:auto}
+}
+
+
+
+</style>
+</head>
+
+<body data-btnwatch="solid" data-displayfont="dela">
+
+<div id="grain" aria-hidden="true"></div>
+<div id="toasts" aria-live="polite"></div>
+
+<!-- ================= ШАПКА ================= -->
+<header class="app-header" id="appHeader">
+  <div class="header-inner">
+
+    <!-- левая зона: логотип + основная навигация -->
+    <div class="h-left">
+      <button id="btnBurger" class="icobtn" aria-label="Открыть меню">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <a href="/" class="logo">Kuvion</a>
+      <nav class="main-nav" aria-label="Основная навигация">
+        <a href="/" class="nav-link" data-nav="home">Главная</a>
+        <a href="/catalog/" class="nav-link" data-nav="catalog">Каталог</a>
+        <a href="#" class="nav-link" id="navRandom" data-stub="Случайное">Случайное</a>
+        <a href="/collections/" class="nav-link" data-nav="colls">Подборки</a>
+      </nav>
+    </div>
+
+    <!-- центр: поиск строго по середине шапки -->
+    <div class="h-center">
+      <button class="search-fake" id="searchOpen" aria-label="Открыть поиск">
+        <span class="s-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </span>
+        <span class="sf-ph">Поиск фильмов, сериалов, аниме…</span>
+        <span class="s-kbd">Ctrl K</span>
+      </button>
+      <button class="icobtn" id="hdrSearchIcon" aria-label="Поиск">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+
+    <!-- правая зона: разделы + аккаунт -->
+    <div class="h-right">
+      <nav class="main-nav" aria-label="Разделы">
+        <a href="/mylist/" class="nav-link" data-nav="mylist">Мой список</a>
+        <a href="/catalog/?type=anime" class="nav-link" data-nav="anime">Аниме</a>
+        <a href="/schedule/" class="nav-link" data-nav="sched">Расписание</a>
+        <a href="/manga/" class="nav-link" data-nav="manga">Манга</a>
+      </nav>
+
+      <div class="header-right">
+
+        <!-- Уведомления -->
+        <div style="position:relative" id="userArea">
+          <button class="icobtn" id="bellBtn" aria-label="Уведомления" aria-expanded="false">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="bell-badge" id="bellBadge">2</span>
+          </button>
+
+          <div class="dd bell-dd dd-right hidden" id="bellDd" role="menu">
+            <div class="bell-head">
+              <span class="bell-title">Уведомления</span>
+              <button class="bell-clear" id="bellClear">Отметить прочитанными</button>
+            </div>
+<div class="bell-list" id="bellList"></div>
+            <a class="bell-all" href="/notifications/" id="bellAll"><span>Все уведомления</span><span class="bell-all-n" id="bellAllN"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+          </div>
+        </div>
+
+        <span class="a-divider" id="userDivider"></span>
+
+        <!-- Аватар: клик открывает меню (как на YouTube) -->
+        <div style="position:relative" id="avatarWrap">
+          <button class="avatar-btn" id="avatarBtn" aria-label="Аккаунт" aria-expanded="false">
+            <span class="avatar-core" id="avatarCore">D</span>
+          </button>
+
+          <div class="dd acct-dd dd-right hidden" id="acctDd" role="menu">
+            <div class="acct-head">
+              <span class="avatar-core" id="avatarCoreMenu">D</span>
+              <div style="min-width:0">
+                <p class="acct-name">danil</p>
+                <p class="acct-handle"><span class="acct-dot"></span>в сети</p>
+              </div>
+            </div>
+            <div class="dd-sep"></div>
+            <a class="dd-item" href="/profile/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Мой профиль
+            </a>
+            <a class="dd-item" href="/mylist/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H3"/><path d="M10 12H3"/><path d="M10 19H3"/><path d="m15 12 5 3-5 3z"/></svg>
+              Мой список
+            </a>
+            <a class="dd-item" href="/settings/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              Настройки
+            </a>
+
+            <div class="dd-sep"></div>
+
+            <div class="sub-card">
+              <p class="sc-name">Kuvion+</p>
+              <p class="sc-desc">Без рекламы, 4K-качество и ранний доступ к главам манги</p>
+              <a class="sc-btn" href="/plus/" style="display:inline-flex;align-items:center;justify-content:center">Оформить</a>
+            </div>
+
+            <div class="dd-sep"></div>
+            <button class="dd-item dd-item--danger" id="logoutBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+              Выйти
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-cta btn-login hidden" id="loginBtn">Войти</button>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- ================= НАСТРОЙКИ ================= -->
+<main class="st" id="settings">
+
+  <div class="st-wrap">
+
+    <div class="st-head">
+      <a class="st-back" href="/profile/">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Профиль
+      </a>
+      <h1 class="st-title">Настройки</h1>
+      <p class="st-lead">Управляйте своим профилем, оформлением и аккаунтом</p>
+    </div>
+
+    <!-- вид пользователя -->
+    <div id="stMain">
+
+      <!-- каркас «как в старой версии»: слева — липкое меню выбора
+           раздела, справа — содержание выбранного. Разделы
+           переключаются целиком (не пилюлями, как вкладки «Моего
+           списка» и профиля): активный пункт читается по белому
+           квадрату-иконке и белой подписи. Выбор живёт в адресе
+           (#account, #notify) — им можно поделиться ссылкой и
+           вернуться к нему кнопкой «назад». -->
+      <div class="st-layout">
+
+        <nav class="st-side" id="stNav" aria-label="Разделы настроек">
+          <!-- карточка пользователя над меню — как в первой версии:
+               сразу видно, чей это аккаунт -->
+          <div class="st-usercard">
+            <span class="st-uc-ava" aria-hidden="true"><i id="stUcLetter">D</i><img id="stUcImg" alt="" style="display:none"></span>
+            <div class="st-uc-tx">
+              <b id="stUcName">danil</b>
+              <small>danil@kuvion.app</small>
+            </div>
+          </div>
+          <button class="st-nav-item is-cur" type="button" data-sec="profile">
+            <span class="st-nav-ic" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <span class="st-nav-tx"><b>Профиль</b><small>никнейм, аватар, баннер</small></span>
+          </button>
+          <button class="st-nav-item" type="button" data-sec="appearance">
+            <span class="st-nav-ic" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+            </span>
+            <span class="st-nav-tx"><b>Оформление</b><small>карточки и анимации</small></span>
+          </button>
+          <button class="st-nav-item" type="button" data-sec="account">
+            <span class="st-nav-ic" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <span class="st-nav-tx"><b>Аккаунт</b><small>вход, почта, пароль</small></span>
+          </button>
+          <button class="st-nav-item" type="button" data-sec="notify">
+            <span class="st-nav-ic" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            </span>
+            <span class="st-nav-tx"><b>Уведомления</b><small>серии, премьеры, подборки</small></span>
+          </button>
+        </nav>
+
+        <div class="st-pane" id="stPane">
+
+          <!-- ПРОФИЛЬ: никнейм, «О себе», баннер. Всё применяется сразу
+               и переживает переход между страницами (localStorage в макете,
+               бэкенд в продакшене); превью сверху показывает, как голову
+               профиля увидят другие пользователи. -->
+          <section class="st-sec" data-pane="profile" id="stProfile">
+            <h2 class="st-sec-title">Профиль</h2>
+
+            <div class="st-bpreview" id="stPreview">
+              <img id="stPreviewImg" alt="">
+              <span class="st-bpreview-shade" aria-hidden="true"></span>
+              <div class="st-bpreview-head">
+                <span class="st-bpreview-avatar" aria-hidden="true"><i id="stPreviewLetter">D</i><img id="stPreviewAvImg" alt="" style="display:none"></span>
+                <div class="st-bpreview-id">
+                  <b class="st-bpreview-name" id="stPreviewName">danil</b>
+                  <span class="st-bpreview-presence"><i class="st-dot"></i>в сети</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="st-field" id="stHandleField">
+              <label for="stHandle">Никнейм</label>
+              <div class="st-pill">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>
+                <input id="stHandle" maxlength="20" autocomplete="username" placeholder="danil" spellcheck="false">
+              </div>
+              <p class="f-err">2–20 символов: латиница, цифры и _</p>
+            </div>
+
+            <div class="st-field">
+              <div class="st-label-row">
+                <label for="stBio">О себе</label>
+                <span class="st-count"><span id="stBioLen">0</span> / 200</span>
+              </div>
+              <textarea id="stBio" maxlength="200" placeholder="Пара слов о ваших вкусах — увидят в вашем профиле"></textarea>
+            </div>
+
+            <!-- Аватар: загрузка своего файла — перенос из первой
+                 версии. Клик по квадрату или кнопке открывает выбор
+                 файла; картинка сжимается и становится аватаром
+                 везде: в превью, в профиле и в шапке. -->
+            <p class="st-sub">Аватар</p>
+            <div class="st-avrow">
+              <label class="st-avpick" title="Заменить аватар">
+                <span class="st-av-frame" aria-hidden="true"><i id="stAvLetter">D</i><img id="stAvImg" alt="" style="display:none"></span>
+                <span class="st-pick-hov" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+                  <b>Заменить</b>
+                </span>
+                <input type="file" id="stAvFile" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+              </label>
+              <div class="st-filebtns">
+                <button class="st-filebtn" type="button" id="stAvPickBtn">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+                  Выбрать файл
+                </button>
+                <button class="st-filebtn st-filebtn--red hidden" type="button" id="stAvDelBtn">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  Удалить
+                </button>
+              </div>
+            </div>
+            <p class="st-hint">Макс. 5 МБ · JPEG, PNG, WebP, GIF — станет аватаром в профиле и в шапке сайта; без него — буква никнейма.</p>
+
+            <p class="st-sub">Баннер</p>
+            <div class="st-tiles" id="stTiles"></div>
+            <div class="st-url" id="stUrlRow">
+              <button class="st-upload" type="button" id="stBanBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+                Загрузить файл
+              </button>
+              <div class="st-pill">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <input id="stUrl" type="url" placeholder="https://… — ссылка на картинку" spellcheck="false">
+              </div>
+              <button class="st-apply" id="stUrlBtn" type="button">Применить</button>
+            </div>
+            <input type="file" id="stBanFile" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+            <p class="st-hint">Файл до 5 МБ или ссылка на картинку · рекомендуется широкий формат от 1200×400.</p>
+          </section>
+
+          <!-- АККАУНТ: перенос из первой версии сайта — способы
+               входа, почта, смена пароля и опасная зона. Действия —
+               демо: отвечают тостами, как остальная навигация
+               макета; в продакшене — запросы к бэкенду. -->
+          <section class="st-sec hidden" data-pane="account" id="stAccount">
+            <h2 class="st-sec-title">Способы входа</h2>
+            <div class="st-warn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+              <p>У вас один способ входа. Если потеряете к нему доступ, восстановить аккаунт будет нечем.</p>
+            </div>
+            <div class="st-method">
+              <span class="st-method-ic" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+              </span>
+              <div class="st-method-tx">
+                <b>Почта и пароль</b>
+                <small>danil · danil@kuvion.app</small>
+              </div>
+              <span class="st-pillx st-pillx--ok">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                Настроен
+              </span>
+            </div>
+            <div class="st-method">
+              <span class="st-method-ic" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              </span>
+              <div class="st-method-tx">
+                <b>Google</b>
+                <small>Быстрый вход одним кликом</small>
+              </div>
+              <span class="st-pillx st-pillx--warn">Не настроен</span>
+              <button class="st-linkbtn" type="button" data-stub="Привязка Google">Привязать</button>
+            </div>
+            <div class="st-method">
+              <span class="st-method-ic" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#2AABEE"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+              </span>
+              <div class="st-method-tx">
+                <b>Telegram</b>
+                <small>Вход и уведомления через бота</small>
+              </div>
+              <span class="st-pillx st-pillx--soon">Скоро</span>
+            </div>
+          </section>
+
+          <section class="st-sec hidden" data-pane="account">
+            <h2 class="st-sec-title">Почта</h2>
+            <div class="st-kv">
+              <span class="st-kv-label">Адрес</span>
+              <b class="st-kv-val">danil@kuvion.app</b>
+              <span class="st-pillx st-pillx--ok">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                Подтверждён
+              </span>
+            </div>
+            <p class="st-hint">Адрес для входа и восстановления доступа.</p>
+            <div class="st-filebtns" style="flex-direction:row;margin-top:12px">
+              <button class="st-filebtn" type="button" data-stub="Смена почты">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+                Изменить адрес
+              </button>
+            </div>
+          </section>
+
+          <!-- Подписка: статус читается из kuvion_plus_v1 (страница
+               Kuvion+), кнопка ведёт на страницу подписки -->
+          <section class="st-sec hidden" data-pane="account">
+            <h2 class="st-sec-title">Подписка</h2>
+            <div class="st-plus" id="stPlusCard">
+              <span class="st-plus-ic">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6 4.6 1.9-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/><path d="M19 15v6"/><path d="M16 18h6"/></svg>
+              </span>
+              <div class="st-plus-info">
+                <p class="st-plus-name">Kuvion+</p>
+                <p class="st-plus-sub" id="stPlusSub">Без рекламы, 4K HDR и ранний доступ к главам манги — на всех устройствах</p>
+              </div>
+              <a class="st-plus-btn" href="/plus/" id="stPlusBtn">Оформить</a>
+            </div>
+          </section>
+
+          <section class="st-sec hidden" data-pane="account">
+            <h2 class="st-sec-title">Смена пароля</h2>
+            <div class="st-field" style="margin-top:0">
+              <label for="stPassCur">Текущий пароль</label>
+              <div class="st-pill">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input id="stPassCur" type="password" autocomplete="current-password" placeholder="••••••••" spellcheck="false">
+                <button type="button" class="st-eye" data-eye="stPassCur" aria-label="Показать пароль">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="st-field">
+              <label for="stPassNew">Новый пароль</label>
+              <div class="st-pill">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+                <input id="stPassNew" type="password" autocomplete="new-password" placeholder="Минимум 8 символов" spellcheck="false">
+                <button type="button" class="st-eye" data-eye="stPassNew" aria-label="Показать пароль">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="st-field">
+              <label for="stPassNew2">Повторите новый пароль</label>
+              <div class="st-pill">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+                <input id="stPassNew2" type="password" autocomplete="new-password" placeholder="Ещё раз" spellcheck="false">
+                <button type="button" class="st-eye" data-eye="stPassNew2" aria-label="Показать пароль">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="st-error hidden" id="stPassErr"></p>
+            <button class="st-save" type="button" id="stPassBtn">Сменить пароль</button>
+            <p class="st-hint">Минимум 8 символов, заглавная и строчная буквы, цифра — как в первой версии.</p>
+          </section>
+
+          <section class="st-sec st-sec--danger hidden" data-pane="account">
+            <h2 class="st-sec-title">Опасная зона</h2>
+            <div class="st-method">
+              <span class="st-method-ic st-method-ic--red" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/><path d="M10 19v-3.96 3.15"/><path d="M7 19h5"/><rect width="6" height="10" x="16" y="12" rx="2"/></svg>
+              </span>
+              <div class="st-method-tx">
+                <b>Выйти со всех устройств</b>
+                <small>Завершит все сессии, кроме текущей</small>
+              </div>
+              <button class="st-danger-btn" type="button" data-stub="Выход со всех устройств">Выйти везде</button>
+            </div>
+            <div class="st-method">
+              <span class="st-method-ic st-method-ic--red" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </span>
+              <div class="st-method-tx">
+                <b>Удалить аккаунт</b>
+                <small>Библиотека и история будут стёрты безвозвратно</small>
+              </div>
+              <button class="st-danger-btn" type="button" data-stub="Удаление аккаунта">Удалить</button>
+            </div>
+          </section>
+
+          <!-- ОФОРМЛЕНИЕ: как выглядят карточки и анимации.
+               Размер карточек — плитки-превью S/M/L с мини-карточками
+               (постер + строки названия): сразу видно, насколько
+               крупными будут карточки. Выбор с запоминанием — ключ
+               kuvion_cardsize_v1 читают все страницы при загрузке.
+               Анимированные аватары — заготовка под GIF/видео-аватары
+               и живые рамки. Видео на главной пока в работе — помечено
+               «Скоро». Зерно из настроек убрано: это часть стиля Kuvion,
+               тумблер для него остался только в «Лаборатории». -->
+          <section class="st-sec hidden" data-pane="appearance" id="stAppearance">
+            <h2 class="st-sec-title">Оформление</h2>
+
+            <div class="st-cards">
+              <div class="st-cards-head">
+                <b>Размер карточек</b>
+                <small>плотность лент и сеток тайтлов — на главной, в каталоге и списках; применяется сразу</small>
+              </div>
+              <div class="st-cards-grid" id="stCardSize" role="group" aria-label="Размер карточек">
+                <button type="button" class="st-cd" data-cardsize="s">
+                  <span class="st-cd-stage" aria-hidden="true">
+                    <span class="st-cd-mock" style="--pw:46px">
+                      <span class="st-cd-poster"></span>
+                      <span class="st-cd-lines"><i></i><i></i></span>
+                    </span>
+                  </span>
+                  <span class="st-cd-cap"><b>S</b><small>компактно</small></span>
+                </button>
+                <button type="button" class="st-cd is-on" data-cardsize="m">
+                  <span class="st-cd-stage" aria-hidden="true">
+                    <span class="st-cd-mock" style="--pw:56px">
+                      <span class="st-cd-poster"></span>
+                      <span class="st-cd-lines"><i></i><i></i></span>
+                    </span>
+                  </span>
+                  <span class="st-cd-cap"><b>M</b><small>стандарт</small></span>
+                </button>
+                <button type="button" class="st-cd" data-cardsize="l">
+                  <span class="st-cd-stage" aria-hidden="true">
+                    <span class="st-cd-mock" style="--pw:68px">
+                      <span class="st-cd-poster"></span>
+                      <span class="st-cd-lines"><i></i><i></i></span>
+                    </span>
+                  </span>
+                  <span class="st-cd-cap"><b>L</b><small>крупно</small></span>
+                </button>
+              </div>
+            </div>
+
+            <label class="st-tg">
+              <span class="st-tg-info">
+                <b>Анимированные аватары и рамки</b>
+                <small>выкл — GIF, видео-аватары и живые рамки показываются статичной картинкой</small>
+              </span>
+              <input type="checkbox" class="st-tg-in" id="stAnim" checked>
+              <span class="st-switch" aria-hidden="true"></span>
+            </label>
+
+            <div class="st-tg st-tg--soon">
+              <span class="st-tg-info">
+                <b>Видео на главной</b>
+                <small>выкл — баннер главной без фонового видео, только кадр</small>
+              </span>
+              <span class="st-soon">Скоро</span>
+            </div>
+          </section>
+
+          <!-- УВЕДОМЛЕНИЯ: переключатели (демо-состояние живёт в localStorage) -->
+          <section class="st-sec hidden" data-pane="notify" id="stNotify">
+            <h2 class="st-sec-title">Уведомления</h2>
+            <label class="st-tg">
+              <span class="st-tg-info">
+                <b>Новые серии</b>
+                <small>выход серий тайтлов из «Смотрю»</small>
+              </span>
+              <input type="checkbox" class="st-tg-in" data-notify="eps" checked>
+              <span class="st-switch" aria-hidden="true"></span>
+            </label>
+            <label class="st-tg">
+              <span class="st-tg-info">
+                <b>Премьеры</b>
+                <small>напоминания о тайтлах из расписания</small>
+              </span>
+              <input type="checkbox" class="st-tg-in" data-notify="premieres" checked>
+              <span class="st-switch" aria-hidden="true"></span>
+            </label>
+            <label class="st-tg">
+              <span class="st-tg-info">
+                <b>Подборки</b>
+                <small>рекомендации Kuvion по вашим жанрам</small>
+              </span>
+              <input type="checkbox" class="st-tg-in" data-notify="reco">
+              <span class="st-switch" aria-hidden="true"></span>
+            </label>
+          </section>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- гостевое состояние: настройки откроются после входа -->
+    <div class="st-guest hidden" id="stGuest">
+      <div class="stg-card">
+        <div class="stg-ic" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h2>Настройки — для аккаунта</h2>
+        <p class="stg-lead">Никнейм, баннер профиля и уведомления настраиваются после входа в аккаунт.</p>
+        <div class="stg-cta">
+          <button class="btn btn-cta" id="stgLogin">Войти</button>
+          <button class="stg-reg" id="stgReg">Создать аккаунт</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ================= ФУТЕР ================= -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <p class="footer-logo">Kuvion</p>
+      <p class="footer-tag">Фильмы, сериалы, аниме и манга в одном месте. Всё, что вы смотрите и читаете, всегда под рукой.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Разделы</h4>
+      <a href="/">Главная</a>
+      <a href="/catalog/">Каталог</a>
+      <a href="/catalog/?type=anime">Аниме</a>
+      <a href="/manga/">Манга</a>
+      <a href="/schedule/">Расписание</a>
+      <a href="/collections/">Подборки</a>
+    </div>
+    <div class="footer-col">
+      <h4>Аккаунт</h4>
+      <a href="/profile/">Профиль</a>
+      <a href="/mylist/">Мой список</a>
+      <a href="/notifications/">Уведомления</a>
+      <a href="/settings/">Настройки</a>
+      <a href="/plus/">Kuvion+</a>
+    </div>
+    <div class="footer-col">
+      <h4>Проект</h4>
+      <a href="#" data-stub="О проекте">О проекте</a>
+      <a href="#" data-stub="Поддержка">Поддержка</a>
+      <a href="#" data-stub="Telegram">Telegram</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Kuvion</span>
+    <span class="footer-version">Демо-прототип интерфейса</span>
+  </div>
+</footer>
+
+<!-- ================= АВТОРИЗАЦИЯ: вход + регистрация в 3 шага ================= -->
+<div class="modal-overlay hidden" id="authModal" role="dialog" aria-modal="true" aria-label="Вход в Kuvion">
+  <div class="auth-card">
+    <button class="auth-close" id="authClose" aria-label="Закрыть"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    <p class="auth-logo">Kuvion</p>
+    <p class="auth-sub" id="authSub">Войдите, чтобы синхронизировать список и прогресс</p>
+    <div class="auth-tabs" id="authTabs" role="tablist">
+      <button class="is-on" data-atab="login" role="tab" aria-selected="true">Вход</button>
+      <button data-atab="register" role="tab" aria-selected="false">Регистрация</button>
+    </div>
+
+    <!-- обе панели в одной grid-ячейке: карточка не меняет размер при переключении -->
+    <div class="auth-panels">
+
+      <!-- панель: ВХОД -->
+      <div id="loginPanel" class="auth-panel">
+        <form id="loginForm" novalidate>
+          <div class="auth-field" id="lfEmail">
+            <label for="loginEmail">Email</label>
+            <div class="af-box">
+              <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg></span>
+              <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <p class="f-err">Похоже, в адресе опечатка</p>
+          </div>
+          <div class="auth-field" id="lfPass">
+            <div class="lb-row">
+              <label for="loginPass">Пароль</label>
+              <button type="button" class="forgot" id="forgotBtn">Забыли пароль?</button>
+            </div>
+            <div class="af-box has-eye">
+              <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+              <input id="loginPass" type="password" placeholder="Ваш пароль" autocomplete="current-password">
+              <button type="button" class="af-eye" data-eye="loginPass" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+            </div>
+            <p class="f-err">Введите пароль</p>
+          </div>
+          <label class="auth-remember">
+            <input type="checkbox" id="rememberMe" checked>
+            <span class="ar-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+            <span>Запомнить меня</span>
+          </label>
+          <button type="submit" class="btn btn-cta btn-block auth-submit">Войти</button>
+        </form>
+        <div class="auth-alt"><span>или</span></div>
+        <button class="btn-google" id="googleLogin">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.6 44 30.3 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+          Войти через Google
+        </button>
+        <p class="auth-swap">Нет аккаунта? <button type="button" id="toRegister">Создать</button></p>
+      </div>
+
+      <!-- панель: РЕГИСТРАЦИЯ (3 шага) -->
+      <div id="registerPanel" class="auth-panel is-off">
+        <div class="auth-steps" id="regSteps">
+          <span class="auth-step is-cur"></span>
+          <span class="auth-step"></span>
+          <span class="auth-step"></span>
+        </div>
+        <div class="auth-stephead">
+          <button type="button" class="auth-back" id="regBack" aria-label="Назад" style="visibility:hidden"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+          <div>
+            <p class="as-title">Создание аккаунта</p>
+            <p class="as-sub" id="regStepLabel">Шаг 1 из 3 · Email</p>
+          </div>
+        </div>
+        <form id="regForm" novalidate>
+          <!-- шаги в одной grid-ячейке: форма не меняет высоту между шагами -->
+          <div class="reg-steps">
+            <div class="reg-step" data-rstep="1">
+              <div class="auth-field" id="rfEmail">
+                <label for="regEmail">Email</label>
+                <div class="af-box">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg></span>
+                  <input id="regEmail" type="email" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <p class="f-err">Похоже, в адресе опечатка</p>
+              </div>
+              <p class="reg-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Дальше — пароль и никнейм: займёт не больше минуты. Если аккаунт уже есть, вернитесь на вкладку «Вход».</span></p>
+            </div>
+            <div class="reg-step is-off" data-rstep="2">
+              <div class="auth-field" id="rfPass">
+                <label for="regPass">Пароль</label>
+                <div class="af-box has-eye">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                  <input id="regPass" type="password" placeholder="Минимум 6 символов" autocomplete="new-password">
+                  <button type="button" class="af-eye" data-eye="regPass" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+                </div>
+                <p class="f-err">Минимум 6 символов</p>
+              </div>
+              <div class="auth-field" id="rfPass2">
+                <label for="regPass2">Повторите пароль</label>
+                <div class="af-box has-eye">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                  <input id="regPass2" type="password" placeholder="Ещё раз" autocomplete="new-password">
+                  <button type="button" class="af-eye" data-eye="regPass2" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+                </div>
+                <p class="f-err">Пароли не совпадают</p>
+              </div>
+            </div>
+            <div class="reg-step is-off" data-rstep="3">
+              <div class="auth-field" id="rfName">
+                <label for="regName">Никнейм</label>
+                <div class="af-box">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                  <input id="regName" placeholder="Как к вам обращаться?" autocomplete="nickname">
+                </div>
+                <p class="f-err">Минимум 2 символа</p>
+              </div>
+              <p class="reg-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Никнейм увидят другие пользователи — например, в комментариях. Сменить его можно в настройках профиля.</span></p>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-cta btn-block auth-submit" id="regSubmit">Далее</button>
+        </form>
+        <div class="auth-alt"><span>или</span></div>
+        <button class="btn-google" id="googleReg">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.6 44 30.3 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+          Зарегистрироваться через Google
+        </button>
+      </div>
+
+    </div>
+    <p class="auth-note">Демо-макет: подойдут любые email и пароль.</p>
+  </div>
+</div>
+
+<!-- ================= ПОДТВЕРЖДЕНИЕ ВЫХОДА ================= -->
+<div class="modal-overlay hidden" id="logoutModal" role="dialog" aria-modal="true" aria-label="Подтверждение выхода">
+  <div class="confirm-card">
+    <div class="cf-ic">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+    </div>
+    <h3>Выйти из аккаунта?</h3>
+    <p>Списки, история и прогресс сохранятся в аккаунте — они будут ждать вас после следующего входа.</p>
+    <div class="cf-actions">
+      <button class="btn btn-ghost" id="logoutCancel">Отмена</button>
+      <button class="btn btn-danger" id="logoutConfirm">Выйти</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ПОЛНОЭКРАННЫЙ ПОИСК ================= -->
+<div id="searchOverlay" class="search-ov hidden" role="dialog" aria-modal="true" aria-label="Поиск по Kuvion">
+  <div class="sov-backdrop" id="sovBack"></div>
+  <div class="sov-panel">
+    <div class="sov-top">
+      <span class="s-big">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </span>
+      <input id="sovInput" type="text" autocomplete="off" spellcheck="false" placeholder="Тайтл, персона, подборка, ID или ссылка…" aria-label="Поиск">
+      <button class="sov-esc" id="sovClose">Esc</button>
+    </div>
+    <div class="sov-body" id="sovBody"></div>
+    <div class="sov-foot">
+      <span><span class="sov-kbd">ID</span>или ссылка · персоны и подборки</span>
+      <span><span class="sov-kbd">Enter</span>открыть первый</span>
+      <span><span class="sov-kbd">Esc</span>закрыть</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ПРЕВЬЮ-ПАНЕЛЬ КАРТОЧКИ ================= -->
+<div id="preview" class="preview hidden" role="dialog" aria-label="Быстрый просмотр тайтла">
+  <div class="pv-wave" aria-hidden="true"></div>
+  <div class="pv-media" id="pvMedia">
+    <img id="pvImg" src="" alt="">
+    <div class="pv-video" aria-hidden="true">
+      <img id="pvVFrame" src="" alt="">
+      <span class="pv-vchip">Трейлер · 0:24</span>
+      <div class="pv-vbar"><span></span></div>
+      <!-- громкость: выдвижной ползунок + мьют, поднята над таймлайном -->
+      <div class="pv-vol" id="pvVol">
+        <div class="pv-vol-track">
+          <div class="pv-vol-slider" id="pvVolSlider" role="slider" aria-label="Громкость" aria-valuemin="0" aria-valuemax="100" aria-valuenow="55" tabindex="0">
+            <span class="vs-rail"><span class="vs-fill" id="vsFill"></span></span>
+            <span class="vs-thumb" id="vsThumb"></span>
+            <span class="vs-bubble" id="vsBubble">55%</span>
+          </div>
+        </div>
+        <button class="pv-vmute" id="pvVMute" aria-label="Звук"></button>
+      </div>
+    </div>
+    <div class="pv-shade"></div>
+    <button class="pv-nav pv-nav--prev" id="pvPrev" aria-label="Предыдущий кадр">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button class="pv-nav pv-nav--next" id="pvNext" aria-label="Следующий кадр">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <button class="pv-play" id="pvPlay" aria-label="Смотреть">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+    </button>
+  </div>
+  <div class="pv-thumbs" id="pvThumbs"></div>
+  <div class="pv-body">
+    <p class="pv-title" id="pvTitle"></p>
+    <div class="pv-meta" id="pvMeta"></div>
+    <p class="pv-desc" id="pvDesc"></p>
+    <div class="pv-actions">
+      <button class="btn btn-watch" id="pvWatchBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        Смотреть
+      </button>
+      <!-- избранное — закладка; «буду смотреть» переехало в меню состояния -->
+      <button class="pv-ico pv-lib" id="pvFav" title="В избранное" aria-label="В избранное">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="pv-ico pv-lib" id="pvStatusBtn" title="Состояние тайтла" aria-label="Состояние тайтла" aria-haspopup="menu">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= МЕНЮ СОСТОЯНИЯ ТИТЛА ================= -->
+<div id="statusMenu" class="hidden" role="menu" aria-label="Состояние тайтла"></div>
+
+<!-- ================= МОБИЛЬНОЕ МЕНЮ (бургер) ================= -->
+<div class="modal-overlay hidden" id="drawerOverlay"></div>
+<nav id="drawer" aria-label="Мобильное меню">
+  <div class="drawer-head">
+    <span class="logo" style="font-size:18px">Kuvion</span>
+    <button class="icobtn" id="drawerClose" aria-label="Закрыть">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <a href="/" class="nav-link" style="display:block;padding:12px 4px">Главная</a>
+  <a href="/catalog/" class="nav-link" style="display:block;padding:12px 4px">Каталог</a>
+  <a href="/mylist/" class="nav-link" style="display:block;padding:12px 4px">Мой список</a>
+  <a href="/catalog/?type=anime" class="nav-link" style="display:block;padding:12px 4px">Аниме</a>
+  <a href="/schedule/" class="nav-link" style="display:block;padding:12px 4px">Расписание</a>
+  <a href="/manga/" class="nav-link" style="display:block;padding:12px 4px">Манга</a>
+  <a href="#" class="nav-link" data-stub="Случайное" style="display:block;padding:12px 4px">Случайное</a>
+  <a href="/collections/" class="nav-link" style="display:block;padding:12px 4px">Подборки</a>
+  <div class="drawer-foot">
+    <button class="btn btn-cta" style="width:100%" id="drawerLogin">Войти</button>
+  </div>
+</nav>
+
+<!-- ================= МОБИЛЬНАЯ НИЖНЯЯ ПАНЕЛЬ ================= -->
+<nav class="bottom-nav" aria-label="Быстрая навигация">
+  <button id="mobHomeBtn">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Главная</span>
+  </button>
+  <button data-stub="Каталог">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span>Каталог</span>
+  </button>
+  <button id="mobSearchBtn">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <span>Поиск</span>
+  </button>
+  <button data-stub="Аниме">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.39 12.06a10 10 0 1 1-8.45-8.45"/><path d="M21.39 12.06 12.34 12.66 21.39 12.06z"/><path d="m12.34 12.66 9.05-.6-6.44-6.44a1 1 0 0 0-1.71.55z"/></svg>
+    <span>Аниме</span>
+  </button>
+  <button id="mobMenuBtn" data-stub="Меню">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Меню</span>
+  </button>
+</nav>
+
+<!-- ================= ЛАБОРАТОРИЯ ================= -->
+<script>
+'use strict';
+/* ================================================================
+   KUVION — «Настройки» v1 · логика демо (инфраструктура v4)
+   Все данные тестовые, предназначены только для оценки дизайна.
+   ================================================================ */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const CDN='https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/';
+
+/* ---------- иконки ---------- */
+const I={
+  star:'<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7-5.4-4.7 7.1-.6z"/></svg>',
+  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  playBig:'<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  bookmark:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  dots:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>',
+  check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>',
+  checkSm:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  xSm:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+  clock:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  vol:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>',
+  volLow:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  volX:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>',
+};
+
+/* ---------- тестовые данные ----------
+   Каталог шире главной: 44 тайтла, у каждого есть pop (популярность
+   для сортировки по умолчанию), added (дата появления на сервисе —
+   сортировка «сначала новые» и бейдж NEW) и ongoing (выходит ли
+   сейчас). Аниме-рейтинги — как в Shikimori, западные — как в
+   справочниках; всё равно это демо-данные для оценки дизайна. */
+const STATUS={watching:'Смотрю',planned:'Буду смотреть',watched:'Просмотрено',onhold:'Отложено',dropped:'Брошено'};
+const T=(id,title,year,type,genres,rating,poster,extra={})=>({id,title,year,type,genres,rating,poster:poster.startsWith('http')?poster:CDN+poster,...extra});
+
+const TITLES={
+  /* ===== главная страница: прежние 13 ===== */
+  interstellar:T('interstellar','Интерстеллар',2014,'Фильм',['Фантастика','Драма','Приключения'],8.6,'85bb955e60e9.jpg',{
+    country:['США','Великобритания','Канада'],
+    wide:CDN+'1290a963615d.jpg',wide2:CDN+'ec06a3bbfb4e.jpg',wide3:CDN+'2bdc37cad2cd.jpg',status:'watched',
+    pop:95,added:'2025-08-14',
+    desc:'Команда исследователей отправляется через червоточину в космосе, чтобы найти новый дом для человечества.'}),
+  dune2:T('dune2','Дюна: Часть вторая',2024,'Фильм',['Фантастика','Приключения','Драма'],8.5,'d4500e7dac80.jpg',{
+    country:['США'],
+    wide:CDN+'12422b422cee.jpg',wide2:CDN+'c7f684d95f5b.jpeg',wide3:CDN+'4cb1149f3eaf.jpg',wide4:CDN+'86e0bf71e647.jpg',status:'planned',isNew:true,
+    pop:87,added:'2026-09-30',
+    desc:'Пол Атрейдес объединяется с Чани и фрименами в войне против дома Харконненов, пытаясь предотвратить ужасное будущее, которое видит только он.'}),
+  br2049:T('br2049','Бегущий по лезвию 2049',2017,'Фильм',['Фантастика','Нуар','Детектив'],8.0,'71b996fefac1.jpg',{
+    country:['США','Великобритания'],
+    wide:CDN+'9cc1a8a277d3.png',wide2:CDN+'de002094f2aa.jpg',wide3:CDN+'1662efa80442.jpg',
+    pop:71,added:'2025-11-02',
+    desc:'Служащий Лос-Анджелеса К, новый блейд-раннер, раскрывает тайну, спрятанную десятилетиями, способную погрузить мир в хаос.'}),
+  oppenheimer:T('oppenheimer','Оппенгеймер',2023,'Фильм',['Драма','История','Военное'],8.3,'a1fd704339d9.jpg',{
+    country:['США','Великобритания'],
+    wide:CDN+'9e0a5f93f220.jpg',isNew:true,
+    pop:78,added:'2026-08-21',
+    desc:'История жизни физика-теоретика Роберта Оппенгеймера, возглавившего разработку атомной бомбы.'}),
+  aot:T('aot','Атака титанов',2013,'Аниме',['Экшен','Драма','Трагедия'],9.0,'9a35191d1d09.jpg',{
+    country:['Япония'],
+    wide:CDN+'7e53c74c6dda.jpg',wide2:CDN+'5b0f4111e774.jpg',status:'watching',
+    pop:96,added:'2025-06-10',
+    desc:'Человечество сражается за выживание за огромными стенами, защищающими от гигантских пожирателей людей — титанов.'}),
+  aotFinal:T('aotFinal','Атака титанов: Финальный сезон',2023,'Аниме',['Экшен','Драма','Военное'],9.1,'bbc4ed32da5c.jpg',{
+    country:['Япония'],
+    wide:CDN+'be104465fb7f.jpg',isNew:true,
+    pop:55,added:'2026-07-15',
+    desc:'Последняя глава истории Эрена Йегера и битвы за судьбу человечества за стенами.'}),
+  jjk:T('jjk','Магическая битва',2020,'Аниме',['Экшен','Сёнэн','Сверхъестественное'],8.6,'235414089ff8.jpg',{
+    country:['Япония'],
+    wide:CDN+'ba2f5e6b7ab4.jpg',ongoing:true,
+    pop:88,added:'2025-09-18',
+    desc:'Школьник Юдзи Итадори проглатывает проклятый палец и становится сосудом для древнего проклятия.'}),
+  onepiece:T('onepiece','Ван Пис',1999,'Аниме',['Приключения','Сёнэн','Комедия'],9.0,'136bb118e1b5.jpg',{
+    country:['Япония'],
+    wide:CDN+'556492005b92.jpg',ongoing:true,
+    pop:99,added:'2025-05-02',
+    desc:'Мальчишка из резинки Люффи собирает команду пиратов и отправляется за легендарным сокровищем — Ван Пис.'}),
+  onepieceRed:T('onepieceRed','Ван Пис: Фильм Ред',2022,'Аниме',['Приключения','Экшен','Музыка'],8.5,'6e4fc8a0fbe9.png',{
+    country:['Япония'],
+    pop:62,added:'2025-10-05',
+    desc:'Люффи и его команда отправляются на музыкальный фестиваль, где встречают мировую звезду Уту.'}),
+  tlou:T('tlou','Последние из нас',2023,'Сериал',['Драма','Хоррор','Триллер'],8.7,'078136c3e9d7.jpg',{
+    country:['США','Канада'],
+    wide:CDN+'4cc4e52e05d7.jpeg',wide2:CDN+'20165b080b81.jpg',isNew:true,ongoing:true,
+    pop:86,added:'2026-08-30',
+    desc:'Через двадцать лет после пандемии контрабандист Джоэл получает задание вывести из города 14-летнюю Элли.'}),
+  spiderverse:T('spiderverse','Человек-паук: Паутина вселенных',2023,'Мультфильм',['Экшен','Приключения','Комедия'],8.6,'401cfa55ea89.jpg',{
+    country:['США'],
+    wide:CDN+'5d05fbe9bf0c.jpeg',isNew:true,
+    pop:75,added:'2026-06-12',
+    desc:'Майлз Моралес отправляется в путешествие по мультивселенной, где встречает команду людей-пауков.'}),
+  arcane:T('arcane','Аркейн',2021,'Сериал',['Фэнтези','Драма','Трагедия'],9.0,'2023ce392d04.jpg',{
+    country:['США','Франция'],
+    wide:CDN+'70d04bc79f91.jpg',
+    pop:68,added:'2025-12-01',
+    desc:'История двух сестёр, Вай и Джинкс, на фоне конфликта утопического Пилтовера и подземного Зауна.'}),
+  arcane2:T('arcane2','Аркейн: Сезон 2',2024,'Сериал',['Фэнтези','Драма','Экшен'],9.2,'5379c8a0c07a.jpg',{
+    country:['США','Франция'],
+    wide:CDN+'81d0d4679ff5.jpg',isNew:true,
+    pop:76,added:'2026-05-20',
+    desc:'Вай и Джинкс оказываются по разные стороны баррикад, когда Пилтовер и Заун стоят на грани войны.'}),
+
+  /* ===== новые для каталога ===== */
+  fmab:T('fmab','Стальной алхимик: Братство',2009,'Аниме',['Экшен','Фэнтези','Драма','Приключения'],9.1,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0b4034f752c6.jpg',{
+    country:['Япония'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/463c0adcff57.jpg',status:'watched',
+    pop:83,added:'2025-07-08',
+    desc:'Братья Эдвард и Альфонс Элрики ищут философский камень, чтобы вернуть телам первоначальный вид после провалившегося алхимического ритуала.'}),
+  demonslayer:T('demonslayer','Клинок, рассекающий демонов',2019,'Аниме',['Экшен','Сёнэн','Сверхъестественное'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/debab583d0ba.jpg',{
+    country:['Япония'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/4e79cf981e25.jpg',ongoing:true,
+    pop:73,added:'2025-09-12',
+    desc:'Тандзиро Камадо становится охотником на демонов, чтобы вернуть сестре Нэдзуко, обращённой в демона, человеческий облик.'}),
+  yourname:T('yourname','Твоё имя',2016,'Аниме',['Романтика','Драма','Мистика'],8.8,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0b6a6b5e4164.jpeg',{
+    country:['Япония'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/609242e7fd78.jpg',
+    pop:81,added:'2025-10-18',
+    desc:'Токи и Мицуха — подростки из разных городов — неожиданно начинают меняться телами и пытаются найти друг друга, пока не стало поздно.'}),
+  spirited:T('spirited','Унесённые призраками',2001,'Аниме',['Фэнтези','Приключения','Сверхъестественное'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/1bea669ab3af.jpg',{
+    country:['Япония'],
+    pop:80,added:'2025-04-15',
+    desc:'Девочка Тихиро попадает в мир духов, где родителей превращают в свиней, а вернуть их можно, только работая в купальне богов.'}),
+  fireflies:T('fireflies','Могила светлячков',1988,'Аниме',['Драма','Трагедия','Военное'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/4ce765f0c314.jpg',{
+    country:['Япония'],
+    pop:57,added:'2025-03-20',
+    desc:'Сэйта и его младшая сестра Сусэку пытаются выжить в Японии последних месяцев Второй мировой после бомбёжки Кобэ.'}),
+  howl:T('howl','Ходячий замок',2004,'Аниме',['Фэнтези','Романтика','Приключения'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/fab348fd8713.jpg',{
+    country:['Япония'],
+    pop:65,added:'2025-05-27',
+    desc:'Заколдованная ведьмой-шляпницей Софи отправляется в странствующий замок чародея Хаула, чтобы снять проклятие.'}),
+  mononoke:T('mononoke','Принцесса Мононоке',1997,'Аниме',['Фэнтези','Приключения','Сверхъестественное'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/3ff66b83d9c0.jpg',{
+    country:['Япония'],
+    pop:64,added:'2025-04-22',
+    desc:'Принц Аситака вмешивается в войну между людьми Железного города и духами леса, ища лекарство от собственного проклятия.'}),
+  deathnote:T('deathnote','Тетрадь смерти',2006,'Аниме',['Триллер','Драма','Психологическое','Детектив'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/dbae99da2de3.jpeg',{
+    country:['Япония'],
+    pop:74,added:'2025-06-30',
+    desc:'Школьник Лайт Ягами находит тетрадь, убивающую любого, чьё имя в ней записано, и начинает войну умов с детективом Элом.'}),
+  bebop:T('bebop','Ковбой Бибоп',1998,'Аниме',['Экшен','Фантастика','Нуар'],8.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9f9b3348ec9e.jpg',{
+    country:['Япония'],
+    pop:61,added:'2025-05-11',
+    desc:'Экипаж космического корабля «Бибоп» — охотники за головами, перебивающиеся сомнительными заказами и собственным прошлым.'}),
+  monster:T('monster','Монстр',2004,'Аниме',['Триллер','Драма','Психологическое','Детектив'],8.8,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/bbf81394593e.jpg',{
+    country:['Япония'],
+    pop:72,added:'2025-07-25',
+    desc:'Талантливый нейрохирург Кэндзо Тэндма спасает мальчика и годами спустя узнаёт, что вырос тот серийным убийцей.'}),
+  psychopass:T('psychopass','Психопаспорт',2012,'Аниме',['Фантастика','Триллер','Психологическое'],8.2,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/139d2fea5700.jpg',{
+    country:['Япония'],
+    pop:58,added:'2025-08-05',
+    desc:'В обществе, где «цвет преступности» просчитывает система, инспектор Аканэ охотится на тех, кого нельзя судить по закону.'}),
+  eva:T('eva','Евангелион',1995,'Аниме',['Фантастика','Драма','Меха','Психологическое'],8.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/18cd40b094d3.jpg',{
+    country:['Япония'],
+    pop:67,added:'2025-03-02',
+    desc:'Подросток Синдзи Икари садится за управление биороботом ЕВА, чтобы защищать Токио-3 от ангелов — и от собственного одиночества.'}),
+  naruto:T('naruto','Наруто',2002,'Аниме',['Экшен','Сёнэн','Приключения'],7.9,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/5beeaab7cf76.jpg',{
+    country:['Япония'],
+    pop:70,added:'2025-02-14',
+    desc:'Шумный юный ниндзя Наруто Узумаки мечтает стать Хокаге — лидером деревни — и вернуть её доверие.'}),
+  frieren:T('frieren','Провожающая в последний путь Фрирен',2023,'Аниме',['Фэнтези','Драма','Приключения','Сэйнэн'],9.0,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/c458046a4f08.jpg',{
+    country:['Япония'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/c33e95bd7dca.jpeg',isNew:true,ongoing:true,status:'planned',
+    pop:91,added:'2026-10-12',
+    desc:'Эльфийка-магиня Фрирен, пережившая своих товарищей по отряду, отправляется в новое путешествие, чтобы понять людей.'}),
+  oshinoko:T('oshinoko','Оши но ко',2023,'Аниме',['Драма','Музыка','Мистика'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/7315e1024447.png',{
+    country:['Япония'],
+    isNew:true,ongoing:true,
+    pop:56,added:'2026-09-21',
+    desc:'Сияние и тьма шоу-бизнеса: врач-акушер Горо и его падчерица Руби идут к тайне легендарной идола.'}),
+  breaking:T('breaking','Во все тяжкие',2008,'Сериал',['Драма','Криминал','Триллер'],9.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/895101998087.jpg',{
+    country:['США'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/00772fbee985.jpg',status:'watched',
+    pop:97,added:'2025-01-25',
+    desc:'Школьный учитель химии Уолтер Уайт, узнав о смертельном диагнозе, начинает варить метамфетамин и постепенно превращается в того, кого сам боялся.'}),
+  chernobyl:T('chernobyl','Чернобыль',2019,'Сериал',['Драма','История','Трагедия'],9.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9eefa807d02a.jpg',{
+    country:['США','Великобритания'],
+    pop:69,added:'2025-04-03',
+    desc:'Хроника аварии на Чернобыльской АЭС: от минут до взрыва до суда над виновными и цены лжи.'}),
+  dark:T('dark','Тьма',2017,'Сериал',['Фантастика','Триллер','Мистика'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0d1c6d89dfa4.jpg',{
+    country:['Германия'],
+    pop:79,added:'2025-06-19',
+    desc:'Пропажа детей в немецком городке Виннден раскрывает временную петлю, связывающую четыре семьи и три эпохи.'}),
+  stranger:T('stranger','Очень странные дела',2016,'Сериал',['Фантастика','Хоррор','Детектив'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d7aa7aa98ff8.jpg',{
+    country:['США'],
+    ongoing:true,status:'watching',
+    pop:93,added:'2025-05-30',
+    desc:'В маленьком американском городке пропадает мальчик, а его друзья находят девочку с телекинезом и портал в Изнанку.'}),
+  squid:T('squid','Игра в кальмара',2021,'Сериал',['Триллер','Драма','Трагедия'],7.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d69134429911.jpg',{
+    country:['Южная Корея'],
+    ongoing:true,
+    pop:94,added:'2025-09-05',
+    desc:'Должники играют в детские игры на выживание ради денежного приза, за которым стоят очень богатые зрители.'}),
+  hotd:T('hotd','Дом Дракона',2022,'Сериал',['Фэнтези','Драма','Военное'],8.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/28853c314411.jpg',{
+    country:['США','Великобритания'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/072b7e1d7703.jpg',ongoing:true,
+    pop:82,added:'2026-06-28',
+    desc:'За двести лет до «Игры престолов» дом Таргариенов рвёт династию на части в танце драконов.'}),
+  severance:T('severance','Разделение',2022,'Сериал',['Фантастика','Триллер','Психологическое'],8.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b22e1179a791.jpg',{
+    country:['США'],
+    ongoing:true,
+    pop:77,added:'2026-07-09',
+    desc:'Сотрудники Lumon соглашаются на процедуру, разделяющую сознание на рабочее и личное, — и «внутри» начинают сомневаться.'}),
+  inception:T('inception','Начало',2010,'Фильм',['Фантастика','Триллер','Экшен'],8.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/f77c053f518d.jpeg',{
+    country:['США','Великобритания'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/bc8f8c7be2db.jpg',
+    pop:90,added:'2025-08-11',
+    desc:'Команда специалистов по проникновению в сны берётся не украсть идею, а внушить её — на самом глубоком уровне сна.'}),
+  darkknight:T('darkknight','Тёмный рыцарь',2008,'Фильм',['Экшен','Криминал','Детектив'],8.9,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/82a5f83fce15.jpg',{
+    country:['США','Великобритания'],
+    pop:92,added:'2025-02-28',
+    desc:'Бэтмен против Джокера, для которого хаос — философия, и против вопроса, на что готов Готэм ради покоя.'}),
+  matrix:T('matrix','Матрица',1999,'Фильм',['Фантастика','Экшен','Триллер'],8.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/55b87ebaa5b2.jpg',{
+    country:['США','Австралия'],
+    pop:89,added:'2025-01-15',
+    desc:'Программист Нео узнаёт, что мир — симуляция, и присоединяется к подполью, воюющему с машинами.'}),
+  pulp:T('pulp','Криминальное чтиво',1994,'Фильм',['Криминал','Драма','Комедия'],8.9,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b015d90fa0de.jpeg',{
+    country:['США'],
+    pop:84,added:'2025-03-08',
+    desc:'Несколько криминальных историй Лос-Анджелеса сплетаются в один нелинейный рассказ о выборе и бургерах.'}),
+  shawshank:T('shawshank','Побег из Шоушенка',1994,'Фильм',['Драма','Криминал'],9.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/503afd663b47.jpg',{
+    country:['США'],
+    pop:85,added:'2025-02-03',
+    desc:'Банкир Энди Дюфрейн, осуждённый за убийство жены, годами хранит надежду в тюрьме Шоушенк.'}),
+  martian:T('martian','Марсианин',2015,'Фильм',['Фантастика','Приключения','Комедия'],8.0,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9257150c70e5.jpg',{
+    country:['США','Великобритания'],
+    pop:63,added:'2025-10-12',
+    desc:'Астронавт Марк Уотни, оставленный на Марсе в одиночку, выживает, выращивая картофель и налаживая связь с Землёй.'}),
+  coco:T('coco','Тайна Коко',2017,'Мультфильм',['Фэнтези','Приключения','Музыка'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/e18e3257cac8.jpg',{
+    country:['США'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b151b1662f57.jpg',
+    pop:66,added:'2025-11-09',
+    desc:'Мальчик Мигель попадает в Страну мёртвых и ищет там прапрадеда, чтобы разгадать семейную тайну.'}),
+  lionking:T('lionking','Король Лев',1994,'Мультфильм',['Драма','Приключения','Трагедия'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/36c3dd5e2997.jpg',{
+    country:['США'],
+    pop:59,added:'2025-01-20',
+    desc:'Львёнок Симба теряет отца и становится изгнанником, чтобы вернуться и занять своё место на скале.'}),
+  walle:T('walle','ВАЛЛ·И',2008,'Мультфильм',['Фантастика','Романтика','Приключения'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/a4c63836c432.jpg',{
+    country:['США'],
+    pop:60,added:'2025-07-01',
+    desc:'Робот-уборщик, оставленный на пустой Земле, влюбляется в робота-разведчика Еву и отправляется за ней в космос.'}),
+
+  /* ===== онгоинги для страницы расписания (v1.3) ===== */
+  conan:T('conan','Детектив Конан',1996,'Аниме',['Детектив','Комедия','Экшен'],7.8,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/ac3d8be922f8.jpg',{
+    country:['Япония'],ongoing:true,
+    pop:52,added:'2026-02-10',
+    desc:'Старшеклассник Синъити Кудо, обращённый таинственным ядом в ребёнка, расследует преступления под именем Конан Эдогава.'}),
+  opm:T('opm','Ванпанчмен',2015,'Аниме',['Экшен','Комедия','Сверхъестественное'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/22989602a31a.jpg',{
+    country:['Япония'],ongoing:true,
+    pop:58,added:'2026-03-14',
+    desc:'Сайтама, герой ради хобби, положил любого врага одним ударом — и от скуки ищет достойного противника.'}),
+  csm:T('csm','Человек-бензопила',2022,'Аниме',['Экшен','Сверхъестественное','Хоррор'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/26c985572f2e.jpg',{
+    country:['Япония'],ongoing:true,isNew:true,
+    pop:63,added:'2026-10-07',
+    desc:'Дэндзи, живущий в долгах, сливается с демоном-бензопилой Почитой и встаёт в ряды охотников на демонов.'}),
+  dandadan:T('dandadan','Дандадан',2024,'Аниме',['Экшен','Комедия','Романтика'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/84646f7e875b.jpg',{
+    country:['Япония'],ongoing:true,isNew:true,
+    pop:60,added:'2026-09-30',
+    desc:'Скептик Окобун и верящая в духов Момо объединяются против пришельцев и ёкаев, пробудив в себе странные силы.'}),
+  solo:T('solo','Поднятие уровня в одиночку',2024,'Аниме',['Экшен','Фэнтези'],8.1,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/dd92af4988a9.jpg',{
+    country:['Япония'],ongoing:true,
+    pop:55,added:'2026-04-18',
+    desc:'Слабейший из охотников Сон Чин У после смерти получает право расти в уровнях — и становится тем, кого боятся ранги S.'}),
+  kaiju:T('kaiju','Кайдзю № 8',2024,'Аниме',['Экшен','Фантастика','Комедия'],8.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/da192b822591.jpg',{
+    country:['Япония'],ongoing:true,
+    pop:54,added:'2026-05-06',
+    desc:'Уборщик после атак кайдзю Хибино Кафка сам становится кайдзю и, скрывая это, вступает в Силы обороны ради обещания другу.'}),
+  rezero:T('rezero','Re:Zero. Жизнь с нуля в альтернативном мире',2016,'Аниме',['Фэнтези','Драма','Психологическое'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d3687f77d518.jpg',{
+    country:['Япония'],ongoing:true,isNew:true,
+    pop:57,added:'2026-10-14',
+    desc:'Субару Нацуки переносится в фэнтезийный мир, где после каждой смерти возвращается к контрольной точке — и платит за это рассудком.'}),
+};
+
+
+/* ---------- тосты ---------- */
+function toast(msg){
+  const el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML=I.check+'<span></span>';
+  el.querySelector('span').textContent=msg;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{el.classList.add('is-out');setTimeout(()=>el.remove(),320)},2600);
+}
+
+/* ---------- защита модалок от выделения текста ----------
+   Окно закрывается по фону, только если и нажатие, и отпускание
+   ЛКМ произошли на самом фоне: выделение текста внутри плашки
+   с выходом курсора наружу больше не закрывает модалку/меню. */
+function safeOverlayClose(overlay,closeFn){
+  let downT=null,upT=null;
+  overlay.addEventListener('pointerdown',e=>{downT=e.target;});
+  overlay.addEventListener('pointerup',e=>{upT=e.target;});
+  overlay.addEventListener('click',e=>{
+    const ok=e.target===overlay&&downT===overlay&&upT===overlay;
+    downT=upT=null;
+    if(ok)closeFn();
+  });
+}
+function safeOutsideClose(el,triggers,closeFn){
+  const out=t=>!el.contains(t)&&!triggers.some(b=>b.contains(t));
+  const open=()=>!el.classList.contains('hidden');
+  let started=false;
+  document.addEventListener('pointerdown',e=>{started=out(e.target)&&open();},true);
+  document.addEventListener('click',e=>
+    {if(started&&out(e.target)&&open())closeFn();started=false;});
+}
+
+/* ---------- рендер карточек ---------- */
+const ratingCls=v=>v>=7?'hi':v>=5?'mid':'low';
+const ratingColor=v=>v>=7?'#86EFAC':v>=5?'#FDE047':'#FCA5A5';
+
+function posterCard(t){
+  const st=t.status?STATUS[t.status]:null;
+  return `
+  <article class="poster-card" tabindex="0" role="button" data-id="${t.id}" data-title="${t.title}" aria-label="${t.title}, ${t.year}">
+    <div class="poster-wrap">
+      <img class="poster-img" src="${t.poster}" alt="" loading="lazy">
+      <div class="poster-scrim"></div>
+      <div class="poster-spotlight"></div>
+      <span class="rating-pill rating-pill--${ratingCls(t.rating)}">${I.star} ${t.rating.toFixed(1)}</span>
+      ${t.isNew?'<span class="badge-new"><span class="bn-text">NEW</span></span>':''}
+      ${st?`<span class="status-chip status-chip--${t.status}"><span class="sc-dot"></span><span class="sc-t">${st}</span></span>`:''}
+      <button class="card-dots" data-dots title="Состояние тайтла" aria-label="Состояние тайтла" aria-haspopup="menu">${I.dots}</button>
+      <span class="card-play">${I.playBig}</span>
+    </div>
+    <div class="card-caption">
+      <p class="cc-title">${t.title}</p>
+      <p class="cc-meta">
+        <span>${t.year}</span><span class="cm-sep">·</span>
+        <span class="cm-type">${t.type}</span><span class="cm-sep">·</span>
+        <span class="cm-genres" title="${t.genres.join(', ')}">${t.genres.join(', ')}</span>
+      </p>
+    </div>
+  </article>`;
+}
+
+/* ---------- hover карточек: .is-hover вместо :hover ----------
+   Единственный источник состояния — само движение мыши: цель mousemove
+   браузер вычисляет заново при каждом событии, поэтому «залипнуть»
+   здесь невозможно — в отличие от :hover/:focus-within, которые Chrome
+   после драга держит до клика по сайту (pointer-events:none → auto под
+   неподвижным курсором + забытый фокус карточки с tabindex).
+   Здесь же живёт логика открытия превью-панели: после драга Chrome
+   рассылает поддельные pointerover — их слушатели больше не читают. */
+let cardHover=null;
+function clearCardHover(){
+  if(cardHover){cardHover.classList.remove('is-hover');cardHover=null;}
+}
+document.addEventListener('mousemove',e=>{
+  /* зажатая кнопка — драг или выделение: hover не вешаем. Важно
+     проверять ДО работы с классом: compat-mousemove в пакете с
+     pointermove, преодолевшим порог драга, несёт устаревшую цель
+     (hit-test сделан до листенеров) — с карточкой под курсором */
+  if(e.buttons)return;
+  if(pv.contains(e.target))return;        /* курсор в панели превью — там своя логика */
+  const card=e.target.closest('.poster-card,.cw-card');
+  if(card===cardHover)return;             /* под курсором всё та же карточка */
+  if(cardHover)cardHover.classList.remove('is-hover');
+  cardHover=(card&&card.isConnected)?card:null;
+  if(cardHover)cardHover.classList.add('is-hover');
+  /* курсор ушёл с карточки — гасим отложенный показ */
+  if(!cardHover){
+    clearTimeout(PVD.showT);
+    if(pv.classList.contains('show'))schedulePvHide();
+    return;
+  }
+  /* курсор пришёл на новую карточку — планируем показ превью */
+  clearTimeout(PVD.hideT);
+  if(PVD.card===cardHover&&pv.classList.contains('show'))return;
+  clearTimeout(PVD.showT);
+  const delay=PVD.card&&pv.classList.contains('show')?120:480;
+  PVD.showT=setTimeout(()=>showPreview(cardHover),delay);
+},{passive:true});
+/* курсор покинул окно — гасим hover и прячем превью, как при уходе с карточки */
+document.documentElement.addEventListener('mouseleave',()=>{
+  clearCardHover();
+  clearTimeout(PVD.showT);
+  if(pv.classList.contains('show'))schedulePvHide();
+});
+
+/* ---------- выпадающие панели ---------- */
+function closeAllDd(){
+  ['bellDd','acctDd'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+  $('#bellBtn').setAttribute('aria-expanded','false');
+  $('#avatarBtn').setAttribute('aria-expanded','false');
+}
+function toggleDd(id,btn){
+  const el=document.getElementById(id);
+  const willOpen=el.classList.contains('hidden');
+  closeAllDd();
+  if(willOpen){el.classList.remove('hidden');btn.setAttribute('aria-expanded','true');}
+}
+
+</script>
+<script src="/assets/kuvion-search.js"></script>
+<script>
+"use strict";
+/* ---------- превью-панель карточки ---------- */
+const pv=$('#preview');
+const PVD={showT:null,hideT:null,inPanel:false,hold:false,mediaHover:false,card:null,media:[],idx:0,frameT:null,autoT:null};
+
+function pvRunWave(el){el.classList.remove('waving');void el.offsetWidth;el.classList.add('waving');}
+function pvSetMedia(i,opts){
+  PVD.idx=i;
+  const m=PVD.media[i];
+  const media=$('#pvMedia'),img=$('#pvImg');
+  $$('#pvThumbs .pv-thumb').forEach((b,k)=>b.classList.toggle('is-on',k===i));
+  /* активная миниатюра выезжает в центр, если полоса прокручивается */
+  const strip=$('#pvThumbs'),btn=strip.children[i];
+  if(btn)strip.scrollTo({left:Math.max(0,btn.offsetLeft-(strip.clientWidth-btn.offsetWidth)/2),behavior:'smooth'});
+  clearInterval(PVD.frameT);
+  if(m.kind==='trailer'){
+    media.classList.add('is-trailer');
+    media.classList.remove('is-paused');
+    const frames=PVD.media.filter(x=>x.src).map(x=>x.src);
+    $('#pvVFrame').src=frames[0]||img.src;
+    let f=0;
+    PVD.frameT=setInterval(()=>{          /* живой «трейлер»: кадры сменяют друг друга */
+      f=(f+1)%frames.length;
+      const vf=$('#pvVFrame');
+      vf.style.opacity=.25;
+      setTimeout(()=>{vf.src=frames[f];vf.style.opacity=1;},200);
+    },3200);
+  }else{
+    media.classList.remove('is-trailer','is-paused');
+    img.style.opacity=opts&&opts.auto?.35:0; /* автосмена — мягче, без «провала» */
+    setTimeout(()=>{img.src=m.src;img.style.opacity=1;},opts&&opts.auto?120:160);
+  }
+  audioSync();
+}
+function pvFill(t){
+  $('#pvTitle').textContent=t.title;
+  $('#pvMeta').innerHTML=
+    `<span class="rating-pill rating-pill--${ratingCls(t.rating)}" style="position:static">${I.star} ${t.rating.toFixed(1)}</span>`+
+    `<span>${t.year}</span><span class="hm-sep">·</span><span>${t.type}</span>`+
+    `<span class="hm-sep">·</span><span>${t.genres.join(', ')}</span>`;
+  updatePvStatus(t);
+  $('#pvDesc').textContent=t.desc||'Описание появится позже.';
+  /* кадров может быть сколько угодно: сначала широкие кадры,
+     постер добавляется только если широких меньше двух */
+  const wides=[t.wide,t.wide2,t.wide3,t.wide4].filter(Boolean);
+  const shots=wides.length>=2?wides:wides.concat(t.poster).filter(Boolean);
+  PVD.media=[{kind:'trailer'},...shots.map(s=>({kind:'shot',src:s}))];
+  $('#pvImg').src=shots[0]||t.poster;
+  $('#pvThumbs').innerHTML=PVD.media.map((m,i)=>m.kind==='trailer'
+    ?`<button class="pv-thumb pv-thumb--trailer is-on" data-m="0">${I.play}<span>Трейлер</span></button>`
+    :`<button class="pv-thumb" data-m="${i}"><img src="${m.src}" alt="" loading="lazy"></button>`).join('');
+  const strip=$('#pvThumbs');
+  strip.scrollLeft=0;
+  requestAnimationFrame(()=>strip.classList.toggle('is-scrollable',strip.scrollWidth>strip.clientWidth+4));
+  $('#pvFav').classList.toggle('is-on',!!t.fav);
+  pvSetMedia(0);
+}
+function showPreview(card){
+  const t=TITLES[card.dataset.id];
+  if(!t)return;
+  clearTimeout(PVD.hideT);
+  PVD.card=card;
+  pvFill(t);
+  pv.classList.remove('hidden');
+  const W=pv.offsetWidth,H=pv.offsetHeight;
+  const r=card.getBoundingClientRect();
+  let x=r.right+14;
+  if(x+W>innerWidth-12)x=r.left-W-14;               /* нет места справа — показываем слева */
+  x=Math.max(12,Math.min(x,innerWidth-W-12));
+  let y=r.top-26;
+  y=Math.max(12,Math.min(y,innerHeight-H-12));
+  pv.style.left=Math.round(x)+'px';
+  pv.style.top=Math.round(y)+'px';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    pv.classList.add('show');
+    pvRunWave(pv);                                  /* белая волна сверху вниз — и появляется контент */
+    pvAutoStart();
+    audioSync();
+  }));
+}
+function hidePreview(){
+  clearTimeout(PVD.showT);clearTimeout(PVD.hideT);clearInterval(PVD.frameT);clearInterval(PVD.autoT);
+  PVD.inPanel=false;PVD.mediaHover=false;
+  pv.classList.remove('show');
+  audioSync();
+  if(pv.classList.contains('hidden'))return;
+  setTimeout(()=>{if(!pv.classList.contains('show')){pv.classList.add('hidden');audioSync();}},220);
+}
+function schedulePvHide(){
+  clearTimeout(PVD.hideT);
+  PVD.hideT=setTimeout(()=>{if(!PVD.inPanel&&!PVD.hold&&!pv.matches(':hover'))hidePreview();},200);
+}
+/* показ/скрытие превью полностью в mousemove-трекере (.is-hover)
+   выше по коду: поддельные pointerover/pointerout, которые Chrome
+   рассылает после драга, больше ничего не решают.
+   Курсор ушёл и с панели, и с карточки — превью скрывается: */
+pv.addEventListener('pointerenter',()=>{PVD.inPanel=true;clearTimeout(PVD.hideT);});
+pv.addEventListener('pointerleave',()=>{PVD.inPanel=false;schedulePvHide();});
+window.addEventListener('scroll',()=>{hidePreview();closeStatusMenu();},{passive:true});
+window.addEventListener('resize',hidePreview);
+$('#pvThumbs').addEventListener('click',e=>{
+  const b=e.target.closest('.pv-thumb');
+  if(!b)return;
+  pvSetMedia(Number(b.dataset.m));
+  pvRunWave($('#pvMedia'));                          /* мини-волна при смене кадра */
+});
+$('#pvMedia').addEventListener('click',e=>{
+  if(e.target.closest('button,.pv-vol'))return;      /* клики по громкости не ставят паузу */
+  if($('#pvMedia').classList.contains('is-trailer')){$('#pvMedia').classList.toggle('is-paused');audioSync();}
+});
+/* курсор на медиаблоке — автосмена кадров ждёт */
+$('#pvMedia').addEventListener('pointerenter',()=>PVD.mediaHover=true);
+$('#pvMedia').addEventListener('pointerleave',()=>PVD.mediaHover=false);
+/* стрелки ‹ › — листаем трейлер и кадры по кругу */
+function pvStep(d){
+  const n=PVD.media.length;
+  if(!n)return;
+  pvSetMedia((PVD.idx+d+n)%n);
+  pvRunWave($('#pvMedia'));
+}
+$('#pvPrev').addEventListener('click',()=>pvStep(-1));
+$('#pvNext').addEventListener('click',()=>pvStep(1));
+/* автосмена кадров: пока превью открыт и курсор не на медиаблоке,
+   кадры сами сменяют друг друга (трейлер не трогаем — он «играет») */
+function pvAutoStart(){
+  clearInterval(PVD.autoT);
+  PVD.autoT=setInterval(()=>{
+    if(!pv.classList.contains('show')||PVD.mediaHover)return;
+    const m=PVD.media[PVD.idx];
+    if(!m||m.kind!=='shot')return;
+    let n=PVD.idx+1;
+    while(n<PVD.media.length&&PVD.media[n].kind!=='shot')n++;
+    if(n>=PVD.media.length){n=0;while(n<PVD.media.length&&PVD.media[n].kind!=='shot')n++;}
+    if(n<PVD.media.length&&n!==PVD.idx)pvSetMedia(n,{auto:true});
+  },3400);
+}
+/* ---------- громкость трейлера ----------
+   Трейлеры мы не храним (HLS-потоков нет) — в проде они будут
+   отдаваться через YouTube IFrame API, и этот же слайдер будет
+   дёргать плеер напрямую:
+     yt.setVolume(Math.round(VOL.level*100)); yt.mute(); yt.unMute();
+   Чтобы в макете громкость можно было реально пощупать, звук
+   синтезируется локально через WebAudio: тихий «кинематографичный»
+   гул, громкость которого и управляет ползунком. */
+const VOL={level:.55,muted:true,ctx:null,master:null};
+const volEff=()=>VOL.muted?0:VOL.level;
+const volIcon=()=>(VOL.muted||VOL.level===0)?I.volX:(VOL.level<=.5?I.volLow:I.vol);
+function volUI(){
+  $('#vsFill').style.width=(VOL.level*100)+'%';
+  $('#vsThumb').style.left=(VOL.level*100)+'%';
+  $('#vsBubble').textContent=Math.round(VOL.level*100)+'%';
+  $('#pvVolSlider').setAttribute('aria-valuenow',String(Math.round(VOL.level*100)));
+  const vm=$('#pvVMute');
+  vm.innerHTML=volIcon();
+  vm.classList.toggle('is-off',VOL.muted||VOL.level===0);
+  vm.setAttribute('aria-label',VOL.muted?'Включить звук':'Выключить звук');
+  $('#pvVol').classList.toggle('is-muted',VOL.muted);
+}
+function audioEnsure(){
+  if(VOL.ctx)return;
+  const C=window.AudioContext||window.webkitAudioContext;
+  if(!C)return;
+  const ctx=VOL.ctx=new C();
+  const master=ctx.createGain();
+  master.gain.value=0;
+  master.connect(ctx.destination);
+  const lp=ctx.createBiquadFilter();
+  lp.type='lowpass';lp.frequency.value=420;lp.Q.value=.7;
+  lp.connect(master);
+  const voice=(freq,type,amp,detune)=>{
+    const o=ctx.createOscillator();o.type=type;o.frequency.value=freq;o.detune.value=detune||0;
+    const g=ctx.createGain();g.gain.value=amp;
+    o.connect(g);g.connect(lp);o.start();
+  };
+  voice(55,'sine',.5);voice(110,'triangle',.4);voice(110.7,'triangle',.3);voice(220,'sine',.14);
+  const lfo=ctx.createOscillator();lfo.frequency.value=.07;   /* медленное «дыхание» фильтра */
+  const lg=ctx.createGain();lg.gain.value=140;
+  lfo.connect(lg);lg.connect(lp.frequency);lfo.start();
+  VOL.master=master;
+}
+function audioSync(){
+  const media=$('#pvMedia');
+  const active=pv.classList.contains('show')
+    &&media.classList.contains('is-trailer')
+    &&!media.classList.contains('is-paused');
+  const target=active?volEff()*.16:0;
+  if(target>0){
+    audioEnsure();
+    VOL.ctx&&VOL.ctx.resume&&VOL.ctx.resume();
+  }
+  if(!VOL.master)return;
+  const g=VOL.master.gain,n=VOL.ctx.currentTime;
+  g.cancelScheduledValues(n);
+  g.setTargetAtTime(target,n,.09);
+}
+$('#pvVMute').addEventListener('click',()=>{
+  VOL.muted=!VOL.muted;
+  volUI();audioSync();
+});
+(function(){
+  const slider=$('#pvVolSlider'),wrap=$('#pvVol');
+  let drag=false;
+  const setFromX=x=>{
+    const r=slider.getBoundingClientRect();
+    VOL.level=Math.min(1,Math.max(0,(x-r.left)/r.width));
+    if(VOL.muted&&VOL.level>0)VOL.muted=false;   /* крутанули громкость — снимаем мьют */
+    volUI();audioSync();
+  };
+  slider.addEventListener('pointerdown',e=>{
+    drag=true;wrap.classList.add('dragging');
+    try{slider.setPointerCapture(e.pointerId);}catch(_){}
+    setFromX(e.clientX);
+    e.preventDefault();
+  });
+  slider.addEventListener('pointermove',e=>{if(drag)setFromX(e.clientX);});
+  const end=()=>{drag=false;wrap.classList.remove('dragging');};
+  slider.addEventListener('pointerup',end);
+  slider.addEventListener('pointercancel',end);
+  /* колесо мыши над зоной звука — тише/громче */
+  wrap.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const d=e.deltaY<0?.05:-.05;
+    VOL.level=Math.min(1,Math.max(0,Math.round((VOL.level+d)*20)/20));
+    if(VOL.muted&&VOL.level>0)VOL.muted=false;
+    volUI();audioSync();
+  },{passive:false});
+  volUI();
+})();
+$('#pvPlay').addEventListener('click',()=>toast('Плеер — в разработке (демо-макет)'));
+$('#pvWatchBtn').addEventListener('click',()=>toast('Плеер — в разработке (демо-макет)'));
+$('#pvFav').addEventListener('click',()=>{
+  const t=TITLES[PVD.card?.dataset.id];
+  if(t)t.fav=!t.fav;
+  const on=$('#pvFav').classList.toggle('is-on');
+  toast(on?'Добавлено в избранное':'Убрано из избранного');
+});
+$('#pvStatusBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  if(SM.open){closeStatusMenu();return;}
+  if(!PVD.card)return;
+  openStatusMenu(e.currentTarget,PVD.card.dataset.id,PVD.card);
+});
+
+/* ---------- меню состояния тайтла («⋮» на карточке и в превью) ---------- */
+const SM={open:false,titleId:null,trigger:null,card:null};
+const smEl=$('#statusMenu');
+const DOT_COLOR={watching:'var(--ok)',planned:'var(--info)',watched:'rgba(255,255,255,.75)',onhold:'var(--warn)',dropped:'var(--bad)'};
+function buildStatusItems(t){
+  const items=[['watching','Смотрю'],['planned','Буду смотреть'],['watched','Просмотрено'],['onhold','Отложено'],['dropped','Брошено']];
+  let html='<p class="sm-head">Состояние тайтла</p>';
+  html+=items.map(([k,label])=>
+    `<button class="sm-item${t.status===k?' is-cur':''}" data-st="${k}" role="menuitem">`+
+    `<span class="sm-dot" style="background:${DOT_COLOR[k]}"></span>`+
+    `<span class="sm-label">${label}</span>`+
+    (t.status===k?I.checkSm:'')+`</button>`).join('');
+  if(t.status)html+=
+    `<div class="sm-sep"></div>`+
+    `<button class="sm-item sm-item--clear" data-st="" role="menuitem">`+
+    `<span class="sm-x">${I.xSm}</span><span class="sm-label">Убрать статус</span></button>`;
+  return html;
+}
+function openStatusMenu(btn,titleId,card){
+  const t=TITLES[titleId];
+  if(!t)return;
+  SM.open=true;SM.titleId=titleId;SM.trigger=btn;SM.card=card||btn.closest('.poster-card')||PVD.card;
+  PVD.hold=true;clearTimeout(PVD.hideT);      /* пока открыто меню — превью не прячем */
+  smEl.innerHTML=buildStatusItems(t);
+  smEl.classList.remove('hidden');
+  const r=btn.getBoundingClientRect();
+  const w=smEl.offsetWidth,h=smEl.offsetHeight;
+  let x=r.left+r.width/2-w/2;
+  x=Math.max(10,Math.min(x,innerWidth-w-10));
+  let y=r.top-h-10;                           /* предпочитаем открыть над кнопкой */
+  if(y<10)y=Math.min(r.bottom+10,innerHeight-h-10);
+  smEl.style.left=Math.round(x)+'px';
+  smEl.style.top=Math.round(y)+'px';
+}
+function closeStatusMenu(){
+  if(!SM.open)return;
+  smEl.classList.add('hidden');smEl.innerHTML='';
+  SM.open=false;SM.titleId=null;SM.trigger=null;SM.card=null;
+  PVD.hold=false;
+  if(pv.classList.contains('show'))schedulePvHide();
+}
+smEl.addEventListener('click',e=>{
+  const it=e.target.closest('.sm-item');
+  if(!it)return;
+  const t=TITLES[SM.titleId];
+  if(!t){closeStatusMenu();return;}
+  const k=it.dataset.st||null;
+  t.status=k||undefined;
+  if(SM.card&&SM.card.isConnected)syncCardStatus(SM.card,t);
+  updatePvStatus(t);
+  closeStatusMenu();
+  toast(k?('Отмечено: '+STATUS[k]):'Статус убран');
+});
+document.addEventListener('pointerdown',e=>{
+  if(!SM.open)return;
+  if(smEl.contains(e.target))return;
+  if(SM.trigger&&SM.trigger.contains(e.target))return;
+  closeStatusMenu();
+},true);
+function syncCardStatus(card,t){
+  if(!card)return;
+  const wrap=card.querySelector('.poster-wrap');
+  if(!wrap)return;
+  let chip=wrap.querySelector('.status-chip');
+  if(!t.status){chip&&chip.remove();return;}
+  if(!chip){chip=document.createElement('span');wrap.appendChild(chip);}
+  chip.className='status-chip status-chip--'+t.status;
+  chip.innerHTML='<span class="sc-dot"></span><span class="sc-t">'+STATUS[t.status]+'</span>';
+}
+function updatePvStatus(t){
+  let chip=$('#pvStatus');
+  if(!t.status){chip&&chip.remove();return;}
+  if(!chip){chip=document.createElement('span');chip.id='pvStatus';$('#pvMeta').appendChild(chip);}
+  chip.className='pv-status';
+  chip.innerHTML=`<span class="sc-dot" style="background:${DOT_COLOR[t.status]}"></span><span class="sc-t">${STATUS[t.status]}</span>`;
+}
+
+
+/* ---------- настройки: профиль, аккаунт, уведомления ----------
+   Профиль настраивается здесь (не на самой странице профиля):
+   никнейм, «О себе» и баннер. Изменения применяются к превью
+   сразу и пишутся в localStorage (ключ kuvion_profile_v1) —
+   страница профиля читает его при открытии, поэтому настройки
+   переживают переходы между страницами. В продакшене это
+   запросы к бэкенду. Уведомления — демо-состояние в
+   kuvion_notify_v1: тумблеры просто запоминаются.
+   Каркас — «как в старой версии»: слева меню раздела, справа —
+   его форма. Выбранный раздел пишется в адрес (#account,
+   #notify): ссылкой можно поделиться, кнопка «назад» из
+   другого раздела возвращает к последнему открытому. */
+
+const PF_BANNERS=[
+  {id:'none',     kind:'none', name:'Без баннера'},
+  {id:'nebula',   kind:'img',  name:'Туманность',      url:CDN+'0098ff7224b3.jpg'},
+  {id:'stars',    kind:'img',  name:'Звёздное небо',   url:CDN+'384c7e88c6f1.jpg'},
+  {id:'neon',     kind:'img',  name:'Неоновый город',  url:CDN+'09205ca52b55.jpg'},
+  {id:'isles',    kind:'img',  name:'Парящие острова', url:CDN+'996b43feb1ba.jpg'},
+  {id:'fog',      kind:'img',  name:'Горы в тумане',   url:CDN+'711dac4d80c5.jpg'},
+  {id:'amethyst', kind:'grad', name:'Аметист',
+    css:'linear-gradient(120deg,var(--accent-1),var(--accent-2))'},
+  {id:'graphite', kind:'grad', name:'Графит',
+    css:'linear-gradient(160deg,#3d3d47 0%,#17171c 55%,#050507 100%)'},
+];
+const PF_STORE_KEY='kuvion_profile_v1';
+const NF_STORE_KEY='kuvion_notify_v1';
+const CS_STORE_KEY='kuvion_cardsize_v1';   /* оформление: размер карточек */
+const AN_STORE_KEY='kuvion_anim_v1';       /* оформление: анимации аватаров */
+const byPop=()=>Object.values(TITLES).slice().sort((a,b)=>b.pop-a.pop);   /* для поиска v4 */
+
+const pfUser={
+  handle:'danil',
+  bio:'Смотрю драмы, психологические триллеры и хорошее аниме. Десятку выдаю скупой рукой — её надо заслужить.',
+  banner:PF_BANNERS[1],          /* по умолчанию — «Туманность» */
+  avatar:null,                   /* своя аватарка — файл из «Настройек» */
+};
+
+/* читаем сохранённое (то же хранилище, что у страницы профиля) */
+(function stLoadStore(){
+  let s=null;
+  try{s=JSON.parse(localStorage.getItem(PF_STORE_KEY)||'null')}catch(e){}
+  if(!s)return;
+  if(typeof s.handle==='string'&&/^[a-z0-9_]{2,20}$/.test(s.handle))pfUser.handle=s.handle;
+  if(typeof s.bio==='string')pfUser.bio=s.bio;
+  const av=s.avatar;
+  if(av&&av.kind==='img'&&/^(https?:\/\/|data:image\/)/i.test(av.url||''))
+    pfUser.avatar={kind:'img',url:av.url};
+  const b=s.banner;
+  if(b&&b.kind==='none')pfUser.banner=PF_BANNERS[0];
+  else if(b&&b.kind==='grad'&&b.css)pfUser.banner={kind:'grad',css:b.css,name:b.name||'Градиент'};
+  else if(b&&b.kind==='img'&&/^(https?:\/\/|data:image\/)/i.test(b.url||''))
+    pfUser.banner={kind:'img',url:b.url,name:b.name||'Своя картинка',isCustom:!b.id};
+})();
+
+const stSave=()=>{
+  try{
+    localStorage.setItem(PF_STORE_KEY,JSON.stringify({
+      handle:pfUser.handle,bio:pfUser.bio,
+      avatar:pfUser.avatar&&pfUser.avatar.kind==='img'?{kind:'img',url:pfUser.avatar.url}:null,
+      banner:{kind:pfUser.banner.kind,url:pfUser.banner.url,css:pfUser.banner.css,
+              name:pfUser.banner.name,id:pfUser.banner.id},
+    }));
+  }catch(e){/* приватный режим — просто живём без сохранения */}
+};
+
+/* ---------- левое меню: выбор раздела ----------
+   Один раздел за раз: меню слева подсвечивает текущий, форма
+   справа меняется с коротким появлением. Выбор пишем в адрес
+   через replaceState — без лишних записей в истории, но
+   вернувшись на страницу (или открыв чужую ссылку с #notify)
+   попадёшь сразу в нужный раздел. При переключении длинного
+   раздела на короткий подтягиваем прокрутку к началу формы,
+   чтобы не «залипать» в футере. */
+const ST_SECS=['profile','appearance','account','notify'];
+let stFirstSwitch=true;
+function stSwitch(sec){
+  if(!ST_SECS.includes(sec))sec='profile';
+  document.querySelectorAll('#stNav .st-nav-item').forEach(b=>{
+    const cur=b.dataset.sec===sec;
+    b.classList.toggle('is-cur',cur);
+    b.setAttribute('aria-current',cur?'true':'false');
+  });
+  document.querySelectorAll('#stPane>.st-sec').forEach(s=>{
+    s.classList.toggle('hidden',s.dataset.pane!==sec);
+  });
+  if(stFirstSwitch){stFirstSwitch=false;}
+  else{
+    const hdr=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h'))||64;
+    const y=($('#stPane').getBoundingClientRect().top+scrollY)-hdr-16;
+    if(scrollY>y+4)window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
+  }
+  try{history.replaceState(null,'','#'+sec);}catch(e){/* file:// без хеша — не страшно */}
+}
+$('#stNav').addEventListener('click',e=>{
+  const b=e.target.closest('.st-nav-item');
+  if(b)stSwitch(b.dataset.sec);
+});
+addEventListener('hashchange',()=>stSwitch((location.hash||'#profile').slice(1)));
+stSwitch((location.hash||'#profile').slice(1));
+
+/* ---------- буква аватара в превью: центр по метрикам глифа ----------
+   Та же логика, что на странице профиля: канвас меряет чернильный
+   прямоугольник буквы и сдвигает его точно в центр квадрата. */
+const stGlyphCtx=document.createElement('canvas').getContext('2d');
+function stCenterLetter(){
+  const el=$('#stPreviewLetter'),letter=el.textContent;
+  el.style.transform='';
+  if(!letter)return;
+  const cs=getComputedStyle(el);
+  stGlyphCtx.font=`${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const m=stGlyphCtx.measureText(letter);
+  if(!('actualBoundingBoxAscent'in m)||!('fontBoundingBoxAscent'in m))return;
+  const dx=m.width/2-(m.actualBoundingBoxRight-m.actualBoundingBoxLeft)/2;
+  const dy=(m.actualBoundingBoxAscent-m.actualBoundingBoxDescent
+           +m.fontBoundingBoxDescent-m.fontBoundingBoxAscent)/2;
+  el.style.transform=`translate(${dx.toFixed(2)}px,${dy.toFixed(2)}px)`;
+}
+document.fonts.ready.then(stCenterLetter);
+new MutationObserver(stCenterLetter).observe(document.body,{attributes:true,attributeFilter:['data-displayfont']});
+setTimeout(stCenterLetter,400);
+
+/* ---------- аватар: буква или своя картинка — везде сразу ----------
+   Одна функция обновляет все места: квадрат выбора в разделе
+   «Профиль», превью головы, карточку в меню слева и круглые
+   мини-аватарки в шапке (+ имя в меню аккаунта). */
+function stApplyAvatar(){
+  const a=pfUser.avatar,url=a&&a.kind==='img'?a.url:null;
+  const letter=(pfUser.handle.trim()[0]||'?').toUpperCase();
+  /* квадрат выбора */
+  const img=$('#stAvImg'),letEl=$('#stAvLetter');
+  if(url){img.style.display='';if(img.getAttribute('src')!==url)img.src=url;letEl.style.display='none';}
+  else{img.style.display='none';img.removeAttribute('src');letEl.style.display='';letEl.textContent=letter;stCenterLetter();}
+  $('#stAvDelBtn').classList.toggle('hidden',!url);
+  /* превью головы */
+  const pimg=$('#stPreviewAvImg'),plet=$('#stPreviewLetter');
+  if(url){pimg.style.display='';if(pimg.getAttribute('src')!==url)pimg.src=url;plet.style.display='none';}
+  else{pimg.style.display='none';pimg.removeAttribute('src');plet.style.display='';}
+  /* карточка в меню */
+  const uimg=$('#stUcImg');
+  if(url){uimg.style.display='';if(uimg.getAttribute('src')!==url)uimg.src=url;$('#stUcLetter').style.display='none';}
+  else{uimg.style.display='none';uimg.removeAttribute('src');const ul=$('#stUcLetter');ul.style.display='';ul.textContent=letter;}
+  $('#stUcName').textContent=pfUser.handle;
+  /* шапка сайта */
+  ['#avatarCore','#avatarCoreMenu'].forEach(sel=>{
+    const core=document.querySelector(sel);if(!core)return;
+    if(url){
+      let im=core.querySelector('img');
+      if(!im){im=document.createElement('img');im.alt='';core.textContent='';core.appendChild(im);}
+      if(im.getAttribute('src')!==url)im.src=url;
+    }else{
+      const im=core.querySelector('img');if(im)im.remove();
+      core.textContent=letter;
+    }
+  });
+  const nm=document.querySelector('.acct-name');if(nm)nm.textContent=pfUser.handle;
+}
+/* битая аватарка (кривая ссылка) — возвращаем букву */
+$('#stAvImg').addEventListener('error',()=>{
+  if(pfUser.avatar?.url&&$('#stAvImg').getAttribute('src')===pfUser.avatar.url){
+    pfUser.avatar=null;stApplyAvatar();
+    toast('Не удалось загрузить аватар — вернулась буква никнейма');
+  }
+});
+
+/* ---------- загрузка своих картинок: аватар и баннер ----------
+   Перенос из первой версии: файл с устройства, до 5 МБ,
+   JPEG/PNG/WebP/GIF. В макете картинка читается FileReader'ом и
+   сжимается канвасом (аватар — до 512px, баннер — до 1600 по
+   ширине), чтобы data-URL спокойно жил в localStorage; в проде
+   файл ушёл бы на бэкенд, а обратно пришла бы CDN-ссылка. */
+function stReadImage(file,maxW,maxH,done){
+  if(!file)return;
+  if(!/^image\/(jpeg|png|webp|gif)$/i.test(file.type)){toast('Подходят JPEG, PNG, WebP и GIF');return;}
+  if(file.size>5*1024*1024){toast('Файл больше 5 МБ — выберите поменьше');return;}
+  const fr=new FileReader();
+  fr.onerror=()=>toast('Не удалось прочитать файл');
+  fr.onload=()=>{
+    const im=new Image();
+    im.onerror=()=>toast('Не удалось прочитать картинку');
+    im.onload=()=>{
+      const k=Math.min(1,maxW/im.naturalWidth,maxH/im.naturalHeight);
+      const w=Math.max(1,Math.round(im.naturalWidth*k)),h=Math.max(1,Math.round(im.naturalHeight*k));
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      cv.getContext('2d').drawImage(im,0,0,w,h);
+      let url;try{url=cv.toDataURL('image/jpeg',.85);}catch(e){url=fr.result;}
+      done(url);
+    };
+    im.src=fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+$('#stAvPickBtn').addEventListener('click',()=>$('#stAvFile').click());
+$('#stAvFile').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';
+  stReadImage(f,512,512,url=>{
+    pfUser.avatar={kind:'img',url};
+    stApplyAvatar();stSave();
+    toast('Аватар обновлён — он уже в превью и в шапке');
+  });
+});
+$('#stAvDelBtn').addEventListener('click',()=>{
+  pfUser.avatar=null;
+  stApplyAvatar();stSave();
+  toast('Аватар удалён — вернулась буква никнейма');
+});
+$('#stBanBtn').addEventListener('click',()=>$('#stBanFile').click());
+$('#stBanFile').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';
+  stReadImage(f,1600,900,url=>{
+    pfUser.banner={kind:'img',url,name:'Свой баннер',isCustom:true};
+    $('#stUrl').value='';
+    stRenderPreview();stRenderTiles();stSave();
+    toast('Баннер обновлён');
+  });
+});
+
+/* ---------- оформление: карточки и анимации ----------
+   Размер карточек — тот же S/M/L, что в «Лаборатории», но
+   с запоминанием: ключ kuvion_cardsize_v1 читают все
+   страницы при загрузке, «Лаборатория» остаётся сессионной
+   и лишь поверх переключает то же самое. Анимированные
+   аватары и рамки — заготовка под будущие GIF/видео-аватары:
+   выкл показывает статичный кадр. Зерно больше не
+   настраивается — вычищаем старый ключ, чтобы у тех, кто
+   успел его выключить, оно не осталось навсегда скрытым. */
+try{localStorage.removeItem('kuvion_appearance_v1')}catch(e){}
+(function stLoadAppearance(){
+  let cs='m';
+  try{cs=localStorage.getItem(CS_STORE_KEY)||'m'}catch(e){}
+  if(cs!=='s'&&cs!=='m'&&cs!=='l')cs='m';
+  document.body.dataset.cardsize=cs;
+  $$('#stCardSize button').forEach(b=>b.classList.toggle('is-on',b.dataset.cardsize===cs));
+  $$('#sizeSeg button').forEach(b=>b.classList.toggle('is-on',b.dataset.cardsize===cs));
+  let animOff=false;
+  try{animOff=localStorage.getItem(AN_STORE_KEY)==='anim-off'}catch(e){}
+  if(animOff)$('#stAnim').checked=false;
+})();
+$$('#stCardSize button').forEach(b=>b.addEventListener('click',()=>{
+  $$('#stCardSize button').forEach(x=>x.classList.remove('is-on'));
+  b.classList.add('is-on');
+  const cs=b.dataset.cardsize;
+  document.body.dataset.cardsize=cs;
+  $$('#sizeSeg button').forEach(x=>x.classList.toggle('is-on',x.dataset.cardsize===cs));
+  try{localStorage.setItem(CS_STORE_KEY,cs)}catch(e){}
+  toast('Размер карточек: '+cs.toUpperCase());
+}));
+$('#stAnim').addEventListener('change',()=>{
+  const on=$('#stAnim').checked;
+  try{localStorage.setItem(AN_STORE_KEY,on?'anim-on':'anim-off')}catch(e){}
+  toast(on?'Анимации аватаров включены':'Анимации показываются статичной картинкой');
+});
+
+/* ---------- смена пароля: правила первой версии ----------
+   Минимум 8 символов, заглавная и строчная буквы, цифра; глазки
+   показывают пароль по одному. Демо: после проверки поля
+   очищаются и появляется тост. */
+document.querySelectorAll('.st-eye').forEach(b=>b.addEventListener('click',()=>{
+  const inp=document.getElementById(b.dataset.eye);
+  if(!inp)return;
+  const show=inp.type==='password';
+  inp.type=show?'text':'password';
+  b.classList.toggle('is-on',show);
+  b.setAttribute('aria-label',show?'Скрыть пароль':'Показать пароль');
+}));
+$('#stPassBtn').addEventListener('click',()=>{
+  const cur=$('#stPassCur').value,nw=$('#stPassNew').value,nw2=$('#stPassNew2').value,err=$('#stPassErr');
+  const fail=m=>{err.textContent=m;err.classList.remove('hidden');};
+  if(!cur){fail('Введите текущий пароль');return;}
+  if(nw.length<8||!/[A-Z]/.test(nw)||!/[a-z]/.test(nw)||!/[0-9]/.test(nw)){
+    fail('Новый пароль: минимум 8 символов, заглавная и строчная буквы, цифра');return;
+  }
+  if(nw!==nw2){fail('Пароли не совпадают');return;}
+  err.classList.add('hidden');
+  $('#stPassCur').value='';$('#stPassNew').value='';$('#stPassNew2').value='';
+  toast('Пароль изменён (демо)');
+});
+
+/* ---------- превью: как голову профиля увидят другие ---------- */
+function stRenderPreview(){
+  const b=pfUser.banner,el=$('#stPreview'),img=$('#stPreviewImg');
+  $('#stPreviewName').textContent=pfUser.handle;
+  $('#stPreviewLetter').textContent=(pfUser.handle.trim()[0]||'?').toUpperCase();
+  stApplyAvatar();
+  if(!b||b.kind==='none'){
+    el.classList.add('is-none');
+    img.style.display='none';img.removeAttribute('src');el.style.background='#0b0b0e';
+    return;
+  }
+  el.classList.remove('is-none');
+  if(b.kind==='grad'){
+    img.style.display='none';img.removeAttribute('src');
+    el.style.background=b.css;
+  }else{
+    img.style.display='';el.style.background='#0b0b0e';
+    if(img.getAttribute('src')!==b.url)img.src=b.url;
+  }
+}
+/* битая ссылка: превью остаётся тёмной подложкой, сообщаем один раз */
+$('#stPreviewImg').addEventListener('error',()=>{
+  if(pfUser.banner?.url&&$('#stPreviewImg').getAttribute('src')===pfUser.banner.url){
+    $('#stPreviewImg').style.display='none';
+    toast('Не удалось загрузить картинку — проверьте ссылку');
+  }
+});
+
+/* ---------- плитки баннеров ---------- */
+const stTileHtml=b=>{
+  const cur=b.id===pfUser.banner?.id&&!pfUser.banner?.isCustom;
+  const inner=b.kind==='none'
+    ?`<span class="st-tile-noneic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m9 9 6 6"/><path d="m15 9-6 6"/></svg></span>`
+    :b.kind==='grad'?`<span class="st-tile-grad" style="background:${b.css}"></span>`:`<img src="${b.url}" alt="" loading="lazy">`;
+  return `<button class="st-tile${b.kind==='none'?' st-tile--none':''}${cur?' is-cur':''}" data-b="${b.id}" aria-pressed="${cur}" title="${b.name}">`+
+    `${inner}<span class="st-tile-name">${b.name}</span><span class="st-tile-check">${I.checkSm}</span></button>`;
+};
+const stRenderTiles=()=>{$('#stTiles').innerHTML=PF_BANNERS.map(stTileHtml).join('');};
+
+$('#stTiles').addEventListener('click',e=>{
+  const t=e.target.closest('.st-tile');
+  if(!t)return;
+  pfUser.banner=PF_BANNERS.find(b=>b.id===t.dataset.b)||PF_BANNERS[0];
+  $('#stUrl').value='';
+  $('#stUrlRow').classList.remove('has-err');
+  stRenderPreview();stRenderTiles();stSave();
+});
+
+/* ---------- своя ссылка на картинку ---------- */
+const stApplyUrl=()=>{
+  const inp=$('#stUrl'),v=inp.value.trim();
+  if(!v)return;                       /* пустое поле — не ошибка: пресеты выбираются плитками */
+  if(!/^https?:\/\/\S+$/i.test(v)){
+    $('#stUrlRow').classList.add('has-err');
+    toast('Ссылка не похожа на адрес картинки — нужна https://…');
+    return;
+  }
+  $('#stUrlRow').classList.remove('has-err');
+  pfUser.banner={kind:'img',url:v,name:'Своя картинка',isCustom:true};
+  stRenderPreview();stRenderTiles();stSave();
+  toast('Баннер обновлён');
+};
+$('#stUrlBtn').addEventListener('click',stApplyUrl);
+$('#stUrl').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();stApplyUrl();}});
+$('#stUrl').addEventListener('input',()=>$('#stUrlRow').classList.remove('has-err'));
+
+/* ---------- никнейм: живой отклик с валидацией ---------- */
+$('#stHandle').addEventListener('input',()=>{
+  const el=$('#stHandle');
+  const v=el.value.replace(/^@+/,'').replace(/[^a-z0-9_]/gi,'').toLowerCase();
+  if(el.value!==v)el.value=v;
+  const ok=/^[a-z0-9_]{2,20}$/.test(v);
+  $('#stHandleField').classList.toggle('has-err',v.length>0&&!ok);
+  if(ok){pfUser.handle=v;stRenderPreview();stApplyAvatar();stSave();}
+});
+
+/* ---------- «О себе»: живой отклик + счётчик ---------- */
+$('#stBio').addEventListener('input',()=>{
+  const v=$('#stBio').value;
+  $('#stBioLen').textContent=v.length;
+  pfUser.bio=v;stSave();
+});
+
+/* ---------- уведомления: тумблеры запоминаются ---------- */
+(function stLoadNotify(){
+  let s=null;
+  try{s=JSON.parse(localStorage.getItem(NF_STORE_KEY)||'null')}catch(e){}
+  if(!s)return;
+  document.querySelectorAll('.st-tg-in').forEach(t=>{if(s[t.dataset.notify]===false)t.checked=false;});
+})();
+document.querySelectorAll('.st-tg-in').forEach(t=>{
+  t.addEventListener('change',()=>{
+    const s={};
+    document.querySelectorAll('.st-tg-in').forEach(x=>s[x.dataset.notify]=x.checked);
+    try{localStorage.setItem(NF_STORE_KEY,JSON.stringify(s))}catch(e){}
+  });
+});
+
+/* ---------- подписка Kuvion+: статус в разделе «Аккаунт» ----------
+   Ключ пишет страница подписки (и «Лаборатория» на ней); истёкшая
+   подписка показывается как «не активна» */
+(()=>{
+  let p=null;
+  try{p=JSON.parse(localStorage.getItem('kuvion_plus_v1')||'null')}catch(e){}
+  const ok=p&&p.until&&new Date(p.until)>new Date('2026-11-05T12:00:00');
+  if(!ok)return;
+  const MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  const[y,m,d]=(p.until||'').split('-').map(Number);
+  const date=y?`${d} ${MONTHS[m-1]} ${y}`:'';
+  const sub=document.getElementById('stPlusSub');
+  const btn=document.getElementById('stPlusBtn');
+  if(!sub||!btn)return;
+  sub.innerHTML=p.canceled
+    ?`Отменена — активна ещё <b>до ${date}</b>, продлеваться не будет`
+    :`Активна <b>до ${date}</b> · без рекламы, 4K HDR и ранний доступ к главам манги`;
+  btn.textContent='Управлять';
+})();
+
+/* ---------- инициализация полей ---------- */
+$('#stHandle').value=pfUser.handle;
+$('#stBio').value=pfUser.bio;
+$('#stBioLen').textContent=pfUser.bio.length;
+stRenderPreview();stRenderTiles();
+
+/* ---------- гостевое состояние: вход и регистрация ---------- */
+$('#stgLogin').addEventListener('click',()=>openAuth('login'));
+$('#stgReg').addEventListener('click',()=>openAuth('register'));
+
+/* ---------- гость / пользователь ---------- */
+function setUser(mode){
+  const guest=mode==='guest';
+  closeStatusMenu();
+  document.body.classList.toggle('is-guest',guest);
+  $('#userArea').style.display=guest?'none':'';
+  $('#userDivider').style.display=guest?'none':'';
+  $('#avatarWrap').style.display=guest?'none':'';
+  $('#loginBtn').classList.toggle('hidden',!guest);
+  /* «Настройки» — страница аккаунта: гостю показываем заглушку */
+  $('#stMain').classList.toggle('hidden',guest);
+  $('#stGuest').classList.toggle('hidden',!guest);
+  $$('#userSeg button').forEach(b=>b.classList.toggle('is-on',b.dataset.user===mode));
+}
+
+</script>
+<script src="/assets/kuvion-auth.js"></script>
+<script>
+"use strict";
+/* ---------- подтверждение выхода ---------- */
+$('#logoutBtn').addEventListener('click',()=>{
+  hidePreview();
+  closeAllDd();
+  $('#logoutModal').classList.remove('hidden');
+});
+$('#logoutCancel').addEventListener('click',()=>$('#logoutModal').classList.add('hidden'));
+$('#logoutConfirm').addEventListener('click',()=>{
+  $('#logoutModal').classList.add('hidden');
+  setUser('guest');
+  toast('Вы вышли из аккаунта');
+});
+safeOverlayClose($('#logoutModal'),()=>$('#logoutModal').classList.add('hidden'));
+
+/* ---------- инициализация ---------- */
+setUser('user');
+
+/* навигация по макетам: главная и меню */
+$('#mobHomeBtn').addEventListener('click',()=>{location.href='/';});
+$('#mobMenuBtn').addEventListener('click',()=>openDrawer());
+
+/* шапка: фон при скролле */
+window.addEventListener('scroll',()=>$('#appHeader').classList.toggle('scrolled',scrollY>40),{passive:true});
+
+/* дропдауны: закрытие по клику вне — с защитой от выделения текста */
+$('#bellBtn').addEventListener('click',e=>{e.stopPropagation();toggleDd('bellDd',e.currentTarget);});
+$('#avatarBtn').addEventListener('click',e=>{e.stopPropagation();toggleDd('acctDd',e.currentTarget);});
+safeOutsideClose($('#bellDd'),[$('#bellBtn')],closeAllDd);
+safeOutsideClose($('#acctDd'),[$('#avatarBtn')],closeAllDd);
+
+/* ---------- уведомления: живая лента v2 ----------
+   Было (v1): движок с шестью демо-событиями и кнопкой «Показать
+   ещё» в дропдауне. Стало: демо-набор охватывает два месяца
+   (группы «Сегодня / Вчера / На этой неделе / Ранее»), а внизу
+   дропдауна вместо «Показать ещё» — строка «Все уведомления · N»,
+   открывающая отдельную страницу /notifications/ (тот же
+   паттерн, что у «Все результаты» в поиске). Состояние
+   «прочитано» — по-прежнему честное, в localStorage
+   (kuvion_notifs_v1), и общее для дропдауна и страницы.
+   Движок один на все страницы; после каждого рендера он зовёт
+   хук nfsAfterRender — его определяет только страница
+   уведомлений, остальные страницы не замечают. */
+const NT_KEY='kuvion_notifs_v1';
+const NT_IC={
+  ep:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5.5v13a1 1 0 0 0 1.53.85l10.2-6.5a1 1 0 0 0 0-1.7L8.53 4.65A1 1 0 0 0 7 5.5Z"/></svg>',
+  ch:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+  reply:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>',
+  like:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',
+  plus:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9Z"/></svg>',
+  sys:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+};
+/* миниатюры серий — те же постеры, что в каталоге */
+const NT_THUMB={
+  aot:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9a35191d1d09.jpg',
+  jjk:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/235414089ff8.jpg',
+  tlou:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/078136c3e9d7.jpg',
+  frieren:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/c458046a4f08.jpg',
+};
+
+/* демо-набор: ts — сколько часов назад от якоря «сейчас»
+   (5 ноября 2026, как у комментариев); read:1 — прочитанные
+   при первом визите. Непрочитанных в свежем профиле три:
+   серия, глава и Kuvion+; у серий — постер-миниатюра, у глав
+   и служебных событий — цветная иконка */
+const NT_DEMO=[
+  {id:'n-ep-aot19',k:'ep',ts:2,
+   title:'Вышла новая серия',text:'«Атака титанов» — 4 сезон, серия 19',
+   thumb:NT_THUMB.aot,href:'/title/'},
+  {id:'n-ch-csm',k:'ch',ts:5,
+   title:'Вышла новая глава',text:'«Человек-бензопила» — глава 209',
+   href:'/manga/?m=csm'},
+  {id:'n-ep-jjk',k:'ep',ts:9,read:1,
+   title:'Вышла новая серия',text:'«Магическая битва» — 2 сезон, серия 11',
+   thumb:NT_THUMB.jjk,href:'/catalog/'},
+  {id:'n-sys-plus',k:'plus',ts:26,
+   title:'Kuvion+',text:'Ранний доступ к главам манги — на три дня раньше бесплатного релиза',
+   href:'/plus/'},
+  {id:'n-ep-tlou',k:'ep',ts:30,read:1,
+   title:'Вышла новая серия',text:'«Последние из нас» — 2 сезон, серия 3',
+   thumb:NT_THUMB.tlou,href:'/catalog/'},
+  {id:'n-ep-aot18',k:'ep',ts:50,read:1,
+   title:'Вышла новая серия',text:'«Атака титанов» — 4 сезон, серия 18',
+   thumb:NT_THUMB.aot,href:'/title/'},
+  {id:'n-sys-manga',k:'sys',ts:74,read:1,
+   title:'Манга уже на Kuvion',text:'Читайте любимые тайтлы в новой читалке — манга, манхва и маньхуа',
+   href:'/manga/'},
+  {id:'n-ch-op',k:'ch',ts:96,read:1,
+   title:'Вышла новая глава',text:'«Ван Пис» — глава 1129',
+   href:'/manga/?m=onepiece'},
+  {id:'n-ch-csm208',k:'ch',ts:120,read:1,
+   title:'Вышла новая глава',text:'«Человек-бензопила» — глава 208',
+   href:'/manga/?m=csm'},
+  {id:'n-sys-dune',k:'sys',ts:880,read:1,
+   title:'Новый тайтл в каталоге',text:'«Дюна: Часть вторая» — уже доступна к просмотру',
+   href:'/catalog/'},
+  {id:'n-ep-frieren',k:'ep',ts:900,read:1,
+   title:'Вышла новая серия',text:'«Провожающая в последний путь Фрирен» — 2 сезон, серия 12',
+   thumb:NT_THUMB.frieren,href:'/catalog/'},
+  {id:'n-sys-hi',k:'sys',ts:1400,read:1,
+   title:'Добро пожаловать в Kuvion',text:'Соберите первый список и оцените просмотренное — так заработают рекомендации',
+   href:'/profile/'},
+];
+
+/* живые события: ответ и лайк на самый свежий свой комментарий
+   (появляются, только если вы уже писали на странице тайтла) */
+function ntMine(){
+  let arr=null;
+  try{arr=JSON.parse(localStorage.getItem('kuvion_tcomments_v1')||'null')}catch(e){}
+  if(!Array.isArray(arr)||!arr.length)return [];
+  /* цель — самый свежий корневой комментарий: на ответ никто
+     не «отвечает» (один уровень вложенности), уведомление о
+     ответе на ответ не соберётся */
+  const m=arr.find(x=>!x.parent)||arr[0];
+  const ntEsc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const cut=ntEsc(String(m.text||'').replace(/\s+/g,' ').trim().slice(0,54));
+  return [
+    {id:'n-reply-'+m.id,k:'reply',ts:3,
+     title:'Новый ответ',text:'kira ответил(а) на ваш комментарий «'+cut+'…»',
+     href:'/title/?cmt='+encodeURIComponent(m.id)},
+    {id:'n-like-'+m.id,k:'like',ts:8,
+     title:'Ваш комментарий оценили',text:'vega и ещё 3 человека поставили лайк комментарию «'+cut+'…»',
+     href:'/title/?cmt='+encodeURIComponent(m.id)},
+  ];
+}
+
+/* состояние: набор прочитанных id */
+let NT_READ=new Set(),NT_TOP=5;
+try{
+  const s=JSON.parse(localStorage.getItem(NT_KEY)||'null');
+  if(s&&Array.isArray(s.read))s.read.forEach(id=>NT_READ.add(id));
+}catch(e){}
+function ntSave(){try{localStorage.setItem(NT_KEY,JSON.stringify({read:[...NT_READ]}))}catch(e){}}
+function ntList(){return ntMine().concat(NT_DEMO).sort((a,b)=>a.ts-b.ts)}
+
+function ntWhen(h){
+  const pl=(n,a,b,c)=>{const m=n%10,k=n%100;return m===1&&k!==11?a:(m>=2&&m<=4&&(k<10||k>=20)?b:c)};
+  if(h<=0)return 'только что';
+  if(h<24)return h+' '+pl(h,'час','часа','часов')+' назад';
+  const d=Math.round(h/24);
+  if(d===1)return 'вчера';
+  if(d<7)return d+' '+pl(d,'день','дня','дней')+' назад';
+  if(d<31){const w=Math.round(d/7);return w===1?'неделю назад':w+' '+pl(w,'неделю','недели','недель')+' назад'}
+  const mo=Math.round(d/30);
+  return mo===1?'месяц назад':mo+' '+pl(mo,'месяц','месяца','месяцев')+' назад';
+}
+function ntItemHTML(n){
+  const read=!!n.read||NT_READ.has(n.id);
+  const media=n.thumb
+    ?`<img class="n-thumb" src="${n.thumb}" alt="" loading="lazy">`
+    :`<span class="n-icon" aria-hidden="true">${NT_IC[n.k]}</span>`;
+  return `<a class="notif notif--${n.k}${read?' is-read':''}" href="${n.href}" data-id="${n.id}">`+
+    media+
+    `<div style="min-width:0">`+
+    `<p class="n-title">${n.title}</p>`+
+    `<p class="n-text">${n.text}</p>`+
+    `<p class="n-time">${ntWhen(n.ts)}</p></div>`+
+    (read?'':'<span class="n-dot"></span>')+
+    `</a>`;
+}
+function ntRender(){
+  const list=ntList();
+  $('#bellList').innerHTML=list.slice(0,NT_TOP).map(ntItemHTML).join('');
+  const unread=list.filter(n=>!n.read&&!NT_READ.has(n.id)).length;
+  const badge=$('#bellBadge');
+  if(unread){badge.textContent=unread;badge.classList.remove('is-hidden')}
+  else badge.classList.add('is-hidden');
+  /* «Все уведомления · N»: полная лента живёт на отдельной
+     странице; при короткой ленте строка не нужна */
+  const all=$('#bellAll');
+  if(all){
+    all.style.display=list.length>NT_TOP?'':'none';
+    const n=$('#bellAllN');
+    if(n)n.textContent=list.length;
+  }
+  /* страница уведомлений (если мы на ней) перерисовывается следом */
+  if(typeof nfsAfterRender==='function')nfsAfterRender();
+}
+
+/* «Отметить прочитанными»: помним выбор между визитами */
+$('#bellClear').addEventListener('click',()=>{
+  ntList().forEach(n=>NT_READ.add(n.id));
+  ntSave();ntRender();
+  toast('Уведомления отмечены прочитанными');
+});
+/* клик по уведомлению: помечаем прочитанным и уходим по ссылке */
+$('#bellList').addEventListener('click',e=>{
+  const a=e.target.closest('.notif');
+  if(!a)return;
+  NT_READ.add(a.dataset.id);
+  ntSave();
+});
+ntRender();
+
+/* вход: все кнопки-триггеры */
+$('#loginBtn').addEventListener('click',()=>openAuth('login'));
+$('#drawerLogin').addEventListener('click',()=>{closeDrawer();openAuth('login');});
+
+/* бургер */
+const openDrawer=()=>{hidePreview();$('#drawer').classList.add('open');$('#drawerOverlay').classList.remove('hidden');};
+const closeDrawer=()=>{$('#drawer').classList.remove('open');$('#drawerOverlay').classList.add('hidden');};
+$('#btnBurger').addEventListener('click',openDrawer);
+$('#drawerClose').addEventListener('click',closeDrawer);
+safeOverlayClose($('#drawerOverlay'),closeDrawer);
+
+
+/* горячие клавиши */
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch();return;}
+  if(e.key!=='Escape')return;
+  if(!$('#searchOverlay').classList.contains('hidden')){closeSearch();return;}
+  hidePreview();
+  closeStatusMenu();
+  closeAllDd();
+  closeAuth();
+  $('#logoutModal').classList.add('hidden');
+  closeDrawer();
+});
+
+/* заглушки и действия на карточках — делегирование */
+document.addEventListener('click',e=>{
+  const dots=e.target.closest('.card-dots');
+  if(dots){
+    e.preventDefault();e.stopPropagation();
+    if(SM.open){closeStatusMenu();return;}
+    const card=dots.closest('.poster-card');
+    if(card)openStatusMenu(dots,card.dataset.id,card);
+    return;
+  }
+  const card=e.target.closest('.poster-card,.cw-card');
+  if(card){
+    hidePreview();
+    /* для «Атаки титанов» страница-макет уже готова — ведём на неё */
+    if(card.dataset.id==='aot'){location.href='/title/';return;}
+    toast('Страница «'+card.dataset.title+'» — в разработке');
+    return;
+  }
+  const sr=e.target.closest('.sr-item');
+  if(sr){
+    sovSaveRecent(sovInput.value);
+    closeSearch();closeAllDd();
+    if(sr.dataset.local==='1'){showManga(sr.dataset.srid);return;}
+    if(sr.dataset.href){location.href=sr.dataset.href;return;}
+    toast('Страница «'+sr.dataset.title+'» — в разработке');return;
+  }
+  const stub=e.target.closest('[data-stub]');
+  if(stub){
+    e.preventDefault();
+    if(stub.closest('.dd'))closeAllDd();
+    if(stub.closest('#drawer'))closeDrawer();
+    /* навигация между готовыми макетами — по-настоящему */
+    if(stub.dataset.stub==='Каталог'){location.href='/catalog/';return;}
+    if(stub.dataset.stub==='Аниме'){location.href='/catalog/?type=anime';return;}
+    if(stub.dataset.stub==='Случайное'){location.href='/catalog/?random=1';return;}
+    if(stub.dataset.stub==='Главная'){location.href='/';return;}
+    if(stub.dataset.stub==='Расписание'){location.href='/schedule/';return;}
+    toast('«'+stub.dataset.stub+'» — в разработке');
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const card=e.target.closest?.('.poster-card,.cw-card');
+  if(card){toast('Страница «'+card.dataset.title+'» — в разработке');}
+});
+</script>
+<script>
+/* ---- reveal рядов: секции ниже первого экрана мягко всплывают при
+   попадании в экран (один раз); видимое при загрузке не трогаем;
+   после показа классы снимаются — финальная разметка чистая;
+   при prefers-reduced-motion и без JS всё видно как раньше ---- */
+(function(){
+  try{
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    setTimeout(function(){
+      var SEL='.st-wrap>*';
+      var els=[].slice.call(document.querySelectorAll(SEL)).filter(function(el){
+        var s=getComputedStyle(el);
+        return s.display!=='none'&&s.visibility!=='hidden'&&el.getBoundingClientRect().height>0;
+      });
+      if(!els.length||!('IntersectionObserver' in window))return;
+      var H=window.innerHeight||document.documentElement.clientHeight;
+      var marked=els.filter(function(el){
+        return el.getBoundingClientRect().top>=H;
+      });
+      if(!marked.length)return;
+      var io=new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if(!e.isIntersecting)return;
+          var el=e.target;
+          io.unobserve(el);
+          el.classList.add('rv-in');
+          setTimeout(function(){el.classList.remove('rv-hide','rv-in');},750);
+        });
+      },{rootMargin:'0px 0px -10% 0px',threshold:0});
+      marked.forEach(function(el){el.classList.add('rv-hide');io.observe(el);});
+    },60);
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

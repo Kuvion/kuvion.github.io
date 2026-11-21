@@ -1,0 +1,2517 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="Kuvion+ — подписка: выгоды, сравнение с бесплатным доступом, тарифы и управление.">
+<meta property="og:title" content="Kuvion+ — подписка">
+<meta property="og:description" content="Kuvion+ — подписка: выгоды, сравнение с бесплатным доступом, тарифы и управление.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%230b0b0e'/%3E%3Crect%20x='1.5'%20y='1.5'%20width='61'%20height='61'%20rx='12.5'%20fill='none'%20stroke='rgba(255,255,255,.18)'%20stroke-width='3'/%3E%3Cpath%20d='M17%2014h8v14l12-14h11l-16%2017%2016%2019h-11l-12-14v14h-8z'%20fill='%23fff'/%3E%3C/svg%3E">
+<title>Kuvion+ — подписка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@300;400;500;600;700;800;900&family=Rubik:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/kuvion-common.css">
+<style>
+
+/* ================================================================
+   KUVION+ — страница подписки, дизайн-макет v1.3 (собран из
+   дизайн-системы v4; черновой, для просмотра и тестов)
+   Единственная страница, где градиент — главный герой: по
+   философии системы градиент живёт только в аккаунте и подписке.
+   Состояния: гость / юзер без подписки / активная / отменённая /
+   истекающая — переключатель «Подписка Kuvion+» в «Лаборатории».
+   Прогресс хранится в localStorage (kuvion_plus_v1) — ключ читают
+   также профиль и настройки. Цены и платёжные реквизиты — демо.
+   Правки v1.3: убраны градиентные полоски перед надписями секций
+   («Что входит», «Сравнение», «Тарифы», «Вопросы») — рудимент
+   самой первой версии сайта; заголовки секций теперь чистый текст.
+   Правки v1.2: ранний доступ — только для глав манги (сериалы
+   и фильмы выходят всем сразу, без искусственных задержек);
+   починена кнопка «Попробовать 7 дней бесплатно» — раньше без
+   подписки она не делала ничего, теперь гостю открывает вход,
+   а пользователю — оформление годового тарифа.
+   Правки v1.1: текст в кнопках «Оформить» отцентрован флексом
+   (раньше прилипал к верхнему краю); убран лимит «одновременных
+   экранов» — подписка аккаунтная, работает на всех устройствах
+   без счётчика; реклама в манге описана конкретно: экран перед
+   открытием главы и баннеры между страницами.
+   (Ниже — исходное описание дизайн-системы v4.)
+   Философия: абсолютный чёрный, белый как главный акцент,
+   градиент — только для аккаунта и подписки. Весь цвет несут
+   постеры + семантика рейтингов и статусов.
+   Новое в v4: «невидимая стена» как в старой версии — карточки
+   обрезаются сразу за краем рамки контента, отступы слева и
+   справа постоянные; на карточках больше нет быстрых кнопок —
+   избранное (закладка) и состояние тайтла (⋮: смотрю /
+   просмотрено / отложено…) живут в превью-панели и в меню
+   карточки; превью крутит несколько кадров (стрелки, миниатюры,
+   автосмена), у трейлера появился регулятор громкости;
+   драг-скролл больше не оставляет «залипшую» кнопку Play;
+   по умолчанию: белая «Смотреть», зерно вкл, акцент фиолетовый,
+   шрифт — Dela Gothic One.
+   Связи макетов (04.11): «Каталог», «Аниме» и «Случайное» ведут
+   в каталог-макет (/catalog/; ?type=anime — с фильтром,
+   ?random=1 — случайный тайтл), карточка «Атаки титанов» — на
+   страницу тайтла (/title/).
+   ================================================================ */
+
+:root{
+  --bg:#000;
+  --surface:rgba(255,255,255,.04);
+  --surface-2:rgba(255,255,255,.07);
+  --surface-3:rgba(255,255,255,.11);
+  --border:rgba(255,255,255,.08);
+  --border-2:rgba(255,255,255,.14);
+  --border-3:rgba(255,255,255,.24);
+  --text:#fff;
+  --text-2:rgba(255,255,255,.62);
+  --text-3:rgba(255,255,255,.4);
+  --accent-1:#7C4DFF;
+  --accent-2:#D946EF;
+  --accent-glow:rgba(168,85,247,.35);
+  --ok:#4ADE80;
+  --warn:#FACC15;
+  --bad:#F87171;
+  --info:#60A5FA;
+  --r-s:10px;   /* радиус малый */
+  --r-m:14px;   /* радиус карточек */
+  --r-l:18px;   /* радиус панелей */
+  --font-display:'Dela Gothic One','Onest',system-ui,sans-serif;
+  --font-body:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --header-h:64px;
+  --page-x:clamp(20px,4vw,56px);
+  --rail-gap:16px;                                   /* единый шаг между карточками */
+  --card-w:clamp(168px,13.5vw,204px);                /* размер карточки M (по умолчанию) */
+}
+
+body:not([data-displayfont="dela"]) :is(.logo,.hero-title,.row-title,.pv-title,.auth-logo,.footer-logo,.soon-title,.lab-title,.sub-card .sc-name){font-weight:800}
+
+
+.nav-link{
+  position:relative;font-size:14px;font-weight:500;color:var(--text-2);
+  padding:6px 1px;transition:color .2s ease;white-space:nowrap;
+}
+
+/* ============ KUVION+ (страница подписки) ============
+   Единственная страница, где градиент — главный герой:
+   по философии дизайн-системы градиент живёт только в аккаунте
+   и подписке. Весь остальной цвет несут постеры в ленте.
+   Состояния: гость (CTA — вход), юзер без подписки (оформление),
+   активная (chip со сроком, панель управления, рамка аватара),
+   отменённая (серый chip + «Возобновить»), истекающая (жёлтый
+   chip + «Продлить»). Состоянием управляет «Лаборатория». */
+
+/* ---------- HERO подписки ---------- */
+.plus-hero{
+  position:relative;overflow:hidden;
+  padding:calc(var(--header-h) + 58px) 0 0;
+  min-height:560px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  text-align:center;
+}
+
+/* мягкое свечение за заголовком — два пятна акцентов */
+.plus-hero::before{
+  content:'';position:absolute;inset:-30% -20% auto;z-index:0;pointer-events:none;
+  height:120%;
+  background:
+    radial-gradient(46% 42% at 38% 30%,var(--accent-glow),transparent 70%),
+    radial-gradient(40% 38% at 64% 26%,rgba(217,70,239,.2),transparent 70%);
+  filter:blur(10px);
+  opacity:.9;
+  animation:plus-glow 9s ease-in-out infinite alternate;
+}
+
+@keyframes plus-glow{
+  from{transform:translate3d(-2%,-1%,0) scale(1)}
+  to{transform:translate3d(2%,2%,0) scale(1.06)}
+}
+
+/* тонкое кольцо-водяной знак за контентом */
+.plus-ring{
+  position:absolute;z-index:0;left:50%;top:16%;width:min(72vw,880px);aspect-ratio:1;
+  transform:translateX(-50%);
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.05);
+  pointer-events:none;
+}
+
+.plus-ring::before{
+  content:'';position:absolute;inset:11%;
+  border-radius:50%;border:1px solid rgba(255,255,255,.04);
+}
+
+.plus-hero-inner{
+  position:relative;z-index:2;
+  max-width:760px;padding:0 24px;
+  display:flex;flex-direction:column;align-items:center;
+}
+
+
+/* чип KUVION+ / статус подписки */
+.pchip{
+  display:inline-flex;align-items:center;gap:8px;
+  height:30px;padding:0 15px;border-radius:99px;
+  font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:#fff;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  box-shadow:0 6px 22px var(--accent-glow);
+  margin-bottom:22px;
+}
+
+.pchip .p-dot{width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.8)}
+
+.pchip--ok{background:rgba(74,222,128,.13);color:#86EFAC;box-shadow:none;border:1px solid rgba(74,222,128,.34)}
+
+.pchip--ok .p-dot{background:#4ADE80;box-shadow:0 0 8px rgba(74,222,128,.8)}
+
+.pchip--warn{background:rgba(250,204,21,.12);color:#FDE047;box-shadow:none;border:1px solid rgba(250,204,21,.32)}
+
+.pchip--warn .p-dot{background:#FACC15;box-shadow:0 0 8px rgba(250,204,21,.8)}
+
+.pchip--muted{background:var(--surface-2);color:var(--text-2);box-shadow:none;border:1px solid var(--border-2)}
+
+.pchip--muted .p-dot{background:var(--text-3);box-shadow:none}
+
+.pchip--muted svg{color:currentColor}
+
+
+.plus-title{
+  font-family:var(--font-display);
+  font-size:clamp(30px,4.8vw,56px);
+  line-height:1.1;letter-spacing:.2px;
+  margin-bottom:18px;
+  text-shadow:0 4px 34px rgba(0,0,0,.55);
+}
+
+/* градиентный текст — подписочная подпись страницы */
+.grad-text{
+  background:linear-gradient(100deg,var(--accent-1) 8%,var(--accent-2) 60%,#f0abfc 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+
+.plus-sub{
+  color:rgba(255,255,255,.66);font-size:15px;line-height:1.65;
+  max-width:560px;margin-bottom:26px;
+}
+
+/* быстрые факты — стеклянные пилюли */
+.plus-facts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:30px}
+
+.pf-item{
+  display:inline-flex;align-items:center;gap:7px;
+  height:32px;padding:0 13px;border-radius:99px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  font-size:12px;font-weight:600;color:rgba(255,255,255,.82);
+}
+
+.pf-item svg{color:rgba(255,255,255,.7)}
+
+
+.plus-actions{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px;margin-bottom:14px}
+
+.plus-actions .btn{height:48px;padding:0 26px;font-size:14.5px;border-radius:14px}
+
+.btn-plus-link{
+  background:none;border:0;color:var(--text-2);font-size:13.5px;font-weight:600;
+  padding:10px 14px;border-radius:10px;transition:.15s;
+  display:inline-flex;align-items:center;gap:7px;
+}
+
+.btn-plus-link:hover{background:var(--surface-2);color:#fff}
+
+.plus-note{font-size:12px;color:var(--text-3);margin-bottom:44px}
+
+.plus-note b{color:var(--text-2);font-weight:600}
+
+
+/* ---------- лента постеров (марки) ---------- */
+.pm{position:relative;z-index:1;width:100%}
+
+.pm-row{overflow:hidden;padding:5px 0;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+}
+
+.pm-track{display:flex;gap:10px;width:max-content;animation:pm-scroll 70s linear infinite}
+
+.pm-row--rev .pm-track{animation-direction:reverse;animation-duration:84s}
+
+.pm-row:hover .pm-track{animation-play-state:paused}
+
+@keyframes pm-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+.pm-track img{
+  height:126px;width:auto;aspect-ratio:2/3;object-fit:cover;object-position:center 20%;
+  border-radius:9px;flex:none;
+  opacity:.42;filter:saturate(.82);
+  border:1px solid rgba(255,255,255,.07);
+  transition:opacity .3s,filter .3s,transform .3s;
+}
+
+.pm-track img:hover{opacity:.85;filter:saturate(1.05);transform:translateY(-3px)}
+
+/* плавный уход ленты в чёрный низ страницы */
+.pm-fade{height:120px;margin-top:-6px;
+  background:linear-gradient(to top,var(--bg) 12%,transparent);
+  pointer-events:none;
+}
+
+
+/* ---------- каркас секций ---------- */
+.plus-section{padding:66px 0 8px}
+
+.plus-section--tight{padding-top:44px}
+
+.plus-frame{max-width:1080px;margin:0 auto;padding:0 var(--page-x)}
+
+.sec-eyebrow{
+  display:inline-flex;align-items:center;
+  font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:12px;
+}
+
+/* v1.3: градиентная полоска перед надписью секции убрана — заголовки
+   «Что входит / Сравнение / Тарифы / Вопросы» остаются чистым текстом */
+.sec-title{
+  font-family:var(--font-display);
+  font-size:clamp(21px,2.6vw,30px);line-height:1.2;letter-spacing:.2px;
+  margin-bottom:10px;
+}
+
+.sec-sub{font-size:14px;color:var(--text-2);line-height:1.6;max-width:620px}
+
+
+/* ---------- что входит: сетка выгод ---------- */
+.ben-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:30px}
+
+.ben-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-l);
+  padding:22px 20px;
+  transition:border-color .2s,background .2s,transform .2s;
+}
+
+.ben-card:hover{border-color:var(--border-2);background:var(--surface-2);transform:translateY(-2px)}
+
+.ben-ic{
+  width:44px;height:44px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(124,77,255,.16),rgba(217,70,239,.16));
+  border:1px solid rgba(168,85,247,.28);color:#C4B5FD;
+  margin-bottom:14px;
+}
+
+.ben-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;margin-bottom:7px}
+
+.ben-desc{font-size:13px;color:var(--text-2);line-height:1.58}
+
+.ben-soon{
+  display:inline-flex;align-items:center;height:19px;padding:0 8px;border-radius:7px;
+  background:rgba(255,255,255,.08);border:1px solid var(--border-2);
+  font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2);
+}
+
+
+/* ---------- сравнение ---------- */
+.cmp{
+  margin-top:30px;
+  border:1px solid var(--border);border-radius:var(--r-l);
+  background:var(--surface);overflow:hidden;
+}
+
+.cmp-row{display:grid;grid-template-columns:minmax(0,1fr) 148px 148px;align-items:stretch}
+
+.cmp-row+.cmp-row{border-top:1px solid var(--border)}
+
+.cmp-row--head{background:rgba(255,255,255,.025)}
+
+.ch-cell{padding:13px 16px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);display:flex;align-items:center;justify-content:center}
+
+.ch-cell--f{justify-content:flex-start}
+
+.ch-plus{
+  color:#fff;
+  background:linear-gradient(135deg,rgba(124,77,255,.16),rgba(217,70,239,.16));
+  text-shadow:none;
+}
+
+.cmp-name{padding:13px 16px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+
+.cmp-val{
+  padding:13px 12px;display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:12.5px;color:var(--text-3);border-left:1px solid var(--border);
+  gap:6px;
+  -webkit-hyphens:auto;hyphens:auto;
+}
+
+.cmp-val--plus{
+  color:#fff;font-weight:700;
+  background:rgba(168,85,247,.07);
+}
+
+.cv-yes{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(74,222,128,.14);color:#4ADE80;flex:none}
+
+.cv-no{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.05);color:rgba(255,255,255,.28);flex:none}
+
+.cmp-note{margin-top:12px;font-size:11.5px;color:var(--text-3)}
+
+
+/* кнопка «Оформить» в карточке подписки меню аккаунта: ссылка <a>,
+   центрирование переносим из инлайн-стилей в класс (v1.1), чтобы
+   динамический рендер в JS не таскал стиль с собой */
+.sub-card .sc-btn{display:inline-flex;align-items:center;justify-content:center}
+
+
+/* ---------- тарифы ---------- */
+.tar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:30px}
+
+.tar-card{
+  position:relative;
+  border:1px solid var(--border-2);border-radius:20px;
+  padding:24px 22px 22px;
+  background:var(--surface);
+  color:#fff;                      /* кнопка не наследует — задаём явно */
+  cursor:pointer;text-align:left;
+  display:flex;flex-direction:column;
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+
+.tar-card:hover{transform:translateY(-2px);border-color:var(--border-3)}
+
+.tar-card.is-on{
+  border:1.5px solid transparent;
+  background:
+    linear-gradient(rgba(10,10,12,.96),rgba(10,10,12,.96)) padding-box,
+    linear-gradient(135deg,var(--accent-1),var(--accent-2)) border-box;
+  box-shadow:0 24px 64px -18px var(--accent-glow);
+}
+
+.tar-badge{
+  position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+  height:22px;padding:0 11px;border-radius:99px;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  display:flex;align-items:center;white-space:nowrap;
+  box-shadow:0 6px 18px var(--accent-glow);
+}
+
+.tar-name{font-size:15px;font-weight:800;margin-bottom:4px}
+
+.tar-save{font-size:11.5px;font-weight:700;color:#86EFAC;margin-bottom:14px}
+
+.tar-save--none{color:var(--text-3);font-weight:500}
+
+.tar-per{display:flex;align-items:baseline;gap:6px;margin-bottom:2px}
+
+.tar-per b{font-family:var(--font-display);font-size:30px;font-weight:400;letter-spacing:.5px}
+
+.tar-per span{font-size:12.5px;color:var(--text-3)}
+
+.tar-total{font-size:12.5px;color:var(--text-2);margin-bottom:18px}
+
+.tar-btn{
+  margin-top:auto;height:40px;border-radius:11px;border:1px solid rgba(255,255,255,.32);
+  /* span во flex-колонке: без явного флекс-центрирования текст
+     прилипает к верхнему краю кнопки (правка v1.1) */
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.16);color:#fff;font-size:13px;font-weight:800;
+  transition:.18s;
+}
+
+.tar-btn:hover{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.46)}
+
+.tar-card.is-on .tar-btn{
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  border-color:transparent;box-shadow:0 8px 24px var(--accent-glow);
+}
+
+.tar-card.is-on .tar-btn:hover{filter:brightness(1.12)}
+
+.tar-check{
+  position:absolute;top:16px;right:16px;
+  width:22px;height:22px;border-radius:50%;
+  border:1.5px solid var(--border-3);
+  display:flex;align-items:center;justify-content:center;color:transparent;
+  transition:.18s;
+}
+
+.tar-card.is-on .tar-check{
+  border-color:transparent;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  color:#fff;
+}
+
+.tar-foot{margin-top:18px;font-size:12px;color:var(--text-3);line-height:1.6;text-align:center}
+
+.pay-ways{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
+
+.pw{
+  height:26px;padding:0 11px;border-radius:8px;
+  display:inline-flex;align-items:center;
+  background:var(--surface-2);border:1px solid var(--border);
+  font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--text-3);
+}
+
+
+/* ---------- управление подпиской ---------- */
+.mg-card{
+  margin-top:30px;
+  border:1px solid var(--border);border-radius:var(--r-l);
+  background:var(--surface);overflow:hidden;
+}
+
+.mg-head{
+  display:flex;flex-wrap:wrap;align-items:center;gap:14px;
+  padding:20px 22px;
+  background:
+    radial-gradient(340px 120px at 12% 0%,rgba(124,77,255,.12),transparent 70%),
+    radial-gradient(300px 110px at 88% 100%,rgba(217,70,239,.1),transparent 70%);
+}
+
+.mg-head-info{min-width:220px;flex:1}
+
+.mg-title{font-size:16px;font-weight:800;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+.mg-sub{font-size:12.5px;color:var(--text-2);margin-top:5px;line-height:1.5}
+
+.mg-sub b{color:#fff;font-weight:600}
+
+.mg-actions{display:flex;flex-wrap:wrap;gap:9px}
+
+.mg-actions .btn{height:38px;padding:0 16px;font-size:13px;border-radius:10px}
+
+
+.mg-sec{border-top:1px solid var(--border);padding:18px 22px}
+
+.mg-sec-title{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px}
+
+.hist-row{
+  display:grid;grid-template-columns:104px minmax(0,1fr) auto auto;gap:12px;align-items:center;
+  padding:11px 2px;font-size:13px;
+}
+
+.hist-row+.hist-row{border-top:1px solid var(--border)}
+
+.hi-date{color:var(--text-3);font-size:12.5px}
+
+.hi-plan{font-weight:600}
+
+.hi-sum{font-weight:700}
+
+.hi-status{
+  display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 10px;border-radius:99px;
+  background:rgba(74,222,128,.11);color:#86EFAC;font-size:11px;font-weight:700;
+}
+
+.hi-status .p-dot{width:5px;height:5px;border-radius:50%;background:#4ADE80}
+
+.mg-danger{border-top:1px solid var(--border);padding:14px 22px;display:flex;justify-content:flex-end}
+
+
+/* ---------- FAQ ---------- */
+.faq-list{margin-top:26px;border:1px solid var(--border);border-radius:var(--r-l);background:var(--surface);overflow:hidden}
+
+.faq-item+.faq-item{border-top:1px solid var(--border)}
+
+.faq-q{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:16px 20px;background:none;border:0;color:#fff;
+  font-size:14px;font-weight:700;text-align:left;
+  transition:background .15s;
+}
+
+.faq-q:hover{background:var(--surface-2)}
+
+.faq-q .fqc{
+  flex:none;width:26px;height:26px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);border:1px solid var(--border);
+  color:var(--text-2);
+  transition:transform .3s,background .2s,color .2s;
+}
+
+.faq-item.is-open .faq-q .fqc{
+  transform:rotate(180deg);
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  color:#fff;border-color:transparent;
+}
+
+.faq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .32s cubic-bezier(.2,.7,.2,1)}
+
+.faq-item.is-open .faq-a{grid-template-rows:1fr}
+
+.faq-a>div{overflow:hidden}
+
+.faq-a p{padding:0 20px 18px;font-size:13.5px;color:var(--text-2);line-height:1.65;max-width:720px}
+
+.faq-a b{color:#fff;font-weight:600}
+
+
+/* ---------- финальная панель CTA ---------- */
+.fin{
+  position:relative;overflow:hidden;
+  margin:66px auto 0;max-width:1080px;
+  border-radius:24px;padding:52px 24px;
+  text-align:center;
+  border:1px solid rgba(168,85,247,.24);
+  background:
+    radial-gradient(60% 130% at 50% -30%,rgba(124,77,255,.22),transparent 62%),
+    radial-gradient(46% 120% at 78% 120%,rgba(217,70,239,.16),transparent 60%),
+    var(--surface);
+}
+
+.fin-title{font-family:var(--font-display);font-size:clamp(20px,2.6vw,29px);margin-bottom:10px}
+
+.fin-sub{font-size:14px;color:var(--text-2);max-width:440px;margin:0 auto 24px;line-height:1.6}
+
+.fin .btn{height:48px;padding:0 26px;font-size:14.5px;border-radius:14px}
+
+.fin-note{margin-top:12px;font-size:11.5px;color:var(--text-3)}
+
+
+/* ---------- модалка оплаты ---------- */
+.pay-card{
+  width:min(430px,100%);border-radius:22px;padding:28px 26px 24px;position:relative;
+  background:rgba(11,11,14,.97);
+  border:1px solid var(--border-2);
+  box-shadow:0 40px 110px -20px rgba(0,0,0,.95);
+  animation:auth-in .3s cubic-bezier(.2,.7,.2,1);
+}
+
+.pay-close{
+  position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:10px;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;transition:.15s;
+}
+
+.pay-close:hover{background:var(--surface-3);color:#fff}
+
+.pay-title{font-size:17px;font-weight:800;text-align:center}
+
+.pay-sub{font-size:12px;color:var(--text-3);text-align:center;margin-top:4px;margin-bottom:16px}
+
+
+/* сводка выбранного тарифа */
+.pay-plan{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 14px;border-radius:14px;margin-bottom:16px;
+  background:linear-gradient(135deg,rgba(124,77,255,.14),rgba(217,70,239,.14));
+  border:1px solid rgba(168,85,247,.3);
+}
+
+.pp-name{font-size:13.5px;font-weight:700}
+
+.pp-note{font-size:11px;color:rgba(255,255,255,.72);margin-top:3px}
+
+.pp-sum{font-family:var(--font-display);font-size:21px;white-space:nowrap}
+
+.pp-sum span{font-size:11px;font-family:var(--font-body);color:rgba(255,255,255,.72);display:block;text-align:right;font-weight:600}
+
+
+.pay-tabs{display:flex;gap:3px;padding:3px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);margin-bottom:16px}
+
+.pay-tabs button{
+  flex:1;height:34px;border-radius:9px;border:0;background:none;
+  font-size:13px;font-weight:700;color:var(--text-2);transition:.15s;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+
+.pay-tabs button.is-on{background:#fff;color:#000}
+
+
+/* поля формы — та же дисциплина, что у авторизации */
+.pay-field{margin-bottom:11px}
+
+.pay-field label{display:block;font-size:11.5px;font-weight:600;color:var(--text-3);margin-bottom:6px}
+
+.pay-field input{
+  width:100%;height:44px;border-radius:12px;padding:0 14px;
+  background:var(--surface-2);border:1px solid var(--border-2);color:#fff;font-size:14px;
+  transition:border-color .2s,box-shadow .2s;
+}
+
+.pay-field input:focus{outline:none;border-color:rgba(255,255,255,.36);box-shadow:0 0 0 4px rgba(255,255,255,.05)}
+
+.pay-field input::placeholder{color:var(--text-3)}
+
+.pay-field input[inputmode="numeric"]{letter-spacing:.06em}
+
+.pay-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.pay-hint{font-size:10.5px;color:var(--text-3);text-align:center;margin-top:12px;line-height:1.5}
+
+
+/* СБП: QR-заглушка */
+.pay-qr{
+  display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 0 6px;
+}
+
+.qr-box{
+  width:168px;height:168px;border-radius:18px;position:relative;
+  background:
+    repeating-conic-gradient(rgba(255,255,255,.85) 0 25%,transparent 0 50%) 0 0/14px 14px,
+    #0d0d10;
+  border:1px solid var(--border-2);
+  box-shadow:inset 0 0 0 8px #0d0d10, inset 0 0 0 9px var(--border-3);
+}
+
+.qr-box::after{
+  content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  box-shadow:0 0 0 5px #0d0d10;
+}
+
+.qr-cap{font-size:12.5px;color:var(--text-2);text-align:center;line-height:1.55;max-width:250px}
+
+.qr-cap b{color:#fff;font-weight:600}
+
+
+/* состояния кнопки оплаты */
+.btn-pay{width:100%;height:46px;margin-top:6px}
+
+.btn-pay[disabled]{opacity:.45;cursor:not-allowed;filter:grayscale(.3)}
+
+.btn-pay .spin{
+  width:16px;height:16px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
+  animation:spin .7s linear infinite;display:none;
+}
+
+.btn-pay.is-busy .spin{display:block}
+
+.btn-pay.is-busy .bp-label{opacity:.75}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+
+/* экран успеха */
+.pay-ok{display:flex;flex-direction:column;align-items:center;text-align:center;padding:12px 0 4px}
+
+.po-ic{
+  width:64px;height:64px;border-radius:50%;margin-bottom:16px;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  box-shadow:0 14px 44px var(--accent-glow);
+  display:flex;align-items:center;justify-content:center;color:#fff;
+}
+
+.po-title{font-size:18px;font-weight:800;margin-bottom:8px}
+
+.po-text{font-size:13px;color:var(--text-2);line-height:1.6;max-width:280px;margin-bottom:20px}
+
+.po-text b{color:#fff;font-weight:600}
+
+.po-actions{display:flex;gap:10px;width:100%}
+
+.po-actions .btn{flex:1;height:42px;font-size:13.5px}
+
+
+/* модалка отмены — как подтверждение выхода, но с плюсом */
+.cancel-card{
+  width:min(390px,100%);border-radius:20px;padding:26px;text-align:center;
+  background:rgba(11,11,14,.97);
+  border:1px solid var(--border-2);
+  box-shadow:0 40px 110px -20px rgba(0,0,0,.95);
+  animation:auth-in .25s cubic-bezier(.2,.7,.2,1);
+}
+
+.cancel-ic{
+  width:52px;height:52px;border-radius:16px;margin:0 auto 14px;
+  background:linear-gradient(135deg,rgba(124,77,255,.16),rgba(217,70,239,.16));
+  border:1px solid rgba(168,85,247,.32);color:#C4B5FD;
+  display:flex;align-items:center;justify-content:center;
+}
+
+.cancel-card h3{font-size:16.5px;font-weight:800}
+
+.cancel-card p{margin-top:8px;font-size:13px;color:var(--text-2);line-height:1.58}
+
+.cancel-card p b{color:#fff;font-weight:600}
+
+.cancel-actions{display:flex;gap:10px;margin-top:20px}
+
+.cancel-actions .btn{flex:1;height:42px;font-size:13.5px}
+
+
+/* ---------- рамка KUVION+ у аватара ---------- */
+.avatar-core{position:relative}
+
+.avatar-core.is-plus{
+  box-shadow:0 0 0 2px #0a0a0c,0 0 0 3.5px var(--accent-2),0 0 16px var(--accent-glow);
+}
+
+.avatar-core.is-plus::after{
+  content:'+';position:absolute;right:-3px;bottom:-3px;
+  width:15px;height:15px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  color:#fff;font-size:10px;font-weight:800;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px #0a0a0c;
+  font-family:var(--font-body);
+}
+
+/* бейдж в меню аккаунта */
+.acct-plus{
+  display:inline-flex;align-items:center;gap:5px;height:18px;padding:0 7px;border-radius:6px;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+  font-size:9px;font-weight:800;letter-spacing:.1em;color:#fff;
+  vertical-align:middle;
+}
+
+
+/* гости: приветственная плашка в hero */
+.plus-guest-note{
+  display:none;align-items:center;gap:10px;margin-top:2px;
+  font-size:12.5px;color:var(--text-3);
+}
+
+body.is-guest .plus-guest-note{display:flex}
+
+body.is-guest .plus-user-note{display:none}
+
+
+@media (prefers-reduced-motion:reduce){
+  .pm-track{animation:none}
+  .plus-hero::before{animation:none}
+}
+
+/* ============ АДАПТИВ ============ */
+@media (max-width:1240px){
+  .s-kbd{display:none}
+}
+
+/* средние ширины: центрированный поиск не должен наезжать на правую
+   навигацию — «Мой список» прячется (он доступен в меню аккаунта,
+   drawer и футере), пилюля поиска сжимается до свободного места */
+@media (max-width:1560px) and (min-width:1081px){
+  .main-nav [data-nav="mylist"],#navRandom{display:none}   /* «Мой список» и «Случайное» уступают место «Подборкам» — оба доступны в бургере */
+  .search-fake{width:max(200px,min(360px,calc(100vw - 1000px)))}
+}
+
+@media (max-width:1080px){
+  .main-nav{gap:14px}
+  #navRandom,#navMyList,.main-nav [data-nav="mylist"],.main-nav [data-nav="colls"]{display:none}   /* второстепенные ссылки уходят в бургер */
+  .main-nav .nav-link[data-nav="manga"]{display:none}                /* раздел «Скоро» прячется первым */
+  .search-fake{width:min(300px,28vw)}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+
+@media (max-width:930px){
+  .search-fake{width:220px}
+}
+
+@media (max-width:860px){
+  .main-nav{display:none}
+  #btnBurger{display:inline-flex}
+  .header-inner{gap:10px}
+  .h-left{gap:12px}
+  .h-right{gap:10px}
+  .logo{font-size:18px}
+  .search-fake{display:none}
+  #hdrSearchIcon{display:inline-flex}
+  .hero{height:64vh;min-height:460px}
+  .hero-content{padding-bottom:96px}
+  .hero-dots{right:auto;left:var(--page-x);bottom:22px}
+  .row-head{flex-wrap:wrap;gap:8px}
+  .row-arrows{display:none}   /* на таче свайп и так работает */
+  .soon-banner{flex-direction:column;align-items:flex-start;gap:14px;padding:22px}
+  .cw-guest{flex-direction:column;align-items:flex-start;gap:14px}
+  .bottom-nav{display:flex}
+  #toasts{bottom:84px;right:12px}
+  .lab{right:12px;bottom:78px}
+  .footer-grid{grid-template-columns:1fr}
+  footer{padding-bottom:130px}
+  .sov-panel{margin-top:6vh}
+  .preview{display:none!important} /* на тач-устройствах превью не нужно */
+}
+
+
+/* дисциплина движения: меньше анимации тем, кто её не просил */
+@media (prefers-reduced-motion:reduce){
+  #grain{animation:none}
+  .hero-slide.is-active img.hero-bg{animation:none}
+  .preview{transition:none}
+  .preview.waving .pv-wave::before,.pv-media.waving::after{animation:none}
+  .sov-panel.is-searching::after,.sov-spin,.sov-sk-img,.sov-sk-ln i,.sov-sk-side,.srs-sk-img,.srs-sk-ln i,.srs-sk-side{animation:none}
+  .pv-video img{animation:none}
+  .pv-media.is-trailer:not(.is-paused) .pv-vbar span{animation:none}
+  *{scroll-behavior:auto}
+}
+
+
+/* ============ АДАПТИВ: KUVION+ ============ */
+/* якоря не прячутся под липкой шапкой */
+#benefits,#compare,#tariffs,#manage,#faq{scroll-margin-top:84px}
+
+
+@media (max-width:1060px){
+  .tar-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .tar-card{padding:20px 16px 16px}
+  .tar-per b{font-size:26px}
+}
+
+@media (max-width:900px){
+  .plus-hero{min-height:500px;padding-top:calc(var(--header-h) + 40px)}
+  .plus-section{padding:48px 0 6px}
+  .pm-track img{height:104px}
+  .cmp-row{grid-template-columns:minmax(0,1fr) 104px 104px}
+  .cmp-name{font-size:12.5px;padding:11px 12px}
+  .cmp-val{font-size:11.5px;padding:11px 8px}
+  .ch-cell{font-size:10px;padding:11px 10px}
+}
+
+@media (max-width:720px){
+  .plus-hero{min-height:460px}
+  .plus-title{font-size:clamp(27px,8.4vw,36px)}
+  .plus-sub{font-size:14px}
+  .plus-actions{flex-direction:column;gap:9px;width:100%;max-width:340px}
+  .plus-actions .btn{width:100%}
+  .plus-facts{gap:6px}
+  .pf-item{height:29px;padding:0 11px;font-size:11px}
+  .pm-track img{height:92px}
+  .plus-section{padding:42px 0 4px}
+  .sec-title{font-size:20px}
+  .ben-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .ben-card{padding:17px 15px}
+  .ben-ic{width:38px;height:38px;border-radius:11px;margin-bottom:11px}
+  .ben-ic svg{width:17px;height:17px}
+  .ben-title{font-size:13.5px}
+  .ben-desc{font-size:12px}
+  .tar-grid{grid-template-columns:1fr;gap:22px}
+  .tar-card{flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 14px;padding:18px 16px 16px}
+  .tar-badge{left:18px;transform:none}
+  .tar-name{width:100%;margin-bottom:0}
+  .tar-save{margin-bottom:8px}
+  .tar-per{margin-left:auto}
+  .tar-per b{font-size:27px}
+  .tar-total{width:100%;margin-bottom:12px}
+  .tar-btn{width:100%;margin-top:4px}
+  .tar-check{top:14px;right:14px}
+  .cmp-row{grid-template-columns:minmax(0,1fr) 100px 100px}
+  .mg-head{padding:16px}
+  .mg-actions{width:100%}
+  .mg-actions .btn{flex:1;min-width:0;padding:0 10px}
+  .mg-sec{padding:14px 16px}
+  .hist-row{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"d st" "p s";row-gap:4px}
+  .hi-date{grid-area:d}
+  .hi-status{grid-area:st;justify-self:end}
+  .hi-plan{grid-area:p;color:var(--text-2)}
+  .hi-sum{grid-area:s;justify-self:end}
+  .fin{padding:38px 18px;margin-top:46px;border-radius:20px}
+  .faq-q{padding:14px 16px;font-size:13px}
+  .faq-a p{padding:0 16px 15px;font-size:12.5px}
+  .pay-card{padding:22px 18px 18px}
+  .po-actions{flex-direction:column}
+  /* запас снизу: контент уходит за плавающую «Лабораторию»
+     и мобильную нижнюю панель — последняя кнопка не прячется */
+  .plus-page{padding-bottom:150px}
+  .tar-btn{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.38)}
+}
+
+@media (max-width:430px){
+  .pm-track img{height:78px}
+  .cmp-row{grid-template-columns:minmax(0,1fr) 112px 112px}
+  .cmp-val{font-size:11px}
+  .ch-cell{letter-spacing:.04em}
+}
+
+
+/* лаборатория: подпись и контрол в две строки на любой ширине —
+   кнопки сегментов никогда не вылезают за пилюлю (общий фикс
+   каркаса v4; сегмент растягивается на всю строку панели) */
+.lab-row{flex-wrap:wrap}
+
+.lab-row>div:first-child{min-width:100%}
+
+.lab-row .seg{width:100%!important}
+
+.lab-row .swatches{width:auto}
+
+</style>
+</head>
+
+<body data-btnwatch="solid" data-displayfont="dela">
+
+<div id="grain" aria-hidden="true"></div>
+<script>
+/* зерно: уважаем выбор из «Настроек» (kuvion_appearance_v1);
+   тумблер «Лаборатории» по-прежнему работает поверх — он сессионный */
+try{if(localStorage.getItem('kuvion_appearance_v1')==='grain-off'){
+  document.body.classList.add('no-grain');
+  addEventListener('DOMContentLoaded',function(){
+    var s=document.getElementById('grainSwitch');
+    if(s)s.classList.remove('is-on');
+  });
+}}catch(e){}
+</script>
+<script>
+/* размер карточек: уважаем выбор из «Настроек» (kuvion_cardsize_v1);
+   сегмент «Лаборатории» работает поверх — он сессионный */
+try{var __cs=localStorage.getItem('kuvion_cardsize_v1');
+if(__cs==='s'||__cs==='l'){
+  document.body.dataset.cardsize=__cs;
+  addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('#sizeSeg button').forEach(function(b){
+      b.classList.toggle('is-on',b.dataset.cardsize===__cs);
+    });
+  });
+}}catch(e){}
+</script>
+<div id="toasts" aria-live="polite"></div>
+
+<!-- ================= ШАПКА ================= -->
+<header class="app-header" id="appHeader">
+  <div class="header-inner">
+
+    <!-- левая зона: логотип + основная навигация -->
+    <div class="h-left">
+      <button id="btnBurger" class="icobtn" aria-label="Открыть меню">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <a href="#" class="logo" data-stub="Главная">Kuvion</a>
+      <nav class="main-nav" aria-label="Основная навигация">
+        <a href="/" class="nav-link" data-nav="home">Главная</a>
+        <a href="/catalog/" class="nav-link" data-nav="catalog">Каталог</a>
+        <a href="#" class="nav-link" id="navRandom" data-stub="Случайное">Случайное</a>
+        <a href="/collections/" class="nav-link" data-nav="colls">Подборки</a>
+      </nav>
+    </div>
+
+    <!-- центр: поиск строго по середине шапки -->
+    <div class="h-center">
+      <button class="search-fake" id="searchOpen" aria-label="Открыть поиск">
+        <span class="s-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </span>
+        <span class="sf-ph">Поиск фильмов, сериалов, аниме…</span>
+        <span class="s-kbd">Ctrl K</span>
+      </button>
+      <button class="icobtn" id="hdrSearchIcon" aria-label="Поиск">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+
+    <!-- правая зона: разделы + аккаунт -->
+    <div class="h-right">
+      <nav class="main-nav" aria-label="Разделы">
+        <a href="/mylist/" class="nav-link" data-nav="mylist">Мой список</a>
+        <a href="/catalog/?type=anime" class="nav-link" data-nav="anime">Аниме</a>
+        <a href="/schedule/" class="nav-link" data-nav="sched">Расписание</a>
+        <a href="/manga/" class="nav-link" data-nav="manga">Манга</a>
+      </nav>
+
+      <div class="header-right">
+
+        <!-- Уведомления -->
+        <div style="position:relative" id="userArea">
+          <button class="icobtn" id="bellBtn" aria-label="Уведомления" aria-expanded="false">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="bell-badge" id="bellBadge">2</span>
+          </button>
+
+          <div class="dd bell-dd dd-right hidden" id="bellDd" role="menu">
+            <div class="bell-head">
+              <span class="bell-title">Уведомления</span>
+              <button class="bell-clear" id="bellClear">Отметить прочитанными</button>
+            </div>
+<div class="bell-list" id="bellList"></div>
+            <a class="bell-all" href="/notifications/" id="bellAll"><span>Все уведомления</span><span class="bell-all-n" id="bellAllN"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+          </div>
+        </div>
+
+        <span class="a-divider" id="userDivider"></span>
+
+        <!-- Аватар: клик открывает меню (как на YouTube) -->
+        <div style="position:relative" id="avatarWrap">
+          <button class="avatar-btn" id="avatarBtn" aria-label="Аккаунт" aria-expanded="false">
+            <span class="avatar-core" id="avatarCore">D</span>
+          </button>
+
+          <div class="dd acct-dd dd-right hidden" id="acctDd" role="menu">
+            <div class="acct-head">
+              <span class="avatar-core" id="avatarCoreMenu">D</span>
+              <div style="min-width:0">
+                <p class="acct-name" id="acctName">danil</p>
+                <p class="acct-handle"><span class="acct-dot"></span>в сети</p>
+              </div>
+            </div>
+            <div class="dd-sep"></div>
+            <a class="dd-item" href="/profile/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Мой профиль
+            </a>
+            <a class="dd-item" href="/mylist/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H3"/><path d="M10 12H3"/><path d="M10 19H3"/><path d="m15 12 5 3-5 3z"/></svg>
+              Мой список
+            </a>
+            <a class="dd-item" href="/settings/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              Настройки
+            </a>
+
+            <div class="dd-sep"></div>
+
+            <div class="sub-card">
+              <p class="sc-name">Kuvion+</p>
+              <p class="sc-desc">Без рекламы, 4K-качество и ранний доступ к главам манги</p>
+              <a class="sc-btn" href="#tariffs">Оформить</a>
+            </div>
+
+            <div class="dd-sep"></div>
+            <button class="dd-item dd-item--danger" id="logoutBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+              Выйти
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-cta btn-login hidden" id="loginBtn">Войти</button>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- ================= KUVION+ (страница подписки) ================= -->
+<main class="plus-page" style="padding-bottom:64px">
+
+  <!-- HERO: градиентное свечение, чип статуса, лента постеров -->
+  <section class="plus-hero">
+    <div class="plus-ring" aria-hidden="true"></div>
+    <div class="plus-hero-inner">
+
+      <span class="pchip" id="plusChip"><span class="p-dot"></span>Kuvion+</span>
+
+      <h1 class="plus-title">Больше кино.<br><span class="grad-text">Ноль рекламы.</span></h1>
+
+      <p class="plus-sub">Подписка Kuvion+ выключает рекламу, поднимает качество до 4K&nbsp;HDR и открывает ранний доступ к главам манги — во всех разделах, на всех ваших устройствах.</p>
+
+      <div class="plus-facts">
+        <span class="pf-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          До 4K HDR
+        </span>
+        <span class="pf-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/></svg>
+          Без рекламы
+        </span>
+        <span class="pf-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Ранний доступ к манге
+        </span>
+        <span class="pf-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="13" height="10" rx="2"/><rect x="9" y="9" width="13" height="10" rx="2"/></svg>
+          Все устройства
+        </span>
+      </div>
+
+      <div class="plus-actions" id="plusActions"><!-- рендерит JS по состоянию --></div>
+
+      <p class="plus-note plus-user-note">Первые <b>7 дней бесплатно</b>, дальше — от <b>199 ₽ в месяц</b>. Отмена в любой момент.</p>
+      <p class="plus-guest-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Подписка привязана к аккаунту — войдите, чтобы оформить и сохранить прогресс
+      </p>
+    </div>
+
+    <!-- лента постеров: цвет несут обложки, градиент — только акценты -->
+    <div class="pm" aria-hidden="true">
+      <div class="pm-row"><div class="pm-track" id="pmTrackA"></div></div>
+      <div class="pm-row pm-row--rev"><div class="pm-track" id="pmTrackB"></div></div>
+      <div class="pm-fade"></div>
+    </div>
+  </section>
+
+  <!-- ЧТО ВХОДИТ -->
+  <section class="plus-section" id="benefits">
+    <div class="plus-frame">
+      <p class="sec-eyebrow">Что входит</p>
+      <h2 class="sec-title">Всё, что меняет просмотр</h2>
+      <p class="sec-sub">Шесть причин оформить Kuvion+ — и ни одной, которая мешала бы смотреть бесплатно: базовый Kuvion остаётся полным.</p>
+
+      <div class="ben-grid">
+        <div class="ben-card">
+          <div class="ben-ic">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/></svg>
+          </div>
+          <p class="ben-title">Без рекламы</p>
+          <p class="ben-desc">Ни преролов, ни баннеров, ни пауз «реклама после серии», ни рекламных экранов перед главами манги. Ничего между вами и историей.</p>
+        </div>
+        <div class="ben-card">
+          <div class="ben-ic">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>
+          </div>
+          <p class="ben-title">4K и HDR</p>
+          <p class="ben-desc">Максимальное качество, которое отдаёт источник: до 2160p, расширенный цвет и стабильный битрейт без просадок.</p>
+        </div>
+        <div class="ben-card">
+          <div class="ben-ic">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <p class="ben-title">Ранний доступ к манге</p>
+          <p class="ben-desc">Свежие главы — на три дня раньше бесплатного релиза. Сериалы и фильмы показываем всем сразу в день выхода: искусственных задержек не делаем.</p>
+        </div>
+        <div class="ben-card">
+          <div class="ben-ic">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </div>
+          <p class="ben-title">Загрузка эпизодов <span class="ben-soon">Скоро</span></p>
+          <p class="ben-desc">Сохраняйте серии на телефон и планшет — и смотрите в метро и самолёте без интернета.</p>
+        </div>
+        <div class="ben-card">
+          <div class="ben-ic">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="13" height="10" rx="2"/><rect x="9" y="9" width="13" height="10" rx="2"/></svg>
+          </div>
+          <p class="ben-title">Все устройства</p>
+          <p class="ben-desc">Подписка привязана к аккаунту, а не к устройству: телефон, планшет, компьютер и телевизор — везде, где вы вошли, Kuvion+ уже включён. Без привязки, доплат и счётчика экранов.</p>
+        </div>
+        <div class="ben-card">
+          <div class="ben-ic">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6 4.6 1.9-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/><path d="M19 15v6"/><path d="M16 18h6"/></svg>
+          </div>
+          <p class="ben-title">Профиль с плюсом</p>
+          <p class="ben-desc">Градиентная рамка аватара, бейдж KUVION+ рядом с ником и приоритетная поддержка — вопросы решаем первыми.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- СРАВНЕНИЕ -->
+  <section class="plus-section" id="compare">
+    <div class="plus-frame">
+      <p class="sec-eyebrow">Сравнение</p>
+      <h2 class="sec-title">Бесплатный Kuvion и Kuvion+</h2>
+
+      <div class="cmp">
+        <div class="cmp-row cmp-row--head">
+          <span class="ch-cell ch-cell--f">Возможность</span>
+          <span class="ch-cell">Kuvion</span>
+          <span class="ch-cell ch-plus">Kuvion+</span>
+        </div>
+        <div class="cmp-row">
+          <span class="cmp-name">Максимальное качество</span>
+          <span class="cmp-val">1080p</span>
+          <span class="cmp-val cmp-val--plus">4K HDR</span>
+        </div>
+        <div class="cmp-row">
+          <span class="cmp-name">Реклама</span>
+          <span class="cmp-val">Баннеры и прероллы</span>
+          <span class="cmp-val cmp-val--plus"><span class="cv-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Выключена</span>
+        </div>
+        <div class="cmp-row">
+          <span class="cmp-name">Ранний доступ к главам манги</span>
+          <span class="cmp-val"><span class="cv-no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+          <span class="cmp-val cmp-val--plus"><span class="cv-yes"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>За 3 дня</span>
+        </div>
+        <div class="cmp-row">
+          <span class="cmp-name">Загрузка эпизодов</span>
+          <span class="cmp-val"><span class="cv-no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+          <span class="cmp-val cmp-val--plus">Скоро</span>
+        </div>
+        <div class="cmp-row">
+          <span class="cmp-name">Бейдж и рамка профиля</span>
+          <span class="cmp-val"><span class="cv-no"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+          <span class="cmp-val cmp-val--plus">KUVION+</span>
+        </div>
+        <div class="cmp-row">
+          <span class="cmp-name">Поддержка</span>
+          <span class="cmp-val">Обычная очередь</span>
+          <span class="cmp-val cmp-val--plus">Приоритетная</span>
+        </div>
+      </div>
+      <p class="cmp-note">Списки, прогресс, подборки и оценки не зависят от подписки — они остаются с вами в любом случае.</p>
+    </div>
+  </section>
+
+  <!-- ТАРИФЫ -->
+  <section class="plus-section" id="tariffs">
+    <div class="plus-frame">
+      <p class="sec-eyebrow">Тарифы</p>
+      <h2 class="sec-title">Выберите период</h2>
+      <p class="sec-sub">Один Kuvion+ — на все разделы: фильмы, сериалы, аниме и мангу. Чем длиннее период, тем дешевле месяц.</p>
+
+      <div class="tar-grid" id="tarGrid">
+        <button class="tar-card" data-plan="month" type="button">
+          <span class="tar-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <p class="tar-name">Месяц</p>
+          <p class="tar-save tar-save--none">гибкий вариант</p>
+          <p class="tar-per"><b>299 ₽</b><span>/мес</span></p>
+          <p class="tar-total">299 ₽ списывается ежемесячно</p>
+          <span class="tar-btn">Оформить</span>
+        </button>
+        <button class="tar-card" data-plan="q" type="button">
+          <span class="tar-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <p class="tar-name">3 месяца</p>
+          <p class="tar-save">−10%</p>
+          <p class="tar-per"><b>269 ₽</b><span>/мес</span></p>
+          <p class="tar-total">807 ₽ раз в 3 месяца</p>
+          <span class="tar-btn">Оформить</span>
+        </button>
+        <button class="tar-card is-on" data-plan="year" type="button">
+          <span class="tar-badge">Выгоднее всего</span>
+          <span class="tar-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <p class="tar-name">Год</p>
+          <p class="tar-save">−33% · 2 месяца в подарок</p>
+          <p class="tar-per"><b>199 ₽</b><span>/мес</span></p>
+          <p class="tar-total">2 388 ₽ раз в год</p>
+          <span class="tar-btn">Оформить</span>
+        </button>
+      </div>
+
+      <p class="tar-foot">Продление — автоматически в конце периода. Отмена в один клик в любой момент: Kuvion+ продолжит работать до конца оплаченного срока. Цены — демо-макета.</p>
+      <div class="pay-ways">
+        <span class="pw">МИР</span><span class="pw">VISA</span><span class="pw">MASTERCARD</span><span class="pw">СБП</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- УПРАВЛЕНИЕ (только при активной подписке) -->
+  <section class="plus-section hidden" id="manage">
+    <div class="plus-frame">
+      <p class="sec-eyebrow">Подписка</p>
+      <h2 class="sec-title">Управление Kuvion+</h2>
+
+      <div class="mg-card">
+        <div class="mg-head">
+          <div class="mg-head-info">
+            <p class="mg-title">
+              <span class="pchip pchip--ok" id="mgChip"><span class="p-dot"></span>Активна</span>
+            </p>
+            <p class="mg-sub" id="mgSub">Действует до <b>12 августа 2027</b> · продлится автоматически · Visa •• 4242</p>
+          </div>
+          <div class="mg-actions" id="mgActions"><!-- рендерит JS --></div>
+        </div>
+
+        <div class="mg-sec">
+          <p class="mg-sec-title">История платежей</p>
+          <div class="hist-row">
+            <span class="hi-date">12.08.2026</span>
+            <span class="hi-plan">Год · 2 388 ₽</span>
+            <span class="hi-sum">Visa •• 4242</span>
+            <span class="hi-status"><span class="p-dot"></span>Оплачено</span>
+          </div>
+          <div class="hist-row">
+            <span class="hi-date">12.08.2025</span>
+            <span class="hi-plan">Год · 2 388 ₽</span>
+            <span class="hi-sum">Visa •• 4242</span>
+            <span class="hi-status"><span class="p-dot"></span>Оплачено</span>
+          </div>
+          <div class="hist-row">
+            <span class="hi-date">12.02.2025</span>
+            <span class="hi-plan">3 месяца · 807 ₽</span>
+            <span class="hi-sum">Visa •• 4242</span>
+            <span class="hi-status"><span class="p-dot"></span>Оплачено</span>
+          </div>
+          <div class="hist-row">
+            <span class="hi-date">12.11.2024</span>
+            <span class="hi-plan">Месяц · 299 ₽</span>
+            <span class="hi-sum">СБП</span>
+            <span class="hi-status"><span class="p-dot"></span>Оплачено</span>
+          </div>
+        </div>
+
+        <div class="mg-danger" id="mgDanger">
+          <button class="btn btn-danger" id="mgCancel" type="button">Отменить подписку</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="plus-section" id="faq">
+    <div class="plus-frame">
+      <p class="sec-eyebrow">Вопросы</p>
+      <h2 class="sec-title">Частые вопросы</h2>
+
+      <div class="faq-list" id="faqList">
+        <div class="faq-item">
+          <button class="faq-q" type="button">
+            Можно ли отменить подписку в любой момент?
+            <span class="fqc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div><p>Да — <b>отмена в один клик</b> на этой странице или в настройках. Подписка продолжит работать до конца оплаченного периода, деньги не сгорают: купили год в августе — смотрите до следующего августа.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">
+            Что будет с моими списками, если подписка закончится?
+            <span class="fqc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div><p><b>Ничего не пропадёт.</b> «Мой список», прогресс серий и глав, подборки, оценки и настройки — часть аккаунта, а не подписки. Kuvion+ влияет только на рекламу, качество и ранний доступ к главам манги.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">
+            Какие способы оплаты есть?
+            <span class="fqc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div><p>Банковские карты (МИР, Visa, Mastercard) и <b>СБП</b> — по QR из приложения банка. Списываем ту же карту при продлении; сменить способ можно в любой момент в разделе «Управление».</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">
+            На скольких устройствах работает Kuvion+?
+            <span class="fqc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div><p>Подписка привязана к аккаунту, а не к устройству: телефон, планшет, компьютер и телевизор — <b>без доплаты и без лимита на количество устройств</b>, Kuvion+ включён везде, где вы вошли. Лимиты «одновременных экранов» у больших стримингов — защита от передачи аккаунта чужим людям; для вашего аккаунта они не нужны.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">
+            Есть ли пробный период?
+            <span class="fqc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div><p>Да, <b>7 дней бесплатно</b> при первом оформлении. Первое списание — через неделю, напомним за день до него push-уведомлением. Не понравилось — отменяйте до списания, ничего не спишется.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" type="button">
+            Kuvion+ работает в разделе манги?
+            <span class="fqc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div><p>Да: подписка — на весь сервис, включая мангу. Без Kuvion+ в читалке показывается рекламный экран перед открытием главы и баннеры между страницами длинных глав; с Kuvion+ рекламы нет, а новые главы открываются на три дня раньше. Сама читалка, прогресс и списки чтения бесплатны для всех.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ФИНАЛЬНЫЙ CTA -->
+  <div class="plus-frame">
+    <div class="fin" id="finCta">
+      <p class="fin-title" id="finTitle">Неделя <span class="grad-text">в плюс</span> — бесплатно</p>
+      <p class="fin-sub" id="finSub">Оформите Kuvion+ сегодня: первое списание — через 7 дней, отмена — в один клик, а прогресс останется с вами в любом случае.</p>
+      <button class="btn btn-cta" id="finBtn" type="button">Попробовать 7 дней бесплатно</button>
+      <p class="fin-note" id="finNote">Потом — от 199 ₽ в месяц · отмена в любой момент</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- ================= МОДАЛКА ОПЛАТЫ ================= -->
+<div class="modal-overlay hidden" id="payModal" role="dialog" aria-modal="true" aria-label="Оформление Kuvion+">
+  <div class="pay-card">
+    <button class="pay-close" id="payClose" aria-label="Закрыть">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+
+    <!-- форма -->
+    <div id="payForm">
+      <p class="pay-title" id="payTitle">Оформление Kuvion+</p>
+      <p class="pay-sub" id="paySub">Годовой тариф · продление автоматически</p>
+
+      <div class="pay-plan" id="payPlan">
+        <div>
+          <p class="pp-name" id="ppName">Год</p>
+          <p class="pp-note" id="ppNote">2 388 ₽ раз в год · −33%</p>
+        </div>
+        <p class="pp-sum" id="ppSum">2 388 ₽</p>
+      </div>
+
+      <div class="pay-tabs" id="payTabs">
+        <button class="is-on" data-ptab="card" type="button">Карта</button>
+        <button data-ptab="sbp" type="button">СБП</button>
+      </div>
+
+      <div id="ptabCard">
+        <div class="pay-field">
+          <label for="pcNum">Номер карты</label>
+          <input id="pcNum" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" maxlength="19">
+        </div>
+        <div class="pay-row2">
+          <div class="pay-field">
+            <label for="pcExp">Срок</label>
+            <input id="pcExp" inputmode="numeric" autocomplete="cc-exp" placeholder="ММ/ГГ" maxlength="5">
+          </div>
+          <div class="pay-field">
+            <label for="pcCvc">CVC</label>
+            <input id="pcCvc" type="password" inputmode="numeric" autocomplete="cc-csc" placeholder="•••" maxlength="3">
+          </div>
+        </div>
+      </div>
+
+      <div id="ptabSbp" class="hidden">
+        <div class="pay-qr">
+          <div class="qr-box"></div>
+          <p class="qr-cap">Отсканируйте QR в приложении банка.<br><b>Или просто нажмите «Я оплатил»</b> — это демо-макет.</p>
+        </div>
+      </div>
+
+      <button class="btn btn-cta btn-pay" id="payGo" type="button" disabled>
+        <span class="spin"></span>
+        <span class="bp-label" id="payGoLabel">Оплатить 2 388 ₽</span>
+      </button>
+      <p class="pay-hint" id="payHint">Демо-оплата: данные никуда не отправляются. Продление автоматическое — отменить можно в любой момент.</p>
+    </div>
+
+    <!-- успех -->
+    <div id="payOk" class="pay-ok hidden">
+      <div class="po-ic">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <p class="po-title" id="poTitle">Готово — вы с Kuvion+</p>
+      <p class="po-text" id="poText">Подписка активна. Реклама уже выключена, качество поднимется там, где источник отдаёт 4K.</p>
+      <div class="po-actions">
+        <a class="btn btn-ghost" href="/catalog/">Смотреть что-нибудь</a>
+        <button class="btn btn-cta" id="payOkClose" type="button">Готово</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ОТМЕНА ПОДПИСКИ ================= -->
+<div class="modal-overlay hidden" id="cancelModal" role="dialog" aria-modal="true" aria-label="Отмена подписки">
+  <div class="cancel-card">
+    <div class="cancel-ic">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6 4.6 1.9-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/><path d="M19 15v6"/><path d="M16 18h6"/></svg>
+    </div>
+    <h3>Отменить Kuvion+?</h3>
+    <p id="cancelText">Подписка продолжит работать <b>до конца оплаченного периода</b> — потом вернётесь на бесплатный Kuvion. Списки, прогресс и подборки не затронет.</p>
+    <div class="cancel-actions">
+      <button class="btn btn-ghost" id="cancelKeep" type="button">Оставить</button>
+      <button class="btn btn-danger" id="cancelGo" type="button">Отменить подписку</button>
+    </div>
+  </div>
+</div>
+<!-- ================= ФУТЕР ================= -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <p class="footer-logo">Kuvion</p>
+      <p class="footer-tag">Фильмы, сериалы, аниме и манга в одном месте. Всё, что вы смотрите и читаете, всегда под рукой.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Разделы</h4>
+      <a href="/">Главная</a>
+      <a href="/catalog/">Каталог</a>
+      <a href="/catalog/?type=anime">Аниме</a>
+      <a href="/manga/">Манга</a>
+      <a href="/schedule/">Расписание</a>
+      <a href="/collections/">Подборки</a>
+    </div>
+    <div class="footer-col">
+      <h4>Аккаунт</h4>
+      <a href="/profile/">Профиль</a>
+      <a href="/mylist/">Мой список</a>
+      <a href="/notifications/">Уведомления</a>
+      <a href="/settings/">Настройки</a>
+      <a href="/plus/">Kuvion+</a>
+    </div>
+    <div class="footer-col">
+      <h4>Проект</h4>
+      <a href="#" data-stub="О проекте">О проекте</a>
+      <a href="#" data-stub="Поддержка">Поддержка</a>
+      <a href="#" data-stub="Telegram">Telegram</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Kuvion</span>
+    <span class="footer-version">Демо-прототип интерфейса</span>
+  </div>
+</footer>
+
+<!-- ================= АВТОРИЗАЦИЯ: вход + регистрация в 3 шага ================= -->
+<div class="modal-overlay hidden" id="authModal" role="dialog" aria-modal="true" aria-label="Вход в Kuvion">
+  <div class="auth-card">
+    <button class="auth-close" id="authClose" aria-label="Закрыть"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    <p class="auth-logo">Kuvion</p>
+    <p class="auth-sub" id="authSub">Войдите, чтобы синхронизировать список и прогресс</p>
+    <div class="auth-tabs" id="authTabs" role="tablist">
+      <button class="is-on" data-atab="login" role="tab" aria-selected="true">Вход</button>
+      <button data-atab="register" role="tab" aria-selected="false">Регистрация</button>
+    </div>
+
+    <!-- обе панели в одной grid-ячейке: карточка не меняет размер при переключении -->
+    <div class="auth-panels">
+
+      <!-- панель: ВХОД -->
+      <div id="loginPanel" class="auth-panel">
+        <form id="loginForm" novalidate>
+          <div class="auth-field" id="lfEmail">
+            <label for="loginEmail">Email</label>
+            <div class="af-box">
+              <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg></span>
+              <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <p class="f-err">Похоже, в адресе опечатка</p>
+          </div>
+          <div class="auth-field" id="lfPass">
+            <div class="lb-row">
+              <label for="loginPass">Пароль</label>
+              <button type="button" class="forgot" id="forgotBtn">Забыли пароль?</button>
+            </div>
+            <div class="af-box has-eye">
+              <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+              <input id="loginPass" type="password" placeholder="Ваш пароль" autocomplete="current-password">
+              <button type="button" class="af-eye" data-eye="loginPass" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+            </div>
+            <p class="f-err">Введите пароль</p>
+          </div>
+          <label class="auth-remember">
+            <input type="checkbox" id="rememberMe" checked>
+            <span class="ar-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+            <span>Запомнить меня</span>
+          </label>
+          <button type="submit" class="btn btn-cta btn-block auth-submit">Войти</button>
+        </form>
+        <div class="auth-alt"><span>или</span></div>
+        <button class="btn-google" id="googleLogin">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.6 44 30.3 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+          Войти через Google
+        </button>
+        <p class="auth-swap">Нет аккаунта? <button type="button" id="toRegister">Создать</button></p>
+      </div>
+
+      <!-- панель: РЕГИСТРАЦИЯ (3 шага) -->
+      <div id="registerPanel" class="auth-panel is-off">
+        <div class="auth-steps" id="regSteps">
+          <span class="auth-step is-cur"></span>
+          <span class="auth-step"></span>
+          <span class="auth-step"></span>
+        </div>
+        <div class="auth-stephead">
+          <button type="button" class="auth-back" id="regBack" aria-label="Назад" style="visibility:hidden"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+          <div>
+            <p class="as-title">Создание аккаунта</p>
+            <p class="as-sub" id="regStepLabel">Шаг 1 из 3 · Email</p>
+          </div>
+        </div>
+        <form id="regForm" novalidate>
+          <!-- шаги в одной grid-ячейке: форма не меняет высоту между шагами -->
+          <div class="reg-steps">
+            <div class="reg-step" data-rstep="1">
+              <div class="auth-field" id="rfEmail">
+                <label for="regEmail">Email</label>
+                <div class="af-box">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg></span>
+                  <input id="regEmail" type="email" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <p class="f-err">Похоже, в адресе опечатка</p>
+              </div>
+              <p class="reg-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Дальше — пароль и никнейм: займёт не больше минуты. Если аккаунт уже есть, вернитесь на вкладку «Вход».</span></p>
+            </div>
+            <div class="reg-step is-off" data-rstep="2">
+              <div class="auth-field" id="rfPass">
+                <label for="regPass">Пароль</label>
+                <div class="af-box has-eye">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                  <input id="regPass" type="password" placeholder="Минимум 6 символов" autocomplete="new-password">
+                  <button type="button" class="af-eye" data-eye="regPass" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+                </div>
+                <p class="f-err">Минимум 6 символов</p>
+              </div>
+              <div class="auth-field" id="rfPass2">
+                <label for="regPass2">Повторите пароль</label>
+                <div class="af-box has-eye">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                  <input id="regPass2" type="password" placeholder="Ещё раз" autocomplete="new-password">
+                  <button type="button" class="af-eye" data-eye="regPass2" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+                </div>
+                <p class="f-err">Пароли не совпадают</p>
+              </div>
+            </div>
+            <div class="reg-step is-off" data-rstep="3">
+              <div class="auth-field" id="rfName">
+                <label for="regName">Никнейм</label>
+                <div class="af-box">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                  <input id="regName" placeholder="Как к вам обращаться?" autocomplete="nickname">
+                </div>
+                <p class="f-err">Минимум 2 символа</p>
+              </div>
+              <p class="reg-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Никнейм увидят другие пользователи — например, в комментариях. Сменить его можно в настройках профиля.</span></p>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-cta btn-block auth-submit" id="regSubmit">Далее</button>
+        </form>
+        <div class="auth-alt"><span>или</span></div>
+        <button class="btn-google" id="googleReg">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.6 44 30.3 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+          Зарегистрироваться через Google
+        </button>
+      </div>
+
+    </div>
+    <p class="auth-note">Демо-макет: подойдут любые email и пароль.</p>
+  </div>
+</div>
+
+<!-- ================= ПОДТВЕРЖДЕНИЕ ВЫХОДА ================= -->
+<div class="modal-overlay hidden" id="logoutModal" role="dialog" aria-modal="true" aria-label="Подтверждение выхода">
+  <div class="confirm-card">
+    <div class="cf-ic">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+    </div>
+    <h3>Выйти из аккаунта?</h3>
+    <p>Списки, история и прогресс сохранятся в аккаунте — они будут ждать вас после следующего входа.</p>
+    <div class="cf-actions">
+      <button class="btn btn-ghost" id="logoutCancel">Отмена</button>
+      <button class="btn btn-danger" id="logoutConfirm">Выйти</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ПОЛНОЭКРАННЫЙ ПОИСК ================= -->
+<div id="searchOverlay" class="search-ov hidden" role="dialog" aria-modal="true" aria-label="Поиск по Kuvion">
+  <div class="sov-backdrop" id="sovBack"></div>
+  <div class="sov-panel">
+    <div class="sov-top">
+      <span class="s-big">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </span>
+      <input id="sovInput" type="text" autocomplete="off" spellcheck="false" placeholder="Тайтл, персона, подборка, ID или ссылка…" aria-label="Поиск">
+      <button class="sov-esc" id="sovClose">Esc</button>
+    </div>
+    <div class="sov-body" id="sovBody"></div>
+    <div class="sov-foot">
+      <span><span class="sov-kbd">ID</span>или ссылка · персоны и подборки</span>
+      <span><span class="sov-kbd">Enter</span>открыть первый</span>
+      <span><span class="sov-kbd">Esc</span>закрыть</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= МОБИЛЬНОЕ МЕНЮ (бургер) ================= -->
+<div class="modal-overlay hidden" id="drawerOverlay"></div>
+<nav id="drawer" aria-label="Мобильное меню">
+  <div class="drawer-head">
+    <span class="logo" style="font-size:18px">Kuvion</span>
+    <button class="icobtn" id="drawerClose" aria-label="Закрыть">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <a href="/" class="nav-link" style="display:block;padding:12px 4px">Главная</a>
+  <a href="/catalog/" class="nav-link" style="display:block;padding:12px 4px">Каталог</a>
+  <a href="/mylist/" class="nav-link" style="display:block;padding:12px 4px">Мой список</a>
+  <a href="/catalog/?type=anime" class="nav-link" style="display:block;padding:12px 4px">Аниме</a>
+  <a href="/schedule/" class="nav-link" style="display:block;padding:12px 4px">Расписание</a>
+  <a href="/manga/" class="nav-link" style="display:block;padding:12px 4px">Манга</a>
+  <a href="#" class="nav-link" data-stub="Случайное" style="display:block;padding:12px 4px">Случайное</a>
+  <a href="/collections/" class="nav-link" style="display:block;padding:12px 4px">Подборки</a>
+  <div class="drawer-foot">
+    <button class="btn btn-cta" style="width:100%" id="drawerLogin">Войти</button>
+  </div>
+</nav>
+
+<!-- ================= МОБИЛЬНАЯ НИЖНЯЯ ПАНЕЛЬ ================= -->
+<nav class="bottom-nav" aria-label="Быстрая навигация">
+  <button class="is-active" data-stub="Главная">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Главная</span>
+  </button>
+  <button data-stub="Каталог">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span>Каталог</span>
+  </button>
+  <button id="mobSearchBtn">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <span>Поиск</span>
+  </button>
+  <button data-stub="Аниме">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.39 12.06a10 10 0 1 1-8.45-8.45"/><path d="M21.39 12.06 12.34 12.66 21.39 12.06z"/><path d="m12.34 12.66 9.05-.6-6.44-6.44a1 1 0 0 0-1.71.55z"/></svg>
+    <span>Аниме</span>
+  </button>
+  <button data-stub="Меню">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Меню</span>
+  </button>
+</nav>
+
+<!-- ================= ЛАБОРАТОРИЯ ================= -->
+<script>
+'use strict';
+/* ================================================================
+   KUVION — дизайн-макет v4 · логика демо
+   Все данные тестовые, предназначены только для оценки дизайна.
+   ================================================================ */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const CDN='https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/';
+
+/* ---------- иконки ---------- */
+const I={
+  star:'<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7-5.4-4.7 7.1-.6z"/></svg>',
+  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  playBig:'<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  bookmark:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  dots:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>',
+  check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>',
+  checkSm:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  xSm:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+  clock:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  vol:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>',
+  volLow:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  volX:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>',
+};
+
+/* ---------- тестовые данные ---------- */
+const STATUS={watching:'Смотрю',planned:'Буду смотреть',watched:'Просмотрено',onhold:'Отложено',dropped:'Брошено'};
+const T=(id,title,year,type,genres,rating,poster,extra={})=>({id,title,year,type,genres,rating,poster:CDN+poster,...extra});
+
+const TITLES={
+  interstellar:T('interstellar','Интерстеллар',2014,'Фильм',['Фантастика','Драма'],8.6,'85bb955e60e9.jpg',{
+    wide:CDN+'1290a963615d.jpg',wide2:CDN+'ec06a3bbfb4e.jpg',wide3:CDN+'2bdc37cad2cd.jpg',status:'watched',
+    desc:'Команда исследователей отправляется через червоточину в космосе, чтобы найти новый дом для человечества.'}),
+  dune2:T('dune2','Дюна: Часть вторая',2024,'Фильм',['Фантастика','Приключения'],8.5,'d4500e7dac80.jpg',{
+    wide:CDN+'12422b422cee.jpg',wide2:CDN+'c7f684d95f5b.jpeg',wide3:CDN+'4cb1149f3eaf.jpg',wide4:CDN+'86e0bf71e647.jpg',status:'planned',isNew:true,
+    desc:'Пол Атрейдес объединяется с Чани и фрименами в войне против дома Харконненов, пытаясь предотвратить ужасное будущее, которое видит только он.'}),
+  br2049:T('br2049','Бегущий по лезвию 2049',2017,'Фильм',['Фантастика','Нуар'],8.0,'71b996fefac1.jpg',{
+    wide:CDN+'9cc1a8a277d3.png',wide2:CDN+'de002094f2aa.jpg',wide3:CDN+'1662efa80442.jpg',
+    desc:'Служащий Лос-Анджелеса К, новый блейд-раннер, раскрывает тайну, спрятанную десятилетиями, способную погрузить мир в хаос.'}),
+  oppenheimer:T('oppenheimer','Оппенгеймер',2023,'Фильм',['Драма','История'],8.3,'a1fd704339d9.jpg',{
+    wide:CDN+'9e0a5f93f220.jpg',isNew:true,
+    desc:'История жизни физика-теоретика Роберта Оппенгеймера, возглавившего разработку атомной бомбы.'}),
+  aot:T('aot','Атака титанов',2013,'Аниме',['Экшен','Драма'],9.0,'9a35191d1d09.jpg',{
+    wide:CDN+'7e53c74c6dda.jpg',wide2:CDN+'5b0f4111e774.jpg',status:'watching',
+    desc:'Человечество сражается за выживание за огромными стенами, защищающими от гигантских пожирателей людей — титанов.'}),
+  aotFinal:T('aotFinal','Атака титанов: Финальный сезон',2023,'Аниме',['Экшен','Драма'],9.1,'bbc4ed32da5c.jpg',{
+    wide:CDN+'be104465fb7f.jpg',isNew:true,
+    desc:'Последняя глава истории Эрена Йегера и битвы за судьбу человечества за стенами.'}),
+  jjk:T('jjk','Магическая битва',2020,'Аниме',['Экшен','Сёнэн'],8.6,'235414089ff8.jpg',{
+    wide:CDN+'ba2f5e6b7ab4.jpg',
+    desc:'Школьник Юдзи Итадори проглатывает проклятый палец и становится сосудом для древнего проклятия.'}),
+  onepiece:T('onepiece','Ван Пис',1999,'Аниме',['Приключения','Сёнэн'],9.0,'136bb118e1b5.jpg',{
+    wide:CDN+'556492005b92.jpg',
+    desc:'Мальчишка из резинки Люффи собирает команду пиратов и отправляется за легендарным сокровищем — Ван Пис.'}),
+  onepieceRed:T('onepieceRed','Ван Пис: Фильм Ред',2022,'Аниме',['Приключения','Экшен'],8.5,'6e4fc8a0fbe9.png',{
+    desc:'Люффи и его команда отправляются на музыкальный фестиваль, где встречают мировую звезду Уту.'}),
+  tlou:T('tlou','Последние из нас',2023,'Сериал',['Драма','Хоррор'],8.7,'078136c3e9d7.jpg',{
+    wide:CDN+'4cc4e52e05d7.jpeg',wide2:CDN+'20165b080b81.jpg',isNew:true,
+    desc:'Через двадцать лет после пандемии контрабандист Джоэл получает задание вывести из города 14-летнюю Элли.'}),
+  spiderverse:T('spiderverse','Человек-паук: Паутина вселенных',2023,'Мультфильм',['Экшен','Приключения'],8.6,'401cfa55ea89.jpg',{
+    wide:CDN+'5d05fbe9bf0c.jpeg',isNew:true,
+    desc:'Майлз Моралес отправляется в путешествие по мультивселенной, где встречает команду людей-пауков.'}),
+  arcane:T('arcane','Аркейн',2021,'Сериал',['Фэнтези','Драма'],9.0,'2023ce392d04.jpg',{
+    wide:CDN+'70d04bc79f91.jpg',
+    desc:'История двух сестёр, Вай и Джинкс, на фоне конфликта утопического Пилтовера и подземного Зауна.'}),
+  arcane2:T('arcane2','Аркейн: Сезон 2',2024,'Сериал',['Фэнтези','Драма'],9.2,'5379c8a0c07a.jpg',{
+    wide:CDN+'81d0d4679ff5.jpg',isNew:true,
+    desc:'Вай и Джинкс оказываются по разные стороны баррикад, когда Пилтовер и Заун стоят на грани войны.'}),
+};
+
+/* hero: теперь 5 слайдов */
+const HERO=[TITLES.dune2,TITLES.br2049,TITLES.interstellar,TITLES.aot,TITLES.tlou];
+const CONTINUE=[
+  {t:TITLES.aot,sub:'4 сезон · Серия 24',pct:78,left:'Осталось 9 мин'},
+  {t:TITLES.jjk,sub:'2 сезон · Серия 18',pct:45,left:'Осталось 22 мин'},
+  {t:TITLES.dune2,sub:'Фильм · 2024',pct:40,left:'Осталось 1 ч 39 мин',img:'wide2'},
+  {t:TITLES.tlou,sub:'1 сезон · Серия 5',pct:12,left:'Осталось 48 мин'},
+  {t:TITLES.interstellar,sub:'Фильм · 2014',pct:78,left:'Осталось 31 мин',img:'wide2'},
+  {t:TITLES.br2049,sub:'Фильм · 2017',pct:4,left:'Только начали',img:'wide2'},
+];
+const ROWS={
+  trend:[TITLES.interstellar,TITLES.dune2,TITLES.oppenheimer,TITLES.tlou,TITLES.spiderverse,TITLES.arcane,TITLES.aot,TITLES.jjk,TITLES.onepiece],
+  anime:[TITLES.aot,TITLES.aotFinal,TITLES.jjk,TITLES.onepiece,TITLES.onepieceRed],
+  new:[TITLES.dune2,TITLES.arcane2,TITLES.spiderverse,TITLES.oppenheimer,TITLES.tlou,TITLES.aotFinal],
+};
+
+/* ---------- тосты ---------- */
+function toast(msg){
+  const el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML=I.check+'<span></span>';
+  el.querySelector('span').textContent=msg;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{el.classList.add('is-out');setTimeout(()=>el.remove(),320)},2600);
+}
+
+/* ---------- защита модалок от выделения текста ----------
+   Окно закрывается по фону, только если и нажатие, и отпускание
+   ЛКМ произошли на самом фоне: выделение текста внутри плашки
+   с выходом курсора наружу больше не закрывает модалку/меню. */
+function safeOverlayClose(overlay,closeFn){
+  let downT=null,upT=null;
+  overlay.addEventListener('pointerdown',e=>{downT=e.target;});
+  overlay.addEventListener('pointerup',e=>{upT=e.target;});
+  overlay.addEventListener('click',e=>{
+    const ok=e.target===overlay&&downT===overlay&&upT===overlay;
+    downT=upT=null;
+    if(ok)closeFn();
+  });
+}
+function safeOutsideClose(el,triggers,closeFn){
+  const out=t=>!el.contains(t)&&!triggers.some(b=>b.contains(t));
+  const open=()=>!el.classList.contains('hidden');
+  let started=false;
+  document.addEventListener('pointerdown',e=>{started=out(e.target)&&open();},true);
+  document.addEventListener('click',e=>
+    {if(started&&out(e.target)&&open())closeFn();started=false;});
+}
+
+/* ---------- рендер карточек ---------- */
+const ratingCls=v=>v>=7?'hi':v>=5?'mid':'low';
+const ratingColor=v=>v>=7?'#86EFAC':v>=5?'#FDE047':'#FCA5A5';
+
+function posterCard(t){
+  const st=t.status?STATUS[t.status]:null;
+  return `
+  <article class="poster-card" tabindex="0" role="button" data-id="${t.id}" data-title="${t.title}" aria-label="${t.title}, ${t.year}">
+    <div class="poster-wrap">
+      <img class="poster-img" src="${t.poster}" alt="" loading="lazy">
+      <div class="poster-scrim"></div>
+      <div class="poster-spotlight"></div>
+      <span class="rating-pill rating-pill--${ratingCls(t.rating)}">${I.star} ${t.rating.toFixed(1)}</span>
+      ${t.isNew?'<span class="badge-new"><span class="bn-text">NEW</span></span>':''}
+      ${st?`<span class="status-chip status-chip--${t.status}"><span class="sc-dot"></span><span class="sc-t">${st}</span></span>`:''}
+      <button class="card-dots" data-dots title="Состояние тайтла" aria-label="Состояние тайтла" aria-haspopup="menu">${I.dots}</button>
+      <span class="card-play">${I.playBig}</span>
+    </div>
+    <div class="card-caption">
+      <p class="cc-title">${t.title}</p>
+      <p class="cc-meta">
+        <span>${t.year}</span><span class="cm-sep">·</span>
+        <span class="cm-type">${t.type}</span><span class="cm-sep">·</span>
+        <span class="cm-genres">${t.genres.join(', ')}</span>
+      </p>
+    </div>
+  </article>`;
+}
+
+function cwCard(c){
+  const img=c.t[c.img||'wide']||c.t.wide||c.t.poster;
+  return `
+  <article class="cw-card" tabindex="0" role="button" data-id="${c.t.id}" data-title="${c.t.title}" aria-label="${c.t.title}">
+    <div class="cw-wrap">
+      <img src="${img}" alt="" loading="lazy">
+      <div class="cw-shade"></div>
+      <span class="cw-play">${I.playBig}</span>
+      <div class="cw-info">
+        <p class="cw-title">${c.t.title}</p>
+        <p class="cw-sub">${c.sub}</p>
+        <div class="cw-progress"><div class="cw-bar" style="width:${c.pct}%"></div></div>
+        <p class="cw-left">${I.clock} ${c.left}</p>
+      </div>
+    </div>
+  </article>`;
+}
+
+/* ---------- выпадающие панели ---------- */
+function closeAllDd(){
+  ['bellDd','acctDd'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+  $('#bellBtn').setAttribute('aria-expanded','false');
+  $('#avatarBtn').setAttribute('aria-expanded','false');
+}
+function toggleDd(id,btn){
+  const el=document.getElementById(id);
+  const willOpen=el.classList.contains('hidden');
+  closeAllDd();
+  if(willOpen){el.classList.remove('hidden');btn.setAttribute('aria-expanded','true');}
+}
+
+</script>
+<script src="/assets/kuvion-search.js"></script>
+<script>
+"use strict";
+/* ---------- стабы вырезанных секций v4 (превью/меню состояния) ---------- */
+function hidePreview(){}
+function closeStatusMenu(){}
+
+/* ---------- гость / пользователь (версия для Kuvion+) ---------- */
+function setUser(mode){
+  const guest=mode==='guest';
+  closeAllDd();
+  document.body.classList.toggle('is-guest',guest);
+  $('#userArea').style.display=guest?'none':'';
+  $('#userDivider').style.display=guest?'none':'';
+  $('#avatarWrap').style.display=guest?'none':'';
+  $('#loginBtn').classList.toggle('hidden',!guest);
+  $$('#userSeg button').forEach(b=>b.classList.toggle('is-on',b.dataset.user===mode));
+  renderPlus();
+}
+
+</script>
+<script src="/assets/kuvion-auth.js"></script>
+<script>
+"use strict";
+/* ---------- подтверждение выхода ---------- */
+$('#logoutBtn').addEventListener('click',()=>{
+  hidePreview();
+  closeAllDd();
+  $('#logoutModal').classList.remove('hidden');
+});
+$('#logoutCancel').addEventListener('click',()=>$('#logoutModal').classList.add('hidden'));
+$('#logoutConfirm').addEventListener('click',()=>{
+  $('#logoutModal').classList.add('hidden');
+  setUser('guest');
+  toast('Вы вышли из аккаунта');
+});
+safeOverlayClose($('#logoutModal'),()=>$('#logoutModal').classList.add('hidden'));
+
+/* ---------- уведомления: живая лента v2 ----------
+   Было (v1): движок с шестью демо-событиями и кнопкой «Показать
+   ещё» в дропдауне. Стало: демо-набор охватывает два месяца
+   (группы «Сегодня / Вчера / На этой неделе / Ранее»), а внизу
+   дропдауна вместо «Показать ещё» — строка «Все уведомления · N»,
+   открывающая отдельную страницу /notifications/ (тот же
+   паттерн, что у «Все результаты» в поиске). Состояние
+   «прочитано» — по-прежнему честное, в localStorage
+   (kuvion_notifs_v1), и общее для дропдауна и страницы.
+   Движок один на все страницы; после каждого рендера он зовёт
+   хук nfsAfterRender — его определяет только страница
+   уведомлений, остальные страницы не замечают. */
+const NT_KEY='kuvion_notifs_v1';
+const NT_IC={
+  ep:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5.5v13a1 1 0 0 0 1.53.85l10.2-6.5a1 1 0 0 0 0-1.7L8.53 4.65A1 1 0 0 0 7 5.5Z"/></svg>',
+  ch:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+  reply:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>',
+  like:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',
+  plus:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9Z"/></svg>',
+  sys:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+};
+/* миниатюры серий — те же постеры, что в каталоге */
+const NT_THUMB={
+  aot:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9a35191d1d09.jpg',
+  jjk:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/235414089ff8.jpg',
+  tlou:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/078136c3e9d7.jpg',
+  frieren:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/c458046a4f08.jpg',
+};
+
+/* демо-набор: ts — сколько часов назад от якоря «сейчас»
+   (5 ноября 2026, как у комментариев); read:1 — прочитанные
+   при первом визите. Непрочитанных в свежем профиле три:
+   серия, глава и Kuvion+; у серий — постер-миниатюра, у глав
+   и служебных событий — цветная иконка */
+const NT_DEMO=[
+  {id:'n-ep-aot19',k:'ep',ts:2,
+   title:'Вышла новая серия',text:'«Атака титанов» — 4 сезон, серия 19',
+   thumb:NT_THUMB.aot,href:'/title/'},
+  {id:'n-ch-csm',k:'ch',ts:5,
+   title:'Вышла новая глава',text:'«Человек-бензопила» — глава 209',
+   href:'/manga/?m=csm'},
+  {id:'n-ep-jjk',k:'ep',ts:9,read:1,
+   title:'Вышла новая серия',text:'«Магическая битва» — 2 сезон, серия 11',
+   thumb:NT_THUMB.jjk,href:'/catalog/'},
+  {id:'n-sys-plus',k:'plus',ts:26,
+   title:'Kuvion+',text:'Ранний доступ к главам манги — на три дня раньше бесплатного релиза',
+   href:'/plus/'},
+  {id:'n-ep-tlou',k:'ep',ts:30,read:1,
+   title:'Вышла новая серия',text:'«Последние из нас» — 2 сезон, серия 3',
+   thumb:NT_THUMB.tlou,href:'/catalog/'},
+  {id:'n-ep-aot18',k:'ep',ts:50,read:1,
+   title:'Вышла новая серия',text:'«Атака титанов» — 4 сезон, серия 18',
+   thumb:NT_THUMB.aot,href:'/title/'},
+  {id:'n-sys-manga',k:'sys',ts:74,read:1,
+   title:'Манга уже на Kuvion',text:'Читайте любимые тайтлы в новой читалке — манга, манхва и маньхуа',
+   href:'/manga/'},
+  {id:'n-ch-op',k:'ch',ts:96,read:1,
+   title:'Вышла новая глава',text:'«Ван Пис» — глава 1129',
+   href:'/manga/?m=onepiece'},
+  {id:'n-ch-csm208',k:'ch',ts:120,read:1,
+   title:'Вышла новая глава',text:'«Человек-бензопила» — глава 208',
+   href:'/manga/?m=csm'},
+  {id:'n-sys-dune',k:'sys',ts:880,read:1,
+   title:'Новый тайтл в каталоге',text:'«Дюна: Часть вторая» — уже доступна к просмотру',
+   href:'/catalog/'},
+  {id:'n-ep-frieren',k:'ep',ts:900,read:1,
+   title:'Вышла новая серия',text:'«Провожающая в последний путь Фрирен» — 2 сезон, серия 12',
+   thumb:NT_THUMB.frieren,href:'/catalog/'},
+  {id:'n-sys-hi',k:'sys',ts:1400,read:1,
+   title:'Добро пожаловать в Kuvion',text:'Соберите первый список и оцените просмотренное — так заработают рекомендации',
+   href:'/profile/'},
+];
+
+/* живые события: ответ и лайк на самый свежий свой комментарий
+   (появляются, только если вы уже писали на странице тайтла) */
+function ntMine(){
+  let arr=null;
+  try{arr=JSON.parse(localStorage.getItem('kuvion_tcomments_v1')||'null')}catch(e){}
+  if(!Array.isArray(arr)||!arr.length)return [];
+  /* цель — самый свежий корневой комментарий: на ответ никто
+     не «отвечает» (один уровень вложенности), уведомление о
+     ответе на ответ не соберётся */
+  const m=arr.find(x=>!x.parent)||arr[0];
+  const ntEsc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const cut=ntEsc(String(m.text||'').replace(/\s+/g,' ').trim().slice(0,54));
+  return [
+    {id:'n-reply-'+m.id,k:'reply',ts:3,
+     title:'Новый ответ',text:'kira ответил(а) на ваш комментарий «'+cut+'…»',
+     href:'/title/?cmt='+encodeURIComponent(m.id)},
+    {id:'n-like-'+m.id,k:'like',ts:8,
+     title:'Ваш комментарий оценили',text:'vega и ещё 3 человека поставили лайк комментарию «'+cut+'…»',
+     href:'/title/?cmt='+encodeURIComponent(m.id)},
+  ];
+}
+
+/* состояние: набор прочитанных id */
+let NT_READ=new Set(),NT_TOP=5;
+try{
+  const s=JSON.parse(localStorage.getItem(NT_KEY)||'null');
+  if(s&&Array.isArray(s.read))s.read.forEach(id=>NT_READ.add(id));
+}catch(e){}
+function ntSave(){try{localStorage.setItem(NT_KEY,JSON.stringify({read:[...NT_READ]}))}catch(e){}}
+function ntList(){return ntMine().concat(NT_DEMO).sort((a,b)=>a.ts-b.ts)}
+
+function ntWhen(h){
+  const pl=(n,a,b,c)=>{const m=n%10,k=n%100;return m===1&&k!==11?a:(m>=2&&m<=4&&(k<10||k>=20)?b:c)};
+  if(h<=0)return 'только что';
+  if(h<24)return h+' '+pl(h,'час','часа','часов')+' назад';
+  const d=Math.round(h/24);
+  if(d===1)return 'вчера';
+  if(d<7)return d+' '+pl(d,'день','дня','дней')+' назад';
+  if(d<31){const w=Math.round(d/7);return w===1?'неделю назад':w+' '+pl(w,'неделю','недели','недель')+' назад'}
+  const mo=Math.round(d/30);
+  return mo===1?'месяц назад':mo+' '+pl(mo,'месяц','месяца','месяцев')+' назад';
+}
+function ntItemHTML(n){
+  const read=!!n.read||NT_READ.has(n.id);
+  const media=n.thumb
+    ?`<img class="n-thumb" src="${n.thumb}" alt="" loading="lazy">`
+    :`<span class="n-icon" aria-hidden="true">${NT_IC[n.k]}</span>`;
+  return `<a class="notif notif--${n.k}${read?' is-read':''}" href="${n.href}" data-id="${n.id}">`+
+    media+
+    `<div style="min-width:0">`+
+    `<p class="n-title">${n.title}</p>`+
+    `<p class="n-text">${n.text}</p>`+
+    `<p class="n-time">${ntWhen(n.ts)}</p></div>`+
+    (read?'':'<span class="n-dot"></span>')+
+    `</a>`;
+}
+function ntRender(){
+  const list=ntList();
+  $('#bellList').innerHTML=list.slice(0,NT_TOP).map(ntItemHTML).join('');
+  const unread=list.filter(n=>!n.read&&!NT_READ.has(n.id)).length;
+  const badge=$('#bellBadge');
+  if(unread){badge.textContent=unread;badge.classList.remove('is-hidden')}
+  else badge.classList.add('is-hidden');
+  /* «Все уведомления · N»: полная лента живёт на отдельной
+     странице; при короткой ленте строка не нужна */
+  const all=$('#bellAll');
+  if(all){
+    all.style.display=list.length>NT_TOP?'':'none';
+    const n=$('#bellAllN');
+    if(n)n.textContent=list.length;
+  }
+  /* страница уведомлений (если мы на ней) перерисовывается следом */
+  if(typeof nfsAfterRender==='function')nfsAfterRender();
+}
+
+/* «Отметить прочитанными»: помним выбор между визитами */
+$('#bellClear').addEventListener('click',()=>{
+  ntList().forEach(n=>NT_READ.add(n.id));
+  ntSave();ntRender();
+  toast('Уведомления отмечены прочитанными');
+});
+/* клик по уведомлению: помечаем прочитанным и уходим по ссылке */
+$('#bellList').addEventListener('click',e=>{
+  const a=e.target.closest('.notif');
+  if(!a)return;
+  NT_READ.add(a.dataset.id);
+  ntSave();
+});
+ntRender();
+
+/* ---------- состояние подписки (localStorage kuvion_plus_v1) ----------
+   Ключ читают также профиль и настройки. until — ISO-дата, canceled —
+   «отменена, но работает до конца периода». */
+const PLUS_KEY='kuvion_plus_v1';
+const NOW=new Date('2026-11-05T12:00:00');           /* якорь «сегодня» демо */
+const MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const PLANS={
+  month:{name:'Месяц', per:299, total:299,  note:'299 ₽ списывается ежемесячно',      sub:'299 ₽ каждый месяц'},
+  q:    {name:'3 месяца', per:269, total:807, note:'807 ₽ раз в 3 месяца · −10%',    sub:'807 ₽ раз в 3 месяца'},
+  year: {name:'Год',    per:199, total:2388,note:'2 388 ₽ раз в год · −33%',         sub:'2 388 ₽ раз в год'},
+};
+let PLUS=null;
+let payCtx={plan:'year',mode:'buy'};
+
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+const addMonths=(d,n)=>{const x=new Date(d);const day=x.getDate();x.setMonth(x.getMonth()+n);if(x.getDate()<day)x.setDate(0);return x;};
+const iso=x=>x.toISOString().slice(0,10);
+const fmtRu=s=>{const[y,m,d]=s.split('-').map(Number);return `${d} ${MONTHS[m-1]} ${y}`;};
+const daysLeft=s=>Math.ceil((new Date(s)-NOW)/864e5);
+const isPast=s=>new Date(s)<NOW;
+const fmtNum=n=>n.toLocaleString('ru-RU');
+/* эффективное состояние: истёкшая подписка ведёт себя как «нет» */
+const plusEff=()=>(PLUS&&!isPast(PLUS.until))?PLUS:null;
+
+function loadPlus(){try{PLUS=JSON.parse(localStorage.getItem(PLUS_KEY)||'null')}catch(e){PLUS=null}}
+function savePlus(){
+  if(PLUS)localStorage.setItem(PLUS_KEY,JSON.stringify(PLUS));
+  else localStorage.removeItem(PLUS_KEY);
+}
+
+/* ---------- рендер по состоянию ---------- */
+const guestMode=()=>document.body.classList.contains('is-guest');
+function renderPlus(){
+  /* подписка привязана к аккаунту: гостю статус не показываем */
+  const P=guestMode()?null:plusEff();
+  const guest=guestMode();
+
+  /* чип в hero */
+  const chip=$('#plusChip');
+  if(!P){
+    chip.className='pchip';
+    chip.innerHTML='<span class="p-dot"></span>Kuvion+';
+  }else if(P.canceled){
+    chip.className='pchip pchip--muted';
+    chip.innerHTML=`<span class="p-dot"></span>Отменена · активна до ${fmtRu(P.until)}`;
+  }else if(daysLeft(P.until)<=7){
+    chip.className='pchip pchip--warn';
+    chip.innerHTML=`<span class="p-dot"></span>Истекает через ${daysLeft(P.until)} ${plural(daysLeft(P.until),'день','дня','дней')}</span>`;
+  }else{
+    chip.className='pchip pchip--ok';
+    chip.innerHTML=`<span class="p-dot"></span>Активна до ${fmtRu(P.until)}</span>`;
+  }
+
+  /* кнопки hero */
+  const acts=$('#plusActions');
+  const arrow='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg>';
+  if(guest){
+    acts.innerHTML=`<button class="btn btn-cta" id="heroPrimary" type="button">Войти и оформить</button>
+      <a class="btn-plus-link" href="#benefits">Что входит ${arrow}</a>`;
+    $('#heroPrimary').addEventListener('click',()=>openAuth('login'));
+  }else if(!P){
+    acts.innerHTML=`<button class="btn btn-cta" id="heroPrimary" type="button">Оформить · от 199 ₽/мес</button>
+      <a class="btn-plus-link" href="#tariffs">Посмотреть тарифы ${arrow}</a>`;
+    $('#heroPrimary').addEventListener('click',()=>openPay('year','buy'));
+  }else{
+    acts.innerHTML=`<button class="btn btn-cta" id="heroPrimary" type="button">${P.canceled?'Возобновить':'Продлить'}</button>
+      <button class="btn-plus-link" id="heroManage" type="button">Управлять подпиской ${arrow}</button>`;
+    $('#heroPrimary').addEventListener('click',()=>openPay(P.plan,P.canceled?'buy':'renew'));
+    $('#heroManage').addEventListener('click',()=>{
+      $('#manage').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  }
+
+  renderManage(P,guest);
+  renderFin(P);
+  renderHeaderPlus(P);
+
+  /* сегмент «Подписка» в лаборатории следует за реальным ключом
+     (гостевой режим его не меняет) */
+  const st=plusEff();
+  const segMode=!st?'none':(daysLeft(st.until)<=7?'soon':'active');
+  $$('#plusSeg button').forEach(b=>b.classList.toggle('is-on',b.dataset.plus===segMode));
+}
+
+function plural(n,a,b,c){
+  const m=n%100,k=n%10;
+  return m>=11&&m<=14?c:k===1?a:k>=2&&k<=4?b:c;
+}
+
+/* панель управления */
+function renderManage(P,guest){
+  const sec=$('#manage');
+  sec.classList.toggle('hidden',!P||guest);
+  if(!P||guest)return;
+  const chip=$('#mgChip');
+  if(P.canceled){
+    chip.className='pchip pchip--muted';
+    chip.innerHTML='<span class="p-dot"></span>Отменена';
+  }else if(daysLeft(P.until)<=7){
+    chip.className='pchip pchip--warn';
+    chip.innerHTML=`<span class="p-dot"></span>Истекает через ${daysLeft(P.until)} ${plural(daysLeft(P.until),'день','дня','дней')}</span>`;
+  }else{
+    chip.className='pchip pchip--ok';
+    chip.innerHTML='<span class="p-dot"></span>Активна';
+  }
+  $('#mgSub').innerHTML=P.canceled
+    ?`Отменена — работает <b>до ${fmtRu(P.until)}</b>, продлеваться не будет`
+    :daysLeft(P.until)<=7
+      ?`Истекает <b>${fmtRu(P.until)}</b> — продлите, чтобы не терять 4K и чтение без рекламы · Visa •• 4242`
+      :`Действует до <b>${fmtRu(P.until)}</b> · продлится автоматически · Visa •• 4242`;
+
+  $('#mgActions').innerHTML=
+    (P.canceled
+      ?`<button class="btn btn-cta" id="mgResume" type="button">Возобновить подписку</button>`
+      :`<button class="btn btn-cta" id="mgExtend" type="button">Продлить</button>`)+
+    `<button class="btn btn-ghost" id="mgCard" type="button">Сменить карту</button>`;
+  $('#mgDanger').classList.toggle('hidden',P.canceled);
+  if(P.canceled)$('#mgResume').addEventListener('click',()=>{
+    PLUS.canceled=false;savePlus();renderPlus();
+    toast('Подписка возобновлена — продлится автоматически');
+  });
+  else $('#mgExtend').addEventListener('click',()=>openPay(P.plan,'renew'));
+  $('#mgCard').addEventListener('click',()=>openPay(P.plan,'card'));
+}
+
+/* финальная панель */
+function renderFin(P){
+  const title=$('#finTitle'),sub=$('#finSub'),btn=$('#finBtn'),note=$('#finNote');
+  if(!P){
+    /* базовая разметка уже в HTML — но без обработчика кнопка
+       «Попробовать 7 дней бесплатно» была мёртвой (правка v1.2):
+       гостю — вход, пользователю без подписки — оформление годового */
+    btn.onclick=()=>guestMode()?openAuth('login'):openPay('year','buy');
+    return;
+  }
+  title.innerHTML='Kuvion+ <span class="grad-text">уже с вами</span>';
+  sub.textContent=`Подписка активна до ${fmtRu(P.until)}${P.canceled?' и продлеваться не будет':''}. Спасибо, что смотрите с нами!`;
+  btn.textContent='Управлять подпиской';
+  btn.onclick=()=>$('#manage').scrollIntoView({behavior:'smooth',block:'start'});
+  note.textContent='Продление — автоматически · отменить можно в любой момент';
+}
+
+/* шапка: рамка аватара, бейдж в меню, карточка подписки */
+function renderHeaderPlus(P){
+  $('#avatarCore').classList.toggle('is-plus',!!P);
+  $('#avatarCoreMenu').classList.toggle('is-plus',!!P);
+  const name=$('#acctName');
+  if(name)name.innerHTML='danil'+(P?' <span class="acct-plus">KUVION+</span>':'');
+
+  const sc=document.querySelector('.sub-card');
+  if(!sc)return;
+  if(P){
+    sc.innerHTML=`<p class="sc-name">Kuvion+</p>
+      <p class="sc-desc">${P.canceled?'Отменена · активна до ':'Активна до '}${fmtRu(P.until)}</p>
+      <button class="sc-btn" id="scManage" type="button">Управлять</button>`;
+    $('#scManage').addEventListener('click',()=>{
+      closeAllDd();
+      $('#manage').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  }else{
+    sc.innerHTML=`<p class="sc-name">Kuvion+</p>
+      <p class="sc-desc">Без рекламы, 4K-качество и ранний доступ к главам манги</p>
+      <a class="sc-btn" href="#tariffs">Оформить</a>`;
+  }
+}
+
+/* ---------- лента постеров (цвет несут обложки) ---------- */
+const PM_A=['85bb955e60e9.jpg','d4500e7dac80.jpg','71b996fefac1.jpg','a1fd704339d9.jpg','9a35191d1d09.jpg','bbc4ed32da5c.jpg','235414089ff8.jpg','136bb118e1b5.jpg','6e4fc8a0fbe9.png','078136c3e9d7.jpg','401cfa55ea89.jpg','2023ce392d04.jpg'];
+const PM_B=['fab348fd8713.jpg','e18e3257cac8.jpg','d7aa7aa98ff8.jpg','d69134429911.jpg','d3687f77d518.jpg','bbf81394593e.jpg','b22e1179a791.jpg','a4c63836c432.jpg','9f9b3348ec9e.jpg','9eefa807d02a.jpg','9257150c70e5.jpg','895101998087.jpg'];
+function fillPm(el,arr){
+  const one=arr.map(p=>`<img src="${CDN}${p}" alt="" loading="lazy">`).join('');
+  el.innerHTML=one+one;   /* дубль для бесшовной прокрутки */
+}
+fillPm($('#pmTrackA'),PM_A);
+fillPm($('#pmTrackB'),PM_B);
+
+/* ---------- тарифы ---------- */
+$$('#tarGrid .tar-card').forEach(c=>c.addEventListener('click',()=>{
+  $$('#tarGrid .tar-card').forEach(x=>x.classList.remove('is-on'));
+  c.classList.add('is-on');
+  openPay(c.dataset.plan,'buy');
+}));
+
+/* ---------- модалка оплаты ---------- */
+function setPayTab(t){
+  $$('#payTabs button').forEach(b=>b.classList.toggle('is-on',b.dataset.ptab===t));
+  $('#ptabCard').classList.toggle('hidden',t!=='card');
+  $('#ptabSbp').classList.toggle('hidden',t==='card');
+  $('#payGoLabel').textContent=payCtx.mode==='card'
+    ?'Сохранить карту'
+    :t==='sbp'?'Я оплатил':`Оплатить ${fmtNum(PLANS[payCtx.plan].total)} ₽`;
+  validatePay();
+}
+function validatePay(){
+  const btn=$('#payGo');
+  if(btn.classList.contains('is-busy'))return;
+  let ok=true;
+  if(!$('#ptabCard').classList.contains('hidden')){
+    const num=$('#pcNum').value.replace(/\D/g,'').length===16;
+    const ev=$('#pcExp').value,em=parseInt(ev.slice(0,2),10);
+    const exp=ev.length===5&&em>=1&&em<=12;
+    const cvc=$('#pcCvc').value.length===3;
+    ok=num&&exp&&cvc;
+  }
+  btn.disabled=!ok;
+}
+function openPay(plan,mode){
+  payCtx={plan,mode};
+  const P=PLANS[plan];
+  $('#payTitle').textContent=mode==='card'?'Способ оплаты':mode==='renew'?'Продление Kuvion+':'Оформление Kuvion+';
+  $('#paySub').textContent=P.sub+' · продление автоматически';
+  $('#payPlan').classList.toggle('hidden',mode==='card');
+  if(mode!=='card'){
+    $('#ppName').textContent=P.name;
+    $('#ppNote').textContent=P.note;
+    $('#ppSum').textContent=fmtNum(P.total)+' ₽';
+  }
+  ['pcNum','pcExp','pcCvc'].forEach(id=>$('#'+id).value='');
+  $('#payForm').classList.remove('hidden');
+  $('#payOk').classList.add('hidden');
+  const btn=$('#payGo');
+  btn.classList.remove('is-busy');btn.disabled=true;
+  setPayTab('card');
+  $('#payModal').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>$('#pcNum').focus(),60);
+}
+function closePay(){
+  $('#payModal').classList.add('hidden');
+  document.body.style.overflow='';
+  const b=$('#payGo');b.classList.remove('is-busy');
+}
+function paySuccess(){
+  const btn=$('#payGo');btn.classList.remove('is-busy');btn.disabled=true;
+  if(payCtx.mode==='card'){closePay();toast('Способ оплаты обновлён');return;}
+  const months=payCtx.plan==='month'?1:payCtx.plan==='q'?3:12;
+  const cur=plusEff();
+  const base=cur?new Date(cur.until):addDays(NOW,7);   /* пробная неделя при первом оформлении */
+  const until=iso(addMonths(base,months));
+  PLUS={plan:payCtx.plan,until,canceled:false};
+  savePlus();renderPlus();
+  $('#payForm').classList.add('hidden');
+  $('#poText').innerHTML=`Подписка активна до <b>${fmtRu(until)}</b>. Реклама уже выключена, качество поднимется там, где источник отдаёт 4K.`;
+  $('#payOk').classList.remove('hidden');
+}
+$$('#payTabs button').forEach(b=>b.addEventListener('click',()=>setPayTab(b.dataset.ptab)));
+$('#payClose').addEventListener('click',closePay);
+safeOverlayClose($('#payModal'),closePay);
+$('#payOkClose').addEventListener('click',()=>{
+  closePay();
+  toast('Kuvion+ активен до '+fmtRu(plusEff().until));
+});
+$('#payGo').addEventListener('click',()=>{
+  const b=$('#payGo');
+  if(b.disabled||b.classList.contains('is-busy'))return;
+  b.classList.add('is-busy');b.disabled=true;
+  setTimeout(paySuccess,1100);
+});
+
+/* маски полей карты */
+$('#pcNum').addEventListener('input',()=>{
+  const v=$('#pcNum').value.replace(/\D/g,'').slice(0,16);
+  $('#pcNum').value=v.replace(/(.{4})/g,'$1 ').trim();
+  validatePay();
+});
+$('#pcExp').addEventListener('input',()=>{
+  let v=$('#pcExp').value.replace(/\D/g,'').slice(0,4);
+  if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);
+  $('#pcExp').value=v;
+  validatePay();
+});
+$('#pcCvc').addEventListener('input',()=>{
+  $('#pcCvc').value=$('#pcCvc').value.replace(/\D/g,'').slice(0,3);
+  validatePay();
+});
+
+/* ---------- отмена подписки ---------- */
+$('#mgCancel').addEventListener('click',()=>{
+  $('#cancelText').innerHTML=`Подписка продолжит работать <b>до ${fmtRu(plusEff().until)}</b> — потом вернётесь на бесплатный Kuvion. Списки, прогресс и подборки не затронет.`;
+  $('#cancelModal').classList.remove('hidden');
+});
+const closeCancel=()=>$('#cancelModal').classList.add('hidden');
+$('#cancelKeep').addEventListener('click',closeCancel);
+safeOverlayClose($('#cancelModal'),closeCancel);
+$('#cancelGo').addEventListener('click',()=>{
+  PLUS.canceled=true;savePlus();renderPlus();
+  closeCancel();
+  toast('Подписка отменена — активна до '+fmtRu(PLUS.until));
+});
+
+/* ---------- FAQ ---------- */
+$$('#faqList .faq-q').forEach(q=>q.addEventListener('click',()=>{
+  const it=q.closest('.faq-item');
+  const was=it.classList.contains('is-open');
+  $$('#faqList .faq-item').forEach(x=>x.classList.remove('is-open'));
+  if(!was)it.classList.add('is-open');
+}));
+
+/* ---------- лаборатория: переключатель подписки ---------- */
+$$('#plusSeg button').forEach(b=>b.addEventListener('click',()=>{
+  $$('#plusSeg button').forEach(x=>x.classList.remove('is-on'));
+  b.classList.add('is-on');
+  const m=b.dataset.plus;
+  if(m==='none')PLUS=null;
+  else if(m==='active')PLUS={plan:'year',until:'2027-08-12',canceled:false};
+  else PLUS={plan:'year',until:iso(addDays(NOW,6)),canceled:false};
+  savePlus();
+  renderPlus();
+}));
+
+/* ---------- инициализация ---------- */
+/* шапка: фон при скролле */
+window.addEventListener('scroll',()=>$('#appHeader').classList.toggle('scrolled',scrollY>40),{passive:true});
+
+/* дропдауны */
+$('#bellBtn').addEventListener('click',e=>{e.stopPropagation();toggleDd('bellDd',e.currentTarget);});
+$('#avatarBtn').addEventListener('click',e=>{e.stopPropagation();toggleDd('acctDd',e.currentTarget);});
+safeOutsideClose($('#bellDd'),[$('#bellBtn')],closeAllDd);
+safeOutsideClose($('#acctDd'),[$('#avatarBtn')],closeAllDd);
+
+/* уведомления: движок живой ленты приезжает из дизайн-системы v4
+   (секция «уведомления: живая лента» — build_plus.py переносит её
+   целиком); старые статичные обработчики колокольчика убраны */
+
+/* вход */
+$('#loginBtn').addEventListener('click',()=>openAuth('login'));
+$('#drawerLogin').addEventListener('click',()=>{closeDrawer();openAuth('login');});
+
+/* бургер */
+const openDrawer=()=>{$('#drawer').classList.add('open');$('#drawerOverlay').classList.remove('hidden');};
+const closeDrawer=()=>{$('#drawer').classList.remove('open');$('#drawerOverlay').classList.add('hidden');};
+$('#btnBurger').addEventListener('click',openDrawer);
+$('#drawerClose').addEventListener('click',closeDrawer);
+safeOverlayClose($('#drawerOverlay'),closeDrawer);
+
+
+/* горячие клавиши */
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch();return;}
+  if(e.key!=='Escape')return;
+  if(!$('#searchOverlay').classList.contains('hidden')){closeSearch();return;}
+  if(!$('#payModal').classList.contains('hidden')){closePay();return;}
+  if(!$('#cancelModal').classList.contains('hidden')){closeCancel();return;}
+  closeAllDd();
+  closeAuth();
+  $('#logoutModal').classList.add('hidden');
+  closeDrawer();
+});
+
+/* делегирование: результаты поиска и заглушки */
+document.addEventListener('click',e=>{
+  const sr=e.target.closest('.sr-item');
+  if(sr){
+    sovSaveRecent(sovInput.value);
+    closeSearch();closeAllDd();
+    if(sr.dataset.local==='1'){showManga(sr.dataset.srid);return;}
+    if(sr.dataset.href){location.href=sr.dataset.href;return;}
+    toast('Страница «'+sr.dataset.title+'» — в разработке');return;
+  }
+  const stub=e.target.closest('[data-stub]');
+  if(stub){
+    e.preventDefault();
+    if(stub.closest('.dd'))closeAllDd();
+    if(stub.closest('#drawer'))closeDrawer();
+    const n=stub.dataset.stub;
+    if(n==='Главная'){location.href='/';return;}
+    if(n==='Каталог'){location.href='/catalog/';return;}
+    if(n==='Аниме'){location.href='/catalog/?type=anime';return;}
+    if(n==='Случайное'){location.href='/catalog/?random=1';return;}
+    if(n==='Манга'){location.href='/manga/';return;}
+    if(n==='Меню'){openDrawer();return;}
+    toast('«'+n+'» — в разработке');
+  }
+});
+
+/* стартовое состояние */
+loadPlus();
+setUser('user');
+
+</script>
+<script>
+/* ---- reveal рядов: секции ниже первого экрана мягко всплывают при
+   попадании в экран (один раз); видимое при загрузке не трогаем;
+   после показа классы снимаются — финальная разметка чистая;
+   при prefers-reduced-motion и без JS всё видно как раньше ---- */
+(function(){
+  try{
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    setTimeout(function(){
+      var SEL='#benefits,#compare,#tariffs,#manage,#faq';
+      var els=[].slice.call(document.querySelectorAll(SEL)).filter(function(el){
+        var s=getComputedStyle(el);
+        return s.display!=='none'&&s.visibility!=='hidden'&&el.getBoundingClientRect().height>0;
+      });
+      if(!els.length||!('IntersectionObserver' in window))return;
+      var H=window.innerHeight||document.documentElement.clientHeight;
+      var marked=els.filter(function(el){
+        return el.getBoundingClientRect().top>=H;
+      });
+      if(!marked.length)return;
+      var io=new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if(!e.isIntersecting)return;
+          var el=e.target;
+          io.unobserve(el);
+          el.classList.add('rv-in');
+          setTimeout(function(){el.classList.remove('rv-hide','rv-in');},750);
+        });
+      },{rootMargin:'0px 0px -10% 0px',threshold:0});
+      marked.forEach(function(el){el.classList.add('rv-hide');io.observe(el);});
+    },60);
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

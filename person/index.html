@@ -1,0 +1,3523 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="Юки Кадзи на Kuvion — фильмография, озвученные персонажи и фото.">
+<meta property="og:title" content="Kuvion — персона">
+<meta property="og:description" content="Юки Кадзи на Kuvion — фильмография, озвученные персонажи и фото.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%230b0b0e'/%3E%3Crect%20x='1.5'%20y='1.5'%20width='61'%20height='61'%20rx='12.5'%20fill='none'%20stroke='rgba(255,255,255,.18)'%20stroke-width='3'/%3E%3Cpath%20d='M17%2014h8v14l12-14h11l-16%2017%2016%2019h-11l-12-14v14h-8z'%20fill='%23fff'/%3E%3C/svg%3E">
+<title>Kuvion — персона</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@300;400;500;600;700;800;900&family=Rubik:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/kuvion-common.css">
+<style>
+
+/* ================================================================
+   KUVION — страница персоны: сэйю / актёр (дизайн-макет, v1)
+   Карточка человека в том же языке, что и страница тайтла:
+   hero с портретом (формат 3:4 — как карточки персонажей,
+   фото видно целиком), факты, фильмография с ролями, лента
+   озвученных персонажей (у сэйю) и фото (у актёра).
+   Демо-набор: Юки Кадзи (сэйю, «Атака титанов») и Тимоти
+   Шаламе (актёр, «Дюна»). Переключатель «Персона» — в «Лабора-
+   тории»; из блока каста страницы тайтла ведёт глубокая ссылка
+   /person/?mode=people.
+   Дизайн-язык v4: абсолютный чёрный, белый акцент, зерно,
+   Dela Gothic One, стеклянные чипы 7px, «невидимая стена»,
+   драг-скролл, превью-панель и меню состояния — всё как
+   на странице тайтла (карточки фильмографии — те же
+   poster-card с рейтингом, NEW и «⋮»).
+   ================================================================ */
+
+:root{
+  --bg:#000;
+  --surface:rgba(255,255,255,.04);
+  --surface-2:rgba(255,255,255,.07);
+  --surface-3:rgba(255,255,255,.11);
+  --border:rgba(255,255,255,.08);
+  --border-2:rgba(255,255,255,.14);
+  --border-3:rgba(255,255,255,.24);
+  --text:#fff;
+  --text-2:rgba(255,255,255,.62);
+  --text-3:rgba(255,255,255,.4);
+  --accent-1:#7C4DFF;
+  --accent-2:#D946EF;
+  --accent-glow:rgba(168,85,247,.35);
+  --ok:#4ADE80;
+  --warn:#FACC15;
+  --bad:#F87171;
+  --info:#60A5FA;
+  --r-s:10px;   /* радиус малый */
+  --r-m:14px;   /* радиус карточек */
+  --r-l:18px;   /* радиус панелей */
+  --font-display:'Dela Gothic One','Onest',system-ui,sans-serif;
+  --font-body:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --header-h:64px;
+  --page-x:clamp(20px,4vw,56px);
+  --rail-gap:16px;                                   /* единый шаг между карточками */
+  --card-w:clamp(168px,13.5vw,204px);                /* размер карточки M (по умолчанию) */
+}
+
+body:not([data-displayfont="dela"]) :is(.logo,.tp-title,.row-title,.pv-title,.auth-logo,.footer-logo,.lab-title,.sub-card .sc-name){font-weight:800}
+
+
+.nav-link{
+  position:relative;font-size:14px;font-weight:500;color:var(--text-2);
+  padding:6px 1px;transition:color .2s ease;white-space:nowrap;
+}
+
+/* ============ HERO СТРАНИЦЫ ТАЙТЛА ============ */
+.tp-hero{
+  position:relative;overflow:hidden;
+  display:flex;align-items:flex-end;
+  min-height:600px;
+  padding:calc(var(--header-h) + 44px) 0 44px;
+}
+
+.tp-backdrop{position:absolute;inset:0;background:#0b0b0e}
+
+.tp-backdrop img{width:100%;height:100%;object-fit:cover;object-position:center 30%}
+
+.tp-shade{position:absolute;inset:0;pointer-events:none}
+
+.tp-shade--top{background:linear-gradient(to bottom,rgba(0,0,0,.58),transparent 30%)}
+
+.tp-shade--bottom{background:linear-gradient(to top,#000 2%,rgba(0,0,0,.84) 30%,rgba(0,0,0,.28) 62%,transparent 84%)}
+
+.tp-content{
+  position:relative;z-index:4;width:100%;
+  max-width:1760px;margin:0 auto;padding:0 var(--page-x);
+}
+
+.tp-crumbs{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  font-size:12.5px;font-weight:500;color:var(--text-3);margin-bottom:24px;
+}
+
+.tp-crumbs a{color:var(--text-2);transition:color .18s}
+
+.tp-crumbs a:hover{color:#fff}
+
+.tp-crumbs .tc-sep{color:rgba(255,255,255,.22)}
+
+.tp-crumbs .tc-cur{color:rgba(255,255,255,.78)}
+
+/* постер — фиксированный формат 2:3, всегда одинаковый: высота
+   НЕ зависит от количества блоков в инфоблоке, верх — на уровне
+   названия. contain вместо cover: постер всегда виден целиком,
+   без обрезки под формат (если бэкенд пришлёт нестандартную
+   пропорцию — останутся тонкие поля фона, но не обрезка) */
+.tp-main{display:flex;align-items:flex-start;gap:clamp(26px,3.2vw,46px)}
+
+.tp-poster{
+  position:relative;flex:none;width:clamp(196px,16vw,258px);aspect-ratio:2/3;
+  border-radius:var(--r-m);overflow:hidden;background:#0b0b0e;isolation:isolate;
+  box-shadow:0 26px 64px -12px rgba(0,0,0,.92),inset 0 0 0 1px rgba(255,255,255,.12);
+}
+
+.tp-poster img{width:100%;height:100%;object-fit:contain;transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+
+/* постер кликабелен: раскрывается в лайтбокс, как кадры.
+   Значок-стрелки (в разные стороны) подсказывает, что картинку
+   можно открыть; появляется при наведении */
+.tp-poster{cursor:pointer}
+
+.tp-poster:hover{box-shadow:0 30px 74px -12px rgba(0,0,0,.95),inset 0 0 0 1px rgba(255,255,255,.22)}
+
+.tp-poster:hover img,.tp-poster:focus-visible img{transform:scale(1.045)}
+
+.tp-expand{
+  position:absolute;right:10px;top:10px;z-index:4;
+  width:32px;height:32px;border-radius:9px;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:translateY(3px);transition:.2s ease;pointer-events:none;
+}
+
+.tp-poster:hover .tp-expand,.tp-poster:focus-visible .tp-expand{opacity:1;transform:none}
+
+.tp-info{min-width:0;max-width:780px;padding-bottom:2px}
+
+/* статус тайтла живёт на постере — точно как на карточке главной:
+   внизу слева, стекло. Отличие одно: на постере hero справа нет меню
+   «⋮», поэтому резерв под него (58px в базовом правиле) не нужен */
+.status-chip.tp-statuschip{max-width:calc(100% - 20px)}
+
+.tp-title{
+  font-family:var(--font-display);
+  font-size:clamp(30px,4vw,56px);
+  line-height:1.1;letter-spacing:.2px;
+  text-shadow:0 4px 30px rgba(0,0,0,.6);
+  margin-bottom:8px;
+}
+
+.tp-orig{font-size:13.5px;font-weight:500;color:var(--text-2);margin-bottom:16px}
+
+.tp-meta{
+  display:flex;flex-wrap:wrap;align-items:center;gap:9px;
+  font-size:13.5px;font-weight:500;color:var(--text-2);margin-bottom:14px;
+}
+
+.tp-meta .hm-sep{color:rgba(255,255,255,.25)}
+
+.tp-desc{
+  color:rgba(255,255,255,.72);font-size:14.5px;line-height:1.62;
+  max-width:640px;margin-bottom:24px;
+}
+
+.tp-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+
+/* оценка тайтла пользователем: 10-балльная шкала, белые звёзды.
+   Наведение — предпросмотр, клик по той же звезде снимает оценку */
+.tp-rate{
+  margin-top:16px;display:inline-flex;align-items:center;gap:14px;
+  min-height:44px;padding:5px 16px;border-radius:12px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+
+.tp-rate-label{font-size:13px;font-weight:600;color:var(--text-2);transition:color .2s}
+
+.tp-rate.stars-on .tp-rate-label{color:#fff}
+
+.tp-stars{display:flex;gap:3px}
+
+.tp-star{
+  position:relative;width:24px;height:34px;border:0;background:none;padding:0;
+  display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.26);
+  transition:color .12s,transform .12s;cursor:pointer;
+}
+
+.tp-star:hover{transform:scale(1.16)}
+
+.tp-star svg{width:17px;height:17px}
+
+.tp-star .star-f{display:none}
+
+.tp-star.is-on{color:#fff}
+
+.tp-star.is-on .star-f{display:block}
+
+.tp-star.is-on .star-o{display:none}
+
+.tp-rate-val{min-width:46px;font-size:12.5px;font-weight:800;color:var(--text-3);font-variant-numeric:tabular-nums;text-align:right}
+
+.tp-ico{
+  width:44px;height:44px;border-radius:12px;flex:none;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--surface-2);border:1px solid var(--border-2);color:#fff;
+  transition:background .18s,border-color .18s,color .18s,transform .18s;
+}
+
+.tp-ico:hover{background:var(--surface-3);border-color:var(--border-3)}
+
+.tp-ico:active{transform:scale(.95)}
+
+.tp-ico.is-on{background:#fff;color:#000;border-color:#fff}
+
+/* «вы остановились»: стеклянная плашка с прогрессом; клик — продолжить в плеере */
+.tp-resume{
+  margin-top:22px;display:inline-flex;flex-direction:column;gap:9px;
+  min-width:min(430px,100%);padding:14px 16px;border-radius:var(--r-m);
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  cursor:pointer;transition:border-color .2s,background .2s;
+}
+
+.tp-resume:hover{border-color:var(--border-2);background:rgba(255,255,255,.07)}
+
+.tp-resume-head{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;color:var(--text-2)}
+
+.tp-resume-head b{color:#fff;font-weight:700}
+
+.tp-resume .cw-progress{margin-top:0}
+
+
+/* ============ СЕКЦИИ-ЛЕНТЫ (единый ритм отступов) ============ */
+.rows{padding:36px 0 28px}
+
+.row-group+.row-group{margin-top:38px}
+
+.cw-guest+.row-group{margin-top:38px}
+
+.row-head{
+  display:flex;align-items:center;gap:12px;
+  /* рамка контента: заголовки лент встают в одну колонку с логотипом */
+  padding:0 max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x)));margin-bottom:12px;
+}
+
+.row-title{
+  font-family:var(--font-display);
+  font-size:16px;letter-spacing:.3px;color:#fff;white-space:nowrap;
+}
+
+.row-title .rt-count{font-family:var(--font-body);font-size:11.5px;font-weight:600;color:var(--text-3);margin-left:8px;vertical-align:2px}
+
+.row-head .row-link{
+  margin-left:auto;font-size:12.5px;font-weight:600;color:var(--text-3);
+  display:inline-flex;align-items:center;gap:5px;transition:color .2s;padding:4px 6px;border-radius:8px;
+  /* это и ссылка, и кнопка: у <button> без этого остаётся светло-серый
+     фон от браузера — белый текст на нём не читается */
+  background:none;border:0;
+}
+
+.row-head .row-link:hover{color:#fff}
+
+.row-arrows{display:flex;gap:6px}
+
+.row-arrow{
+  width:32px;height:32px;border-radius:50%;border:1px solid var(--border-2);
+  background:var(--surface-2);color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;transition:.18s;
+}
+
+.row-arrow:hover:not(:disabled){background:#fff;color:#000;border-color:#fff}
+
+.row-arrow:disabled{opacity:.25;pointer-events:none}
+
+
+/*
+  Лента и «невидимая стена» (как в старой версии Kuvion):
+  карточки живут в общей рамке контента (одна колонка с шапкой).
+  Рамка обрезается ЖЁСТКО на своём краю — постоянный отступ
+  слева и справа, карточки на него не залезают. Когда за краем
+  рамки есть ещё карточки, у самой стены вырастает короткое
+  (40px) растворение (--wall-l/--wall-r переключает JS при
+  скролле, края рамки --edge-l/--edge-r тоже считает JS).
+  Drag-скролл работает по всей ленте, включая сами карточки.
+  Никакого scroll-snap.
+*/
+@property --wall-l{syntax:'<length>';inherits:false;initial-value:0px}
+
+@property --wall-r{syntax:'<length>';inherits:false;initial-value:0px}
+
+.row-scroller{
+  display:flex;gap:var(--rail-gap);
+  overflow-x:auto;overflow-y:hidden;
+  padding:8px max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x))) 20px;
+  scrollbar-width:none;
+  cursor:grab;user-select:none;-webkit-user-select:none;
+  --wall-l:0px;--wall-r:0px;
+  transition:--wall-l .35s ease,--wall-r .35s ease;
+  -webkit-mask-image:linear-gradient(90deg,
+    transparent calc(var(--edge-l,0px) - var(--wall-l)),
+    #000 var(--edge-l,0px),
+    #000 calc(100% - var(--edge-r,0px)),
+    transparent calc(100% - var(--edge-r,0px) + var(--wall-r)));
+  mask-image:linear-gradient(90deg,
+    transparent calc(var(--edge-l,0px) - var(--wall-l)),
+    #000 var(--edge-l,0px),
+    #000 calc(100% - var(--edge-r,0px)),
+    transparent calc(100% - var(--edge-r,0px) + var(--wall-r)));
+}
+
+.row-scroller::-webkit-scrollbar{display:none}
+
+.row-scroller>*{flex:none}
+
+.row-scroller img{-webkit-user-drag:none;user-drag:none}
+
+.row-scroller.is-dragging{cursor:grabbing}
+
+.row-scroller.is-dragging *{pointer-events:none}
+
+.row-scroller.is-dragging .poster-card,
+.row-scroller.is-dragging .cw-card{transform:none!important}
+
+.row-scroller.is-dragging .card-play,
+.row-scroller.is-dragging .cw-play,
+.row-scroller.is-dragging .card-dots{opacity:0!important}
+
+.row-scroller.is-dragging .still-card,
+.row-scroller.is-dragging .char-card{transform:none!important}
+
+.row-scroller.is-dragging .still-card img,
+.row-scroller.is-dragging .char-card img{transform:none!important}
+
+.row-scroller.is-dragging .still-zoom{opacity:0!important}
+
+/* Оверлеи карточек НЕ используют :hover/:focus-within: после драга у
+   Chrome залипает и :hover (pointer-events:none → auto под неподвижным
+   курсором), и — главное — фокус: карточка с tabindex получает его в
+   момент pointerdown и держит :focus-within до клика по сайту (тот самый
+   «висящий» play). Вместо них класс .is-hover: его вешает только
+   реальное движение мыши (mousemove-трекер в JS ниже), для клавиатуры
+   остаётся :focus-visible. Залечь в «hover» невозможно в принципе. */
+
+/* ============ КАРТОЧКА-ПОСТЕР ============ */
+.poster-card{position:relative;width:var(--card-w);transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+
+.poster-card.is-hover,.poster-card:focus-visible{transform:translateY(-5px)}
+
+.poster-wrap{
+  position:relative;aspect-ratio:2/3;border-radius:var(--r-m);overflow:hidden;
+  background:#0b0b0e;isolation:isolate;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);
+  transition:box-shadow .3s ease;
+}
+
+.poster-card.is-hover .poster-wrap{
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 18px 44px -8px rgba(0,0,0,.85);
+}
+
+.poster-wrap img.poster-img{width:100%;height:100%;object-fit:cover;transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+
+.poster-card.is-hover .poster-img{transform:scale(1.06)}
+
+.poster-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,transparent 26%,transparent 52%,rgba(0,0,0,.66) 100%);pointer-events:none}
+
+.poster-spotlight{
+  position:absolute;inset:0;opacity:0;transition:opacity .35s;pointer-events:none;
+  background:radial-gradient(180px 180px at 50% 26%,rgba(255,255,255,.1),transparent 70%);
+}
+
+.poster-card.is-hover .poster-spotlight{opacity:1}
+
+
+/* ---- бейджи: геометрия из дизайн-системы v2 («Чипы и статусы»):
+   высота 24px, паддинг 11px, радиус 8px; на постере — стекло ---- */
+/* рейтинг — семантический цвет, слева сверху */
+.rating-pill{
+  position:absolute;top:10px;left:10px;z-index:4;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:24px;padding:0 11px;border-radius:8px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;color:#fff;
+}
+
+.rating-pill svg{width:9px;height:9px}
+
+.rating-pill--hi{color:#86EFAC;border-color:rgba(74,222,128,.4)}
+
+.rating-pill--mid{color:#FDE047;border-color:rgba(250,204,21,.4)}
+
+.rating-pill--low{color:#FCA5A5;border-color:rgba(248,113,113,.38)}
+
+
+/* бейдж NEW — белый, справа сверху, текст строго по центру */
+.badge-new{
+  position:absolute;top:10px;right:10px;z-index:4;
+  display:inline-flex;align-items:center;justify-content:center;
+  height:24px;padding:0 11px;border-radius:8px;
+  background:#fff;color:#000;font-size:11px;font-weight:800;
+}
+
+.badge-new .bn-text{letter-spacing:.12em;margin-right:-.12em}
+
+
+/* статус тайтла: внизу слева (справа — меню «⋮»), точка — семантика */
+.status-chip{
+  position:absolute;bottom:10px;left:10px;z-index:4;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:24px;padding:0 11px;border-radius:8px;max-width:calc(100% - 58px);
+  background:rgba(0,0,0,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:11px;font-weight:600;color:rgba(255,255,255,.94);white-space:nowrap;
+  overflow:hidden;
+}
+
+/* геометрия и типографика — из дизайн-системы («черновик v2», блок
+   «Чипы и статусы»): высота 24px, паддинги 11px, радиус 8px, зазор 6px,
+   кегль 11/600, точка 6px, обычный регистр без трекинга. Группа
+   «точка + подпись» центрируется целиком; при нехватке места подпись
+   режется многоточием — точка остаётся видна */
+.status-chip .sc-dot{position:static;width:6px;height:6px;border-radius:50%;flex:none}
+
+.status-chip .sc-t{line-height:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+/* гость ничего не хранит — статусы пользователя не показываем */
+body.is-guest .status-chip{display:none}
+
+.status-chip--watching .sc-dot{background:var(--ok)}
+
+.status-chip--planned .sc-dot{background:var(--info)}
+
+.status-chip--watched .sc-dot{background:rgba(255,255,255,.75)}
+
+.status-chip--onhold .sc-dot{background:var(--warn)}
+
+.status-chip--dropped .sc-dot{background:var(--bad)}
+
+
+/* меню состояния тайтла — «⋮» в правом нижнем углу карточки */
+.card-dots{
+  position:absolute;right:8px;bottom:8px;z-index:6;
+  width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.22);
+  background:rgba(0,0,0,.5);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  color:#fff;display:flex;align-items:center;justify-content:center;padding:0;
+  opacity:0;transform:translateY(4px);transition:.2s ease;
+}
+
+.poster-card.is-hover .card-dots,.poster-card:focus-visible .card-dots{opacity:1;transform:none}
+
+.card-dots:hover{background:#fff;color:#000;border-color:#fff}
+
+/* гость статусы не хранит — меню состояния не показываем */
+body.is-guest .card-dots{display:none}
+
+
+/* центральная play-кнопка */
+.card-play{
+  position:absolute;top:50%;left:50%;z-index:5;
+  width:46px;height:46px;border-radius:50%;
+  transform:translate(-50%,-50%) scale(.55);
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.34);
+  backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 30px rgba(0,0,0,.5);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .22s,transform .25s cubic-bezier(.2,.7,.2,1.5);
+}
+
+.poster-card.is-hover .card-play,.poster-card:focus-visible .card-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+.card-play:hover{background:rgba(255,255,255,.28)}
+
+
+/* подпись под постером */
+.card-caption{padding:9px 2px 0}
+
+.card-caption .cc-title{
+  font-size:13.5px;font-weight:600;line-height:1.35;color:#fff;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  min-height:2.6em;
+}
+
+.card-caption .cc-meta{
+  margin-top:3px;display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;
+}
+
+.cc-meta .cm-sep{color:rgba(255,255,255,.18);flex:none}
+
+.cc-meta .cm-type{font-weight:700;flex:none;color:rgba(255,255,255,.55)}
+
+.cc-meta .cm-genres{overflow:hidden;text-overflow:ellipsis}
+
+
+/* ============ ПРЕВЬЮ-ПАНЕЛЬ КАРТОЧКИ (сбоку при наведении) ============ */
+.preview{
+  position:fixed;z-index:105;width:360px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:16px;
+  box-shadow:0 32px 80px -12px rgba(0,0,0,.95);
+  overflow:hidden;
+  opacity:0;transform:translateY(10px) scale(.97);
+  transition:opacity .22s ease,transform .22s cubic-bezier(.2,.7,.2,1);
+  pointer-events:none;
+}
+
+.preview.show{opacity:1;transform:none;pointer-events:auto}
+
+.preview.hidden{display:none}
+
+
+/* «волна»: полупрозрачная белая полоса проходит сверху вниз,
+   и только после неё проявляется содержимое превью */
+.pv-wave{position:absolute;inset:0;z-index:9;pointer-events:none;overflow:hidden;border-radius:inherit}
+
+.pv-wave::before{
+  content:'';position:absolute;left:0;right:0;top:-42%;height:34%;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.04) 28%,rgba(255,255,255,.2) 47%,rgba(255,255,255,.34) 52%,rgba(255,255,255,.04) 72%,transparent);
+  opacity:0;
+}
+
+.preview.waving .pv-wave::before{animation:pv-sweep .55s cubic-bezier(.45,0,.2,1) forwards}
+
+@keyframes pv-sweep{
+  0%{transform:translateY(0);opacity:0}
+  14%{opacity:1}
+  86%{opacity:1}
+  100%{transform:translateY(470%);opacity:0}
+}
+
+.pv-media,.pv-thumbs,.pv-body{opacity:0;transform:translateY(6px);transition:opacity .12s ease,transform .12s ease}
+
+.preview.show .pv-media,.preview.show .pv-thumbs,.preview.show .pv-body{
+  opacity:1;transform:none;
+  transition:opacity .34s ease .16s,transform .34s cubic-bezier(.2,.7,.2,1) .16s;
+}
+
+
+.pv-media{position:relative;aspect-ratio:16/9;background:#0b0b0e;overflow:hidden}
+
+.pv-media>img{width:100%;height:100%;object-fit:cover;transition:opacity .18s ease}
+
+/* мини-волна при переключении кадра */
+.pv-media::after{
+  content:'';position:absolute;left:0;right:0;top:-64%;height:55%;z-index:8;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.24) 47%,rgba(255,255,255,.38) 52%,transparent);
+  opacity:0;
+}
+
+.pv-media.waving::after{animation:pv-sweep .42s cubic-bezier(.45,0,.2,1) forwards}
+
+.pv-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.06),transparent 34%,rgba(0,0,0,.52) 90%);z-index:2}
+
+.pv-play{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.34);
+  backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  color:#fff;display:flex;align-items:center;justify-content:center;transition:.18s;padding:0;
+}
+
+.preview:hover .pv-play{background:rgba(255,255,255,.28);transform:translate(-50%,-50%) scale(1.07)}
+
+
+/* «трейлер»: имитация видео — кен-бёрнс, полоса прогресса, звук */
+.pv-video{position:absolute;inset:0;z-index:1;display:none;background:#0b0b0e;overflow:hidden}
+
+.pv-media.is-trailer .pv-video{display:block}
+
+.pv-media.is-trailer>img{opacity:0}
+
+.pv-media.is-trailer{cursor:pointer}
+
+.pv-video img{width:100%;height:100%;object-fit:cover;transition:opacity .2s ease;animation:pv-kb 6.5s ease-in-out infinite alternate}
+
+@keyframes pv-kb{from{transform:scale(1.03) translate(-1.4%,0)}to{transform:scale(1.16) translate(1.4%,0)}}
+
+.pv-vchip{
+  position:absolute;top:10px;left:10px;z-index:3;
+  display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:7px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+}
+
+.pv-vbar{position:absolute;left:12px;right:12px;bottom:12px;height:3px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden;z-index:3}
+
+.pv-vbar span{display:block;height:100%;background:#fff;border-radius:99px;transform-origin:left;transform:scaleX(0)}
+
+.pv-media.is-trailer:not(.is-paused) .pv-vbar span{animation:pv-progress 24s linear infinite}
+
+@keyframes pv-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+.pv-media.is-paused .pv-video img{animation-play-state:paused}
+
+/* громкость трейлера: кнопка + выдвижной ползунок. Поднята над
+   полосой таймлайна (bottom:26px), чтобы не наезжать на неё.
+   В проде слайдер управляет плеером YouTube (IFrame API:
+   player.setVolume(0..100)); в макете звук синтезирует WebAudio. */
+.pv-vol{
+  position:absolute;right:10px;bottom:26px;z-index:4;
+  display:flex;align-items:center;gap:7px;
+}
+
+.pv-vol-track{width:0;overflow:hidden;transition:width .28s cubic-bezier(.2,.7,.2,1)}
+
+.pv-vol:hover .pv-vol-track,.pv-vol.dragging .pv-vol-track{width:80px}
+
+.pv-vol-slider{position:relative;width:80px;height:28px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+
+.vs-rail{position:relative;display:block;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,.28);overflow:hidden}
+
+.vs-fill{position:absolute;top:0;bottom:0;left:0;width:55%;background:#fff;border-radius:99px}
+
+.pv-vol-slider:hover .vs-fill,.pv-vol.dragging .vs-fill{box-shadow:0 0 10px rgba(255,255,255,.45)}
+
+.vs-thumb{
+  position:absolute;top:50%;left:55%;width:11px;height:11px;border-radius:50%;
+  transform:translate(-50%,-50%);background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.6);
+  transition:transform .15s;pointer-events:none;
+}
+
+.pv-vol-slider:hover .vs-thumb,.pv-vol.dragging .vs-thumb{transform:translate(-50%,-50%) scale(1.3)}
+
+.pv-vol.is-muted .vs-rail{opacity:.45}
+
+.vs-bubble{
+  position:absolute;bottom:calc(100% - 2px);left:50%;transform:translateX(-50%);
+  padding:2px 7px;border-radius:7px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.18);
+  font-size:10px;font-weight:800;color:#fff;white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .15s;
+}
+
+.pv-vol:hover .vs-bubble,.pv-vol.dragging .vs-bubble{opacity:1}
+
+.pv-vmute{
+  flex:none;width:30px;height:30px;border-radius:9px;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;display:flex;align-items:center;justify-content:center;transition:.15s;padding:0;
+}
+
+.pv-vmute:hover{background:rgba(255,255,255,.22)}
+
+.pv-vmute.is-off{color:var(--text-3)}
+
+/* стрелки переключения кадров прямо на превью */
+.pv-nav{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:5;
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .18s,background .15s;padding:0;
+}
+
+.pv-nav--prev{left:8px}
+
+.pv-nav--next{right:8px}
+
+.pv-media:hover .pv-nav,.pv-media:focus-within .pv-nav{opacity:1}
+
+.pv-nav:hover{background:rgba(255,255,255,.24)}
+
+
+/* миниатюры: вручную переключаем «трейлер / кадры»; кадров может
+   быть много — полоса прокручивается, активная выезжает в центр */
+.pv-thumbs{
+  display:flex;gap:6px;padding:10px 12px 0;
+  overflow-x:auto;scrollbar-width:none;
+}
+
+.pv-thumbs::-webkit-scrollbar{display:none}
+
+.pv-thumbs.is-scrollable{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 10px),transparent);
+  mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 10px),transparent);
+}
+
+.pv-thumb{
+  position:relative;height:42px;flex:1;min-width:44px;border-radius:8px;overflow:hidden;padding:0;
+  border:1px solid var(--border-2);background:var(--surface-2);transition:.15s;
+}
+
+.pv-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+.pv-thumb:hover{border-color:var(--border-3)}
+
+.pv-thumb.is-on{border-color:#fff;box-shadow:0 0 0 1px #fff}
+
+.pv-thumb--trailer{
+  flex:1.35;min-width:66px;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:10px;font-weight:700;color:var(--text-2);white-space:nowrap;
+}
+
+.pv-thumb--trailer svg{color:#fff}
+
+.pv-thumb--trailer.is-on{color:#fff}
+
+.pv-body{padding:12px 16px 16px}
+
+.pv-title{font-family:var(--font-display);font-size:16px;line-height:1.25;letter-spacing:.2px}
+
+.pv-meta{margin-top:7px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;color:var(--text-2);font-weight:600}
+
+.pv-meta .hm-sep{color:rgba(255,255,255,.25)}
+
+.pv-desc{
+  margin-top:9px;font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.66);
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+.pv-actions{margin-top:13px;display:flex;gap:8px;align-items:center}
+
+.pv-actions .btn{height:38px;padding:0 16px;font-size:13px;border-radius:10px}
+
+.pv-ico{
+  width:38px;height:38px;border-radius:10px;
+  border:1px solid var(--border-2);background:var(--surface-2);color:var(--text-2);
+  display:inline-flex;align-items:center;justify-content:center;transition:.15s;
+}
+
+.pv-ico:hover{background:var(--surface-3);color:#fff}
+
+.pv-ico.is-on{background:#fff;color:#000;border-color:#fff}
+
+
+/* чип состояния в мета-строке превью — геометрия из дизайн-системы v2,
+   как у статусной пилюли карточек: 24px / паддинги 11px / радиус 8px,
+   кегль 11/600, точка 6px, обычный регистр без трекинга */
+.pv-status{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:24px;padding:0 11px;border-radius:8px;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.16);
+  font-size:11px;font-weight:600;
+  color:rgba(255,255,255,.94);white-space:nowrap;
+}
+
+.pv-status .sc-dot{position:static;width:6px;height:6px;border-radius:50%;flex:none}
+
+.pv-status .sc-t{line-height:1}
+
+/* гость статусы и списки не хранит */
+body.is-guest .pv-lib,body.is-guest .pv-status{display:none}
+
+
+/* ============ МЕНЮ СОСТОЯНИЯ ТИТЛА («⋮» у карточки и в превью) ============ */
+#statusMenu{
+  position:fixed;z-index:112;width:216px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:0 28px 70px -14px rgba(0,0,0,.9);
+  padding:6px;animation:dd-in .16s ease;
+}
+
+#statusMenu.hidden{display:none}
+
+.sm-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:8px 10px 6px}
+
+.sm-item{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:8px 10px;border-radius:10px;border:0;background:none;
+  color:var(--text-2);font-size:13px;font-weight:600;text-align:left;transition:.14s;
+}
+
+.sm-item:hover{background:var(--surface-2);color:#fff}
+
+.sm-item .sm-dot{width:7px;height:7px;border-radius:50%;flex:none}
+
+.sm-item .sm-label{flex:1;text-align:left}
+
+.sm-item.is-cur{background:var(--surface-2);color:#fff}
+
+.sm-item.is-cur svg{flex:none;color:#fff}
+
+.sm-sep{height:1px;background:var(--border);margin:5px 6px}
+
+.sm-x{width:7px;display:inline-flex;justify-content:center;flex:none;color:var(--text-3)}
+
+.sm-item--clear{color:var(--text-3)}
+
+.sm-item--clear:hover{color:#FCA5A5}
+
+.sm-item--clear:hover .sm-x{color:#FCA5A5}
+
+
+/* ============ МЕНЮ «ПОДЕЛИТЬСЯ» (как в изначальной версии) ============
+   Копирование ссылки, Telegram, ВКонтакте. Живёт в той же стеклянной
+   карточке, что и меню состояния. */
+#shareMenu{
+  position:fixed;z-index:112;width:224px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:0 28px 70px -14px rgba(0,0,0,.9);
+  padding:6px;animation:dd-in .16s ease;
+}
+
+#shareMenu.hidden{display:none}
+
+#shareMenu .sm-item svg{flex:none;color:var(--text-3);transition:color .14s}
+
+#shareMenu .sm-item:hover svg{color:#fff}
+
+
+/* ============ ПОПОВЕР «В ПОДБОРКУ» + СОЗДАНИЕ ПОДБОРКИ ============
+   Стеклянная карточка как у «Поделиться»: список своих подборок
+   с мини-коллажами (четыре постера, каждый в своём углу), клик
+   добавляет/убирает тайтл; внизу — создание новой подборки. */
+#collMenu{
+  position:fixed;z-index:112;width:300px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:0 28px 70px -14px rgba(0,0,0,.9);
+  padding:6px;animation:dd-in .16s ease;
+}
+
+#collMenu.hidden{display:none}
+
+.clm-head{padding:7px 10px 5px;font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3)}
+
+.clm-item{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:8px 10px;border:0;border-radius:10px;background:none;
+  color:var(--text-1);font-family:var(--font-body);font-size:13px;font-weight:600;
+  cursor:pointer;text-align:left;transition:background .14s,color .14s;
+}
+
+.clm-item:hover{background:rgba(255,255,255,.07)}
+
+.clm-mini{
+  flex:none;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:1px;
+  width:34px;height:34px;border-radius:8px;overflow:hidden;background:#0b0b0e;
+}
+
+.clm-mini img{width:100%;height:100%;object-fit:cover;min-width:0;min-height:0}
+
+.clm-mini i{display:block;background:#1c1c24}
+
+/* раскладка мини-коллажа по числу тайтлов — как у больших
+   обложек подборок */
+.clm-mini[data-n="1"]{grid-template-columns:1fr;grid-template-rows:1fr}
+
+.clm-mini[data-n="2"]{grid-template-columns:1fr 1fr;grid-template-rows:1fr}
+
+.clm-mini[data-n="3"]{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+
+.clm-mini[data-n="3"]>:first-child{grid-row:1/span 2}
+
+.clm-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.clm-check{flex:none;color:transparent;transition:color .14s}
+
+.clm-item.is-on .clm-check{color:#fff}
+
+.clm-item--new{color:var(--text-2)}
+
+.clm-item--new:hover{color:#fff}
+
+.clm-item--new .clm-name{font-weight:700}
+
+.clm-empty{padding:10px 12px;font-size:12px;color:var(--text-3);line-height:1.5}
+
+.clm-sep{height:1px;margin:6px 8px;background:var(--border)}
+
+
+/* модалка создания: название + описание, тайтл — первый в составе */
+.clc-card{
+  position:relative;width:min(440px,calc(100vw - 36px));
+  padding:26px 26px 24px;border-radius:20px;
+  background:#101015;border:1px solid var(--border-2);
+  box-shadow:0 60px 140px -30px rgba(0,0,0,.95);
+  display:flex;flex-direction:column;gap:14px;
+}
+
+.clc-card h3{font-family:var(--font-display);font-size:19px;color:#fff}
+
+.clc-sub{margin-top:-8px;font-size:12.5px;color:var(--text-3)}
+
+.clc-field label{display:block;font-size:11.5px;font-weight:600;color:var(--text-3);margin-bottom:7px}
+
+.clc-field input,.clc-field textarea{
+  width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border-2);border-radius:12px;
+  padding:11px 14px;color:#fff;font-family:var(--font-body);font-size:13px;
+  transition:border-color .15s,background .15s;
+}
+
+.clc-field textarea{min-height:76px;resize:vertical;line-height:1.5}
+
+.clc-field input:focus,.clc-field textarea:focus{outline:0;border-color:var(--border-3);background:rgba(255,255,255,.09)}
+
+.clc-field input::placeholder,.clc-field textarea::placeholder{color:var(--text-3)}
+
+.clc-hint{font-size:11.5px;color:var(--text-3);line-height:1.5}
+
+.clc-save{align-self:flex-start}
+
+
+/* ============ КАРТОЧКА «ПРОДОЛЖИТЬ» (альбомная) ============ */
+.cw-card{position:relative;width:calc(var(--card-w)*1.5);transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+
+.cw-card.is-hover,.cw-card:focus-visible{transform:translateY(-4px)}
+
+.cw-wrap{
+  position:relative;aspect-ratio:16/9;border-radius:var(--r-m);overflow:hidden;
+  background:#0b0b0e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);
+  transition:box-shadow .3s ease;
+}
+
+.cw-card.is-hover .cw-wrap{box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 18px 44px -8px rgba(0,0,0,.85)}
+
+.cw-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+
+.cw-card.is-hover .cw-wrap img{transform:scale(1.05)}
+
+.cw-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.14) 0%,transparent 34%,rgba(0,0,0,.2) 62%,rgba(0,0,0,.88) 100%);pointer-events:none}
+
+.cw-info{
+  position:absolute;left:0;right:0;bottom:0;padding:34px 12px 12px;
+  display:flex;flex-direction:column;gap:3px;
+}
+
+.cw-title{font-size:13px;font-weight:700;line-height:1.3;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+
+.cw-sub{font-size:11px;color:rgba(255,255,255,.62)}
+
+.cw-progress{
+  margin-top:8px;height:3.5px;border-radius:99px;background:rgba(255,255,255,.18);overflow:hidden;
+}
+
+.cw-progress .cw-bar{height:100%;border-radius:99px;background:#fff;box-shadow:0 0 10px rgba(255,255,255,.5)}
+
+.cw-left{margin-top:6px;font-size:10.5px;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:5px}
+
+.cw-play{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.55);z-index:5;
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.34);
+  backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:.25s cubic-bezier(.2,.7,.2,1.5);
+}
+
+.cw-card.is-hover .cw-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+
+/* ============ БАННЕР ГОСТЯ (вместо «Продолжить просмотр») ============ */
+.cw-guest{
+  margin:0 max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x)));
+  display:flex;align-items:center;gap:18px;
+  padding:20px 24px;border-radius:var(--r-l);
+  border:1px dashed var(--border-2);
+  background:linear-gradient(120deg,rgba(255,255,255,.045),rgba(255,255,255,.012));
+}
+
+.cg-ic{
+  width:46px;height:46px;border-radius:14px;flex:none;
+  background:var(--surface-2);border:1px solid var(--border-2);
+  display:flex;align-items:center;justify-content:center;color:var(--text-2);
+}
+
+.cg-body{flex:1;min-width:0}
+
+.cg-title{font-size:14.5px;font-weight:700}
+
+.cg-desc{font-size:12.5px;color:var(--text-3);margin-top:2px;line-height:1.5}
+
+
+/* ============ БАННЕР «СКОРО»: МАНГА ============ */
+.soon-banner{
+  margin:40px max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x))) 0;position:relative;overflow:hidden;
+  border-radius:var(--r-l);border:1px solid var(--border-2);
+  background:linear-gradient(120deg,rgba(255,255,255,.06),rgba(255,255,255,.015));
+  display:flex;align-items:center;gap:22px;padding:26px 28px;cursor:pointer;
+  transition:border-color .25s,background .25s;
+}
+
+.soon-banner:hover{border-color:rgba(255,255,255,.3);background:linear-gradient(120deg,rgba(255,255,255,.09),rgba(255,255,255,.03))}
+
+.soon-banner::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(420px 180px at 88% 0%,rgba(255,255,255,.07),transparent 70%);
+}
+
+.soon-ic{
+  width:58px;height:58px;border-radius:16px;flex:none;
+  background:var(--surface-3);border:1px solid var(--border-2);
+  display:flex;align-items:center;justify-content:center;color:#fff;
+}
+
+.soon-body{flex:1;min-width:0}
+
+.soon-title{font-family:var(--font-display);font-size:17px;margin-bottom:5px}
+
+.soon-desc{font-size:13px;color:var(--text-2);line-height:1.55;max-width:560px}
+
+.soon-pill{
+  display:inline-flex;align-items:center;gap:7px;height:26px;padding:0 12px;border-radius:99px;
+  border:1px solid var(--border-2);background:var(--surface-2);
+  font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;flex:none;
+}
+
+.soon-pill .sp-dot{width:6px;height:6px;border-radius:50%;background:var(--warn);animation:pulse 2s ease-in-out infinite}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+
+/* ---- сообщить о проблеме (причины — про персону) ---- */
+.report-card{
+  width:min(430px,100%);border-radius:20px;padding:24px;position:relative;text-align:left;
+  background:rgba(11,11,14,.97);
+  border:1px solid var(--border-2);
+  box-shadow:0 40px 110px -20px rgba(0,0,0,.95);
+  animation:auth-in .25s cubic-bezier(.2,.7,.2,1);
+}
+
+.report-card h3{font-size:16.5px;font-weight:800}
+
+.rp-sub{margin-top:4px;font-size:12.5px;color:var(--text-3)}
+
+.rp-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+
+.rp-item{
+  width:100%;min-height:44px;padding:10px 14px;border-radius:12px;text-align:left;
+  background:var(--surface);border:1px solid var(--border);color:var(--text-2);
+  font-family:inherit;font-size:13px;font-weight:600;line-height:1.35;transition:.15s;
+}
+
+.rp-item:hover{background:var(--surface-2);color:#fff;border-color:var(--border-2)}
+
+.rp-item.is-on{background:#fff;color:#000;border-color:#fff}
+
+.rp-comment{
+  width:100%;margin-top:12px;padding:10px 14px;border-radius:12px;resize:none;
+  background:var(--surface-2);border:1px solid var(--border-2);color:#fff;
+  font-family:inherit;font-size:13px;line-height:1.5;
+}
+
+.rp-comment:focus{outline:none;border-color:rgba(255,255,255,.36);box-shadow:0 0 0 4px rgba(255,255,255,.05)}
+
+.rp-comment::placeholder{color:var(--text-3)}
+
+.rp-send{width:100%;margin-top:14px}
+
+
+/* ============ АДАПТИВ ============ */
+@media (max-width:1240px){
+  .s-kbd{display:none}
+}
+
+/* средние ширины: центрированный поиск не должен наезжать на правую
+   навигацию — «Мой список» прячется (он доступен в меню аккаунта,
+   drawer и футере), пилюля поиска сжимается до свободного места */
+@media (max-width:1560px) and (min-width:1081px){
+  .main-nav [data-nav="mylist"],#navRandom{display:none}   /* «Мой список» и «Случайное» уступают место «Подборкам» — оба доступны в бургере */
+  .search-fake{width:max(200px,min(360px,calc(100vw - 1000px)))}
+}
+
+@media (max-width:1080px){
+  .main-nav{gap:14px}
+  #navRandom,#navMyList,.main-nav [data-nav="mylist"],.main-nav [data-nav="colls"]{display:none}   /* второстепенные ссылки уходят в бургер */
+  .main-nav .nav-link[data-nav="manga"]{display:none}                /* раздел «Скоро» прячется первым */
+  .search-fake{width:min(300px,28vw)}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+
+@media (max-width:930px){
+  .search-fake{width:220px}
+}
+
+@media (max-width:860px){
+  .main-nav{display:none}
+  #btnBurger{display:inline-flex}
+  .header-inner{gap:10px}
+  .h-left{gap:12px}
+  .h-right{gap:10px}
+  .logo{font-size:18px}
+  .search-fake{display:none}
+  #hdrSearchIcon{display:inline-flex}
+  .row-head{flex-wrap:wrap;gap:8px}
+  .row-arrows{display:none}   /* на таче свайп и так работает */
+  .soon-banner{flex-direction:column;align-items:flex-start;gap:14px;padding:22px}
+  .cw-guest{flex-direction:column;align-items:flex-start;gap:14px}
+  .bottom-nav{display:flex}
+  #toasts{bottom:84px;right:12px}
+  .lab{right:12px;bottom:78px}
+  .footer-grid{grid-template-columns:1fr}
+  footer{padding-bottom:130px}
+  .sov-panel{margin-top:6vh}
+  .preview{display:none!important} /* на тач-устройствах превью не нужно */
+}
+
+
+/* дисциплина движения: меньше анимации тем, кто её не просил */
+@media (prefers-reduced-motion:reduce){
+  #grain{animation:none}
+  .preview{transition:none}
+  .preview.waving .pv-wave::before,.pv-media.waving::after{animation:none}
+  .sov-panel.is-searching::after,.sov-spin,.sov-sk-img,.sov-sk-ln i,.sov-sk-side,.srs-sk-img,.srs-sk-ln i,.srs-sk-side{animation:none}
+  .pv-video img{animation:none}
+  .pv-media.is-trailer:not(.is-paused) .pv-vbar span{animation:none}
+  *{scroll-behavior:auto}
+}
+
+/* ============ ФАКТЫ О ТАЙТЛЕ ============ */
+.facts{
+  margin:0 max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x)));
+}
+
+.facts+.row-group{margin-top:38px}
+
+.facts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+
+.fact{
+  padding:15px 18px;border-radius:var(--r-m);
+  background:var(--surface);border:1px solid var(--border);
+}
+
+.fact .f-label{
+  font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:5px;
+}
+
+.fact .f-value{font-size:13.5px;font-weight:600;color:#fff;line-height:1.35}
+
+
+/* ============ ПЛЕЕР (макет размещения) ============
+   Видео подвяжет бэкенд; здесь показано место и язык управления. */
+.player{margin:0 max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x))) 38px}
+
+.player-stage{
+  position:relative;width:100%;aspect-ratio:16/9;max-height:76vh;
+  margin:0 auto;background:#000;border-radius:var(--r-l);overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.09),0 34px 90px -22px rgba(0,0,0,.95);
+}
+
+.player-stage:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:-2px}
+
+.player-stage img.pl-frame{width:100%;height:100%;object-fit:cover;object-position:center 30%}
+
+.player-stage.is-playing img.pl-frame{animation:pl-kb 26s ease-in-out infinite alternate}
+
+@keyframes pl-kb{from{transform:scale(1.02)}to{transform:scale(1.1) translate(1.2%,-.8%)}}
+
+.pl-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.52),transparent 24%,transparent 55%,rgba(0,0,0,.82));opacity:0;transition:opacity .3s;pointer-events:none}
+
+.player-stage.is-idle .pl-shade{opacity:1}
+
+.pl-top{
+  position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;gap:12px;
+  padding:16px 20px;opacity:0;transform:translateY(-6px);transition:.25s ease;pointer-events:none;
+}
+
+.player-stage.is-idle .pl-top{opacity:1;transform:none}
+
+.pl-name{font-family:var(--font-display);font-size:15px;letter-spacing:.3px;text-shadow:0 2px 14px rgba(0,0,0,.75)}
+
+.pl-chip{
+  display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:7px;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+}
+
+.pl-chip.is-trailer{color:#FDE047;border-color:rgba(250,204,21,.4)}
+
+.pl-big{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;
+  width:78px;height:78px;border-radius:50%;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.34);
+  backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 14px 44px rgba(0,0,0,.55);
+  color:#fff;display:flex;align-items:center;justify-content:center;padding:0;
+  transition:opacity .22s,transform .25s cubic-bezier(.2,.7,.2,1.5),background .18s;
+}
+
+.pl-big:hover{background:rgba(255,255,255,.26)}
+
+.player-stage.is-playing .pl-big{opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.55)}
+
+.pl-bar{
+  position:absolute;left:0;right:0;bottom:0;z-index:6;
+  display:flex;align-items:center;gap:4px;padding:6px 12px 10px;
+  background:linear-gradient(transparent,rgba(0,0,0,.6));
+  opacity:0;transform:translateY(8px);transition:.25s ease;
+}
+
+.player-stage.is-idle .pl-bar{opacity:1;transform:none}
+
+.pl-btn{
+  flex:none;width:38px;height:38px;border-radius:10px;border:0;background:none;color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s;padding:0;
+}
+
+.pl-btn:hover{background:rgba(255,255,255,.14)}
+
+.pl-btn--q{width:auto;padding:0 10px;font-size:12px;font-weight:700}
+
+.pl-time{flex:none;font-size:12px;font-weight:600;color:rgba(255,255,255,.88);font-variant-numeric:tabular-nums;white-space:nowrap;margin:0 4px}
+
+.pl-seek{flex:1;min-width:60px;height:30px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+
+.pl-seek .rail{position:relative;display:block;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,.22)}
+
+.pl-buf{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:99px;background:rgba(255,255,255,.34)}
+
+.pl-fill{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:99px;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.5)}
+
+.pl-thumb{
+  position:absolute;top:50%;left:0;width:12px;height:12px;border-radius:50%;
+  transform:translate(-50%,-50%) scale(0);background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.6);
+  transition:transform .15s;pointer-events:none;
+}
+
+.pl-seek:hover .pl-thumb,.pl-seek.dragging .pl-thumb{transform:translate(-50%,-50%) scale(1)}
+
+.pl-vol{flex:none;display:flex;align-items:center;gap:2px}
+
+.pl-vol-track{width:0;overflow:hidden;transition:width .28s cubic-bezier(.2,.7,.2,1)}
+
+.pl-vol:hover .pl-vol-track,.pl-vol.dragging .pl-vol-track{width:72px}
+
+.pl-vol-slider{position:relative;width:72px;height:34px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+
+.pl-pop{
+  position:absolute;right:12px;bottom:64px;z-index:9;min-width:190px;
+  background:rgba(12,12,15,.97);border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:0 28px 70px -14px rgba(0,0,0,.9);padding:6px;animation:dd-in .16s ease;
+}
+
+.pl-pop.hidden{display:none}
+
+.pl-qplus{
+  flex:none;font-size:9px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:6px;
+  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));color:#fff;
+}
+
+.pl-chip--src{color:rgba(255,255,255,.82)}
+
+
+/* --- панель под плеером: дропдауны + полоса серий (по образцу animeon) ---
+   Три компактных селекта: источник, озвучка, сезон. Меню — та же
+   стеклянная карточка, что у остальных дропдаунов сайта. Полоса
+   серий — горизонтальная прокрутка со стрелками; постеров серий
+   нет, только номера и тултип с названием */
+.pl-panel{display:flex;align-items:stretch;gap:10px;margin-top:12px;flex-wrap:wrap}
+
+.pl-dd{position:relative}
+
+.pl-dd-btn{
+  display:flex;align-items:center;gap:14px;min-width:148px;
+  padding:8px 10px 8px 14px;border-radius:var(--r-m);
+  background:var(--surface);border:1px solid var(--border-2);color:#fff;
+  font-family:inherit;transition:background .18s,border-color .18s;
+}
+
+.pl-dd-btn:hover{background:var(--surface-2);border-color:rgba(255,255,255,.16)}
+
+.pl-dd.is-open .pl-dd-btn{background:var(--surface-2);border-color:rgba(255,255,255,.2)}
+
+.pl-dd-txt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;flex:1}
+
+.pl-dd-cap{font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3)}
+
+.pl-dd-val{
+  font-size:13px;font-weight:700;color:#fff;line-height:1.2;
+  max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+
+.pl-dd-caret{flex:none;color:var(--text-3);transition:transform .18s}
+
+.pl-dd.is-open .pl-dd-caret{transform:rotate(180deg);color:#fff}
+
+.pl-dd-menu{
+  position:absolute;top:calc(100% + 8px);left:0;z-index:60;
+  min-width:100%;max-width:290px;max-height:328px;overflow:auto;
+  background:rgba(12,12,15,.97);border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:0 28px 70px -14px rgba(0,0,0,.9);padding:6px;
+  animation:dd-in .16s ease;scrollbar-width:thin;
+}
+
+.pl-dd-menu.hidden{display:none}
+
+.pl-dd-item{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:8px 10px;border-radius:10px;border:0;background:none;
+  color:var(--text-2);font-family:inherit;font-size:13px;font-weight:600;
+  text-align:left;transition:.14s;
+}
+
+.pl-dd-item:hover{background:var(--surface-2);color:#fff}
+
+.pl-dd-item.is-cur{color:#fff}
+
+.pl-dd-item .di-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.pl-dd-item .di-note{flex:none;font-size:10.5px;font-weight:600;color:var(--text-3)}
+
+.pl-dd-item .di-check{flex:none;display:none;color:#fff}
+
+.pl-dd-item.is-cur .di-check{display:inline-flex}
+
+/* плеер без тайтла: приглушён, навести и выбрать нельзя */
+.pl-dd-item.is-off{opacity:.42;pointer-events:none}
+
+.pl-dd-item.is-off .di-label{color:var(--text-3)}
+
+
+/* полоса серий: номера в одну линию, прокрутка со стрелками */
+.pl-eps{display:flex;align-items:center;gap:10px;margin-top:10px}
+
+.pl-eps-arrow{
+  flex:none;width:34px;height:38px;border-radius:11px;
+  background:var(--surface);border:1px solid var(--border-2);color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;padding:0;
+  transition:background .18s,color .18s,opacity .18s;
+}
+
+.pl-eps-arrow:hover:not(:disabled){background:var(--surface-2);color:#fff}
+
+/* стрелки не нужны, когда всё влезло: прячем, место сохраняем */
+.pl-eps-arrow:disabled{opacity:0;visibility:hidden;cursor:default;transition:opacity .18s,visibility .18s}
+
+/* клип-область скролла шире самих чипов: внутренний отступ даёт
+   свечению выбранной серии место, а отрицательные маржины полностью
+   компенсируют его в раскладке — сетка и выравнивание со стрелками
+   не меняются. Снизу запас больше (20px): хвост свечения тает
+   медленно, при 12px он обрезался на ещё заметной яркости;
+   асимметрия не мешает — компенсирующий маржин снизу такой же,
+   чипы стоят ровно в строке со стрелками */
+.pl-eps-strip{
+  flex:1;min-width:0;display:flex;gap:6px;
+  overflow-x:auto;padding:12px 10px 20px;margin:-12px -10px -20px;
+  scrollbar-width:none;
+}
+
+.pl-eps-strip::-webkit-scrollbar{display:none}
+
+.pl-ep{
+  position:relative;flex:none;width:40px;height:38px;border-radius:11px;
+  background:var(--surface);border:1px solid var(--border);color:var(--text-2);
+  font-family:inherit;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;
+  overflow:hidden;transition:background .16s,color .16s,border-color .16s;
+}
+
+.pl-ep:hover{background:var(--surface-2);color:#fff;border-color:var(--border-2)}
+
+/* просмотренная серия — приглушена, точка снизу */
+.pl-ep.is-watched{color:var(--text-3)}
+
+.pl-ep.is-watched::after{
+  content:'';position:absolute;left:50%;bottom:5px;width:4px;height:4px;
+  transform:translateX(-50%);border-radius:50%;background:var(--ok);
+}
+
+.pl-ep.is-watched:hover::after{background:#fff}
+
+/* текущая серия — белая, с полосой прогресса внутри */
+.pl-ep.is-cur{background:#fff;color:#000;border-color:#fff;box-shadow:0 6px 22px -6px rgba(255,255,255,.45)}
+
+.pl-ep.is-cur:hover{background:#fff;color:#000}
+
+.pl-ep.is-cur::after{display:none}
+
+.pe-prog{position:absolute;left:0;bottom:0;height:3px;background:#000;border-radius:99px}
+
+/* подсказка сразу под видимой полосой серий отодвинута ниже: свечение
+   текущей серии тает вниз на ~20px, и карточка подсказки не должна
+   ложиться на него своей рамкой (когда полосы нет — обычный отступ) */
+#plEpsWrap:not(.hidden)+.pl-notice{margin-top:24px}
+
+
+/* --- внешний плеер: имитация iframe --- */
+.player-stage.is-embed .pl-top,
+.player-stage.is-embed .pl-bar,
+.player-stage.is-embed .pl-big{display:none}
+
+.pl-embed{position:absolute;inset:0;z-index:4;display:none}
+
+.player-stage.is-embed .pl-embed{display:block}
+
+.ple-top{
+  position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:12px;
+  padding:14px 18px;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);
+}
+
+.ple-brand{
+  display:inline-flex;align-items:center;gap:8px;flex:none;
+  font-weight:800;font-size:14px;letter-spacing:.02em;color:var(--ple-hue,#fff);
+}
+
+.ple-brand::before{
+  content:'';width:9px;height:9px;border-radius:3px;flex:none;
+  background:var(--ple-hue,#fff);box-shadow:0 0 14px var(--ple-hue,#fff);
+}
+
+.ple-ep{
+  font-size:11.5px;font-weight:600;color:rgba(255,255,255,.78);white-space:nowrap;
+  background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);
+  padding:3px 9px;border-radius:6px;
+}
+
+.ple-play{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:62px;height:62px;border-radius:16px;border:0;background:#fff;color:#000;
+  display:flex;align-items:center;justify-content:center;padding:0;
+  box-shadow:0 14px 44px rgba(0,0,0,.55);
+  transition:opacity .2s,transform .22s cubic-bezier(.2,.7,.2,1.5);
+}
+
+.ple-play:hover{transform:translate(-50%,-50%) scale(1.06)}
+
+.player-stage.is-playing .ple-play{opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.6)}
+
+.ple-bar{
+  position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;
+  padding:12px 16px 14px;background:linear-gradient(transparent,rgba(0,0,0,.65));
+  pointer-events:none;
+}
+
+.ple-time,.ple-dur{flex:none;font-size:11.5px;font-weight:600;color:rgba(255,255,255,.85);font-variant-numeric:tabular-nums}
+
+.ple-rail{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.22);overflow:hidden}
+
+.ple-fill{display:block;height:100%;width:0;border-radius:99px;background:var(--ple-hue,#fff)}
+
+.ple-mark{
+  position:absolute;right:14px;bottom:50px;pointer-events:none;
+  font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);background:rgba(0,0,0,.42);
+  border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:3px 8px;
+}
+
+
+/* --- смена потока: источник/серия/озвучка --- */
+.pl-load{
+  position:absolute;inset:0;z-index:12;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:rgba(0,0,0,.74);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+
+.player-stage.is-loading .pl-load{display:flex}
+
+.pl-spin{
+  width:38px;height:38px;border-radius:50%;flex:none;
+  border:3px solid rgba(255,255,255,.18);border-top-color:#fff;
+  animation:pl-spin .8s linear infinite;
+}
+
+@keyframes pl-spin{to{transform:rotate(360deg)}}
+
+.pl-load .plt{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.88)}
+
+
+/* --- подсказка вместо переключателей: плеером не управляем --- */
+.pl-notice{
+  display:flex;align-items:flex-start;gap:10px;margin-top:10px;
+  padding:11px 14px;border:1px solid var(--border-2);border-radius:13px;
+  background:var(--surface);color:var(--text-2);
+  font-size:12.5px;line-height:1.5;
+}
+
+.pl-notice svg{flex:none;margin-top:2px;color:var(--text-3)}
+
+.pl-notice b{color:#fff;font-weight:700}
+
+
+/* ============ ХРОНОЛОГИЯ ============
+   Сезоны и связанные тайтлы — отдельные карточки: переключение
+   между ними — переход на их страницы. Текущий — белая рамка. */
+.chron-kind{
+  position:absolute;top:10px;right:10px;z-index:4;
+  display:inline-flex;align-items:center;height:24px;padding:0 11px;border-radius:8px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.94);
+}
+
+/* текущий тайтл: белая рамка. Outline, а не inset-тень: inset
+   рисуется ПОД дочерними элементами и постер её закрывает */
+.poster-card.is-current .poster-wrap{outline:2px solid #fff;outline-offset:-2px;box-shadow:0 18px 44px -8px rgba(0,0,0,.85)}
+
+.chron-now{margin-top:4px;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;color:#fff}
+
+.chron-now .cn-dot{width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.7)}
+
+
+/* ============ РОЛИ: аниме (сэйю) и люди (актёры) ============ */
+.char-card--person .char-photo img{object-position:center}
+
+/* карточка-ссылка на страницу персоны: ведёт себя как остальные
+   карточки — тот же hover, тот же курсор */
+a.char-card{color:inherit;text-decoration:none;display:block}
+
+a.char-card .char-name .char-arrow{
+  display:inline-flex;vertical-align:-2px;margin-left:4px;
+  color:var(--text-3);transition:transform .2s,color .2s;
+}
+
+a.char-card:hover .char-name .char-arrow{color:#fff;transform:translateX(2px)}
+
+
+/* ============ КАДРЫ + ЛАЙТБОКС ============ */
+.still-card{
+  position:relative;flex:none;width:clamp(300px,30vw,440px);
+  border-radius:var(--r-m);overflow:hidden;aspect-ratio:16/9;
+  background:#0b0b0e;cursor:pointer;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);
+  transition:box-shadow .3s ease;
+}
+
+.still-card img{width:100%;height:100%;object-fit:cover;transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+
+.still-card.is-hover img{transform:scale(1.05)}
+
+.still-card.is-hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 18px 44px -8px rgba(0,0,0,.85)}
+
+.still-zoom{
+  position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;pointer-events:none;
+}
+
+.still-card.is-hover .still-zoom{opacity:1}
+
+.still-zoom svg{width:13px;height:13px}
+
+.lb{
+  position:fixed;inset:0;z-index:140;
+  display:flex;align-items:center;justify-content:center;
+  padding:56px clamp(64px,9vw,110px) 72px;
+  background:rgba(0,0,0,.9);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  opacity:0;pointer-events:none;transition:opacity .25s ease;
+}
+
+.lb.show{opacity:1;pointer-events:auto}
+
+.lb-frame{position:relative;max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center}
+
+.lb-frame img{
+  max-width:100%;max-height:calc(100vh - 140px);
+  border-radius:var(--r-m);box-shadow:0 30px 90px rgba(0,0,0,.85);
+  transition:opacity .18s;
+}
+
+.lb-count{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:-38px;
+  font-size:12.5px;color:var(--text-2);font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+
+.lb-nav{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:2;
+  width:46px;height:46px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(20,20,22,.6);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  color:#fff;display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+
+.lb-nav:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.4)}
+
+.lb-nav--prev{left:clamp(10px,2.5vw,30px)}
+
+.lb-nav--next{right:clamp(10px,2.5vw,30px)}
+
+.lb-close{
+  position:absolute;top:20px;right:clamp(16px,3vw,34px);z-index:2;
+  width:42px;height:42px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(20,20,22,.6);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  color:#fff;display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+
+.lb-close:hover{background:rgba(255,255,255,.16)}
+
+
+/* ============ ПЕРСОНАЖИ ============ */
+.char-card{flex:none;width:clamp(128px,10vw,158px);text-align:center}
+
+.char-photo{
+  position:relative;aspect-ratio:3/4;border-radius:var(--r-m);overflow:hidden;
+  background:#0b0b0e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);
+  transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s ease;
+}
+
+.char-card.is-hover .char-photo{transform:translateY(-4px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 18px 44px -8px rgba(0,0,0,.85)}
+
+.char-photo img{width:100%;height:100%;object-fit:cover;object-position:top;transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+
+.char-card.is-hover .char-photo img{transform:scale(1.06)}
+
+.char-name{margin-top:9px;font-size:13px;font-weight:600;color:#fff;line-height:1.25}
+
+.char-role{font-size:11px;color:var(--text-3);margin-top:2px;line-height:1.3}
+
+.char-va{font-size:10.5px;color:var(--text-3);margin-top:3px;line-height:1.3}
+
+
+/* ============ ПОЛНЫЙ СПИСОК РОЛЕЙ (модалка) ============
+   «Показать всех» больше не растягивает страницу: полный список
+   открывается в модалке с собственной прокруткой. Сколько бы
+   персонажей или актёров ни прислал бэкенд — длина страницы
+   не меняется, лента на странице остаётся компактной. */
+.cast-modal{
+  width:min(1280px,100%);max-height:min(86vh,880px);
+  display:flex;flex-direction:column;
+  background:rgba(11,11,14,.98);border:1px solid var(--border-2);border-radius:var(--r-l);
+  box-shadow:0 40px 110px -20px rgba(0,0,0,.95);
+  animation:auth-in .3s cubic-bezier(.2,.7,.2,1);
+}
+
+.cast-modal-head{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:16px 20px 14px;border-bottom:1px solid var(--border);flex:none;
+}
+
+.cast-modal-title{font-family:var(--font-display);font-size:16px;letter-spacing:.3px;color:#fff}
+
+.cast-modal-title .rt-count{font-family:var(--font-body);font-size:11.5px;font-weight:600;color:var(--text-3);margin-left:8px;vertical-align:2px}
+
+.cast-modal-close{
+  width:34px;height:34px;border-radius:10px;flex:none;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);
+  display:flex;align-items:center;justify-content:center;transition:.15s;
+}
+
+.cast-modal-close:hover{background:var(--surface-3);color:#fff}
+
+.cast-modal-body{overflow-y:auto;padding:18px 20px 22px;overscroll-behavior:contain}
+
+.cast-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:22px 14px}
+
+.cast-grid .char-card{width:auto}
+
+.cast-grid .char-name{overflow-wrap:anywhere}
+
+.cast-grid .char-role,.cast-grid .char-va{overflow-wrap:anywhere}
+
+
+/* ============ ГОСТЬ НА СТРАНИЦЕ ТАЙТЛА ============ */
+body.is-guest .tp-resume{display:none}
+
+body.is-guest .tp-rate{display:none}
+
+body.is-guest .tp-statuschip{display:none}
+
+body.is-guest #tpStatusBtn{display:none}
+
+/* гость не хранит историю просмотра: без меток «просмотрено» и прогресса */
+body.is-guest .pl-ep.is-watched::after{display:none}
+
+body.is-guest .pe-prog{display:none}
+
+
+/* ============ АДАПТИВ СТРАНИЦЫ ТАЙТЛА ============ */
+@media (max-width:900px){
+  .tp-hero{min-height:0;padding-bottom:34px}
+  .tp-main{flex-direction:column;align-items:flex-start;gap:22px}
+  .tp-poster{width:170px}
+  .tp-info{max-width:none}
+  .tp-resume{min-width:100%}
+}
+
+@media (max-width:640px){
+  .tp-hero{padding-top:calc(var(--header-h) + 22px)}
+  .tp-crumbs{margin-bottom:16px}
+  .tp-title{font-size:clamp(26px,8vw,34px)}
+  .tp-rate{flex-wrap:wrap;gap:10px}
+  .pl-name{font-size:13px}
+  .pl-chip{height:20px;padding:0 8px}
+  .pl-chip--src{display:none}
+  .pl-btn{width:34px;height:34px}
+  .pl-btn--q{padding:0 8px}
+  .pl-panel{gap:8px}
+  .pl-dd{flex:1;min-width:calc(50% - 4px)}
+  .pl-dd-btn{min-width:0;width:100%}
+  .pl-dd-val{max-width:none}
+  .ple-play{width:54px;height:54px;border-radius:13px}
+  .ple-mark{right:10px;bottom:48px}
+  .pl-load .plt{font-size:11.5px}
+  .pl-eps{gap:8px}
+  .pl-eps-strip{padding:12px 8px 20px;margin:-12px -8px -20px}
+  .pl-eps-arrow{width:30px;height:34px}
+  .pl-ep{width:36px;height:34px;font-size:12px}
+  .facts-grid{grid-template-columns:repeat(2,1fr)}
+  .cast-grid{grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:18px 10px}
+  .lb{padding:48px 12px 60px}
+  .lb-nav--prev{left:6px}
+  .lb-nav--next{right:6px}
+}
+
+/* ============ СТРАНИЦА ПЕРСОНЫ ============ */
+/* портрет в hero — формат 3:4 (как у карточек персонажей):
+   фотопортреты приходят вертикальными, 2:3 оставлял бы
+   пустые поля по бокам; contain — фото видно целиком */
+.tp-poster.pp-poster{aspect-ratio:3/4}
+
+.tp-poster.pp-poster img{object-fit:cover}
+
+/* фон hero — портретный снимок на всю ширину: держим лицо
+   в верхней трети, остальное съедает затемнение */
+.tp-backdrop.pp-backdrop img{object-position:center 18%}
+
+/* фон-портрет бывает светлым — крошки сверху должны читаться:
+   усиливаем верхнее затемнение относительно hero тайтла */
+.pp-backdrop+.tp-shade--top{background:linear-gradient(to bottom,rgba(0,0,0,.74),transparent 36%)}
+
+/* строка роли на карточке фильмографии */
+.film-role{margin-top:3px;font-size:11px;color:var(--text-3);line-height:1.35}
+
+.poster-card:hover .film-role,.poster-card:focus-visible .film-role{color:var(--text-2)}
+
+/* сетка фильмографии в модалке «Все роли» */
+.film-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:26px 14px}
+
+.film-grid .poster-card{width:auto}
+
+.film-grid .cc-title{overflow-wrap:anywhere}
+
+/* фото персоны в ленте: портретные снимки кропим сверху,
+   чтобы лицо оставалось в кадре (кадры тайтлов — как было) */
+.still-card.pp-photo img{object-position:center 18%}
+
+@media (max-width:760px){
+  .film-grid{grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:20px 10px}
+}
+
+
+</style>
+</head>
+
+<body data-btnwatch="solid" data-displayfont="dela">
+
+<div id="grain" aria-hidden="true"></div>
+<script>
+/* зерно: уважаем выбор из «Настроек» (kuvion_appearance_v1);
+   тумблер «Лаборатории» по-прежнему работает поверх — он сессионный */
+try{if(localStorage.getItem('kuvion_appearance_v1')==='grain-off'){
+  document.body.classList.add('no-grain');
+  addEventListener('DOMContentLoaded',function(){
+    var s=document.getElementById('grainSwitch');
+    if(s)s.classList.remove('is-on');
+  });
+}}catch(e){}
+</script>
+<script>
+/* размер карточек: уважаем выбор из «Настроек» (kuvion_cardsize_v1);
+   сегмент «Лаборатории» работает поверх — он сессионный */
+try{var __cs=localStorage.getItem('kuvion_cardsize_v1');
+if(__cs==='s'||__cs==='l'){
+  document.body.dataset.cardsize=__cs;
+  addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('#sizeSeg button').forEach(function(b){
+      b.classList.toggle('is-on',b.dataset.cardsize===__cs);
+    });
+  });
+}}catch(e){}
+</script>
+<div id="toasts" aria-live="polite"></div>
+
+<!-- ================= ШАПКА ================= -->
+<header class="app-header" id="appHeader">
+  <div class="header-inner">
+
+    <!-- левая зона: логотип + основная навигация -->
+    <div class="h-left">
+      <button id="btnBurger" class="icobtn" aria-label="Открыть меню">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <a href="/" class="logo">Kuvion</a>
+      <nav class="main-nav" aria-label="Основная навигация">
+        <a href="/" class="nav-link is-active" data-nav="home">Главная</a>
+        <a href="/catalog/" class="nav-link" data-nav="catalog">Каталог</a>
+        <a href="#" class="nav-link" id="navRandom" data-stub="Случайное">Случайное</a>
+        <a href="/collections/" class="nav-link" data-nav="colls">Подборки</a>
+      </nav>
+    </div>
+
+    <!-- центр: поиск строго по середине шапки -->
+    <div class="h-center">
+      <button class="search-fake" id="searchOpen" aria-label="Открыть поиск">
+        <span class="s-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </span>
+        <span class="sf-ph">Поиск фильмов, сериалов, аниме…</span>
+        <span class="s-kbd">Ctrl K</span>
+      </button>
+      <button class="icobtn" id="hdrSearchIcon" aria-label="Поиск">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+
+    <!-- правая зона: разделы + аккаунт -->
+    <div class="h-right">
+      <nav class="main-nav" aria-label="Разделы">
+        <a href="/mylist/" class="nav-link" data-nav="mylist">Мой список</a>
+        <a href="/catalog/?type=anime" class="nav-link" data-nav="anime">Аниме</a>
+        <a href="/schedule/" class="nav-link" data-nav="sched">Расписание</a>
+        <a href="/manga/" class="nav-link" data-nav="manga">Манга</a>
+      </nav>
+
+      <div class="header-right">
+
+        <!-- Уведомления -->
+        <div style="position:relative" id="userArea">
+          <button class="icobtn" id="bellBtn" aria-label="Уведомления" aria-expanded="false">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="bell-badge" id="bellBadge">2</span>
+          </button>
+
+          <div class="dd bell-dd dd-right hidden" id="bellDd" role="menu">
+            <div class="bell-head">
+              <span class="bell-title">Уведомления</span>
+              <button class="bell-clear" id="bellClear">Отметить прочитанными</button>
+            </div>
+<div class="bell-list" id="bellList"></div>
+            <a class="bell-all" href="/notifications/" id="bellAll"><span>Все уведомления</span><span class="bell-all-n" id="bellAllN"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+          </div>
+        </div>
+
+        <span class="a-divider" id="userDivider"></span>
+
+        <!-- Аватар: клик открывает меню (как на YouTube) -->
+        <div style="position:relative" id="avatarWrap">
+          <button class="avatar-btn" id="avatarBtn" aria-label="Аккаунт" aria-expanded="false">
+            <span class="avatar-core" id="avatarCore">D</span>
+          </button>
+
+          <div class="dd acct-dd dd-right hidden" id="acctDd" role="menu">
+            <div class="acct-head">
+              <span class="avatar-core" id="avatarCoreMenu">D</span>
+              <div style="min-width:0">
+                <p class="acct-name">danil</p>
+                <p class="acct-handle"><span class="acct-dot"></span>в сети</p>
+              </div>
+            </div>
+            <div class="dd-sep"></div>
+            <a class="dd-item" href="/profile/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Мой профиль
+            </a>
+            <a class="dd-item" href="/mylist/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H3"/><path d="M10 12H3"/><path d="M10 19H3"/><path d="m15 12 5 3-5 3z"/></svg>
+              Мой список
+            </a>
+            <a class="dd-item" href="/settings/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              Настройки
+            </a>
+
+            <div class="dd-sep"></div>
+
+            <div class="sub-card">
+              <p class="sc-name">Kuvion+</p>
+              <p class="sc-desc">Без рекламы, 4K-качество и ранний доступ к главам манги</p>
+              <a class="sc-btn" href="/plus/" style="display:inline-flex;align-items:center;justify-content:center">Оформить</a>
+            </div>
+
+            <div class="dd-sep"></div>
+            <button class="dd-item dd-item--danger" id="logoutBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+              Выйти
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-cta btn-login hidden" id="loginBtn">Войти</button>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- ================= HERO СТРАНИЦЫ ТАЙТЛА ================= -->
+<!-- ================= HERO ПЕРСОНЫ ================= -->
+<!-- Та же геометрия, что у hero тайтла: фон-снимок с затемнением,
+     портрет слева (3:4, раскрывается в лайтбокс), справа — имя,
+     оригинальное написание, род деятельности, описание и действия.
+     У персоны нет neither рейтинга, ни статуса, ни оценки —
+     только «Поделиться» и «Сообщить о проблеме» -->
+<section class="tp-hero" aria-label="Персона">
+  <div class="tp-backdrop pp-backdrop">
+    <img id="ppBackdrop" src="https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/ad18c000026a.jpg" alt="">
+  </div>
+  <div class="tp-shade tp-shade--top"></div>
+  <div class="tp-shade tp-shade--bottom"></div>
+  <div class="tp-content">
+    <nav class="tp-crumbs" aria-label="Навигационная цепочка">
+      <a href="/">Главная</a>
+      <span class="tc-sep">/</span>
+      <a href="#" data-stub="Персоны">Персоны</a>
+      <span class="tc-sep">/</span>
+      <span class="tc-cur" id="ppCrumb">Юки Кадзи</span>
+    </nav>
+    <div class="tp-main">
+      <!-- портрет раскрывается в лайтбокс, как постер и кадры -->
+      <div class="tp-poster pp-poster" id="ppPoster" tabindex="0" role="button" aria-label="Открыть фото в полном размере">
+        <img id="ppPosterImg" src="https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/6bd882e82d3f.jpg" alt="Юки Кадзи">
+        <span class="tp-expand" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="M9 21H3v-6"/><path d="m3 21 7-7"/></svg></span>
+      </div>
+      <div class="tp-info">
+        <h1 class="tp-title" id="ppName">Юки Кадзи</h1>
+        <p class="tp-orig" id="ppOrig">梶裕貴 · Kaji Yuki</p>
+        <div class="tp-meta" id="ppMeta"></div>
+        <p class="tp-desc" id="ppDesc"></p>
+        <div class="tp-actions">
+          <button class="tp-ico" id="tpShare" title="Поделиться" aria-label="Поделиться" aria-haspopup="menu">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/></svg>
+          </button>
+          <button class="tp-ico" id="tpReport" title="Сообщить о проблеме" aria-label="Сообщить о проблеме">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= КОНТЕНТ СТРАНИЦЫ ПЕРСОНЫ ================= -->
+<main class="rows" id="rows">
+
+  <!-- Факты: короткая карточка-справка о персоне -->
+  <section class="facts" aria-label="Информация о персоне">
+    <div class="row-head" style="padding:0;margin-bottom:12px">
+      <h2 class="row-title">О персоне</h2>
+    </div>
+    <div class="facts-grid" id="ppFacts"></div>
+  </section>
+
+  <!-- Фильмография: карточки тайтлов со строкой роли. У аниме это
+       «Озвучивал», у кино — «Где снимался». Полный список — в модалке
+       с собственной прокруткой (кнопка «Все · N» в заголовке) -->
+  <section class="row-group" id="sectionFilm" aria-label="Фильмография">
+    <div class="row-head">
+      <h2 class="row-title" id="filmTitle">Озвучивал</h2>
+      <button class="row-link" id="castAll" type="button">Все
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+      <div class="row-arrows">
+        <button class="row-arrow" data-dir="-1" aria-label="Назад"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+        <button class="row-arrow" data-dir="1" aria-label="Вперёд"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+      </div>
+    </div>
+    <div class="row-scroller" id="row-film"></div>
+  </section>
+
+  <!-- Озвученные персонажи: только у сэйю (у актёра данных нет —
+       секция прячется). Карточка персонажа ведёт на страницу тайтла -->
+  <section class="row-group" id="sectionChars" aria-label="Озвученные персонажи">
+    <div class="row-head">
+      <h2 class="row-title" id="charsTitle">Озвученные персонажи</h2>
+      <div class="row-arrows">
+        <button class="row-arrow" data-dir="-1" aria-label="Назад"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+        <button class="row-arrow" data-dir="1" aria-label="Вперёд"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+      </div>
+    </div>
+    <div class="row-scroller cast-rail" id="row-chars"></div>
+  </section>
+
+  <!-- Фото: фотосессии и премьеры (у демо-сэйю базы фото нет —
+       секция есть только у актёра). Клик — лайтбокс, как кадры -->
+  <section class="row-group" id="sectionPhotos" aria-label="Фото">
+    <div class="row-head">
+      <h2 class="row-title" id="photosTitle">Фото</h2>
+      <div class="row-arrows">
+        <button class="row-arrow" data-dir="-1" aria-label="Назад"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+        <button class="row-arrow" data-dir="1" aria-label="Вперёд"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+      </div>
+    </div>
+    <div class="row-scroller" id="row-photos"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <p class="footer-logo">Kuvion</p>
+      <p class="footer-tag">Фильмы, сериалы, аниме и манга в одном месте. Всё, что вы смотрите и читаете, всегда под рукой.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Разделы</h4>
+      <a href="/">Главная</a>
+      <a href="/catalog/">Каталог</a>
+      <a href="/catalog/?type=anime">Аниме</a>
+      <a href="/manga/">Манга</a>
+      <a href="/schedule/">Расписание</a>
+      <a href="/collections/">Подборки</a>
+    </div>
+    <div class="footer-col">
+      <h4>Аккаунт</h4>
+      <a href="/profile/">Профиль</a>
+      <a href="/mylist/">Мой список</a>
+      <a href="/notifications/">Уведомления</a>
+      <a href="/settings/">Настройки</a>
+      <a href="/plus/">Kuvion+</a>
+    </div>
+    <div class="footer-col">
+      <h4>Проект</h4>
+      <a href="#" data-stub="О проекте">О проекте</a>
+      <a href="#" data-stub="Поддержка">Поддержка</a>
+      <a href="#" data-stub="Telegram">Telegram</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Kuvion</span>
+    <span class="footer-version">Демо-прототип интерфейса</span>
+  </div>
+</footer>
+
+<!-- ================= АВТОРИЗАЦИЯ: вход + регистрация в 3 шага ================= -->
+<div class="modal-overlay hidden" id="authModal" role="dialog" aria-modal="true" aria-label="Вход в Kuvion">
+  <div class="auth-card">
+    <button class="auth-close" id="authClose" aria-label="Закрыть"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    <p class="auth-logo">Kuvion</p>
+    <p class="auth-sub" id="authSub">Войдите, чтобы синхронизировать список и прогресс</p>
+    <div class="auth-tabs" id="authTabs" role="tablist">
+      <button class="is-on" data-atab="login" role="tab" aria-selected="true">Вход</button>
+      <button data-atab="register" role="tab" aria-selected="false">Регистрация</button>
+    </div>
+
+    <!-- обе панели в одной grid-ячейке: карточка не меняет размер при переключении -->
+    <div class="auth-panels">
+
+      <!-- панель: ВХОД -->
+      <div id="loginPanel" class="auth-panel">
+        <form id="loginForm" novalidate>
+          <div class="auth-field" id="lfEmail">
+            <label for="loginEmail">Email</label>
+            <div class="af-box">
+              <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg></span>
+              <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <p class="f-err">Похоже, в адресе опечатка</p>
+          </div>
+          <div class="auth-field" id="lfPass">
+            <div class="lb-row">
+              <label for="loginPass">Пароль</label>
+              <button type="button" class="forgot" id="forgotBtn">Забыли пароль?</button>
+            </div>
+            <div class="af-box has-eye">
+              <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+              <input id="loginPass" type="password" placeholder="Ваш пароль" autocomplete="current-password">
+              <button type="button" class="af-eye" data-eye="loginPass" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+            </div>
+            <p class="f-err">Введите пароль</p>
+          </div>
+          <label class="auth-remember">
+            <input type="checkbox" id="rememberMe" checked>
+            <span class="ar-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+            <span>Запомнить меня</span>
+          </label>
+          <button type="submit" class="btn btn-cta btn-block auth-submit">Войти</button>
+        </form>
+        <div class="auth-alt"><span>или</span></div>
+        <button class="btn-google" id="googleLogin">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.6 44 30.3 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+          Войти через Google
+        </button>
+        <p class="auth-swap">Нет аккаунта? <button type="button" id="toRegister">Создать</button></p>
+      </div>
+
+      <!-- панель: РЕГИСТРАЦИЯ (3 шага) -->
+      <div id="registerPanel" class="auth-panel is-off">
+        <div class="auth-steps" id="regSteps">
+          <span class="auth-step is-cur"></span>
+          <span class="auth-step"></span>
+          <span class="auth-step"></span>
+        </div>
+        <div class="auth-stephead">
+          <button type="button" class="auth-back" id="regBack" aria-label="Назад" style="visibility:hidden"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+          <div>
+            <p class="as-title">Создание аккаунта</p>
+            <p class="as-sub" id="regStepLabel">Шаг 1 из 3 · Email</p>
+          </div>
+        </div>
+        <form id="regForm" novalidate>
+          <!-- шаги в одной grid-ячейке: форма не меняет высоту между шагами -->
+          <div class="reg-steps">
+            <div class="reg-step" data-rstep="1">
+              <div class="auth-field" id="rfEmail">
+                <label for="regEmail">Email</label>
+                <div class="af-box">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg></span>
+                  <input id="regEmail" type="email" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <p class="f-err">Похоже, в адресе опечатка</p>
+              </div>
+              <p class="reg-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Дальше — пароль и никнейм: займёт не больше минуты. Если аккаунт уже есть, вернитесь на вкладку «Вход».</span></p>
+            </div>
+            <div class="reg-step is-off" data-rstep="2">
+              <div class="auth-field" id="rfPass">
+                <label for="regPass">Пароль</label>
+                <div class="af-box has-eye">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                  <input id="regPass" type="password" placeholder="Минимум 6 символов" autocomplete="new-password">
+                  <button type="button" class="af-eye" data-eye="regPass" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+                </div>
+                <p class="f-err">Минимум 6 символов</p>
+              </div>
+              <div class="auth-field" id="rfPass2">
+                <label for="regPass2">Повторите пароль</label>
+                <div class="af-box has-eye">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                  <input id="regPass2" type="password" placeholder="Ещё раз" autocomplete="new-password">
+                  <button type="button" class="af-eye" data-eye="regPass2" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+                </div>
+                <p class="f-err">Пароли не совпадают</p>
+              </div>
+            </div>
+            <div class="reg-step is-off" data-rstep="3">
+              <div class="auth-field" id="rfName">
+                <label for="regName">Никнейм</label>
+                <div class="af-box">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                  <input id="regName" placeholder="Как к вам обращаться?" autocomplete="nickname">
+                </div>
+                <p class="f-err">Минимум 2 символа</p>
+              </div>
+              <p class="reg-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Никнейм увидят другие пользователи — например, в комментариях. Сменить его можно в настройках профиля.</span></p>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-cta btn-block auth-submit" id="regSubmit">Далее</button>
+        </form>
+        <div class="auth-alt"><span>или</span></div>
+        <button class="btn-google" id="googleReg">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.6 44 30.3 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+          Зарегистрироваться через Google
+        </button>
+      </div>
+
+    </div>
+    <p class="auth-note">Демо-макет: подойдут любые email и пароль.</p>
+  </div>
+</div>
+
+<!-- ================= ПОДТВЕРЖДЕНИЕ ВЫХОДА ================= -->
+<div class="modal-overlay hidden" id="logoutModal" role="dialog" aria-modal="true" aria-label="Подтверждение выхода">
+  <div class="confirm-card">
+    <div class="cf-ic">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+    </div>
+    <h3>Выйти из аккаунта?</h3>
+    <p>Списки, история и прогресс сохранятся в аккаунте — они будут ждать вас после следующего входа.</p>
+    <div class="cf-actions">
+      <button class="btn btn-ghost" id="logoutCancel">Отмена</button>
+      <button class="btn btn-danger" id="logoutConfirm">Выйти</button>
+    </div>
+  </div>
+</div>
+
+<!-- Полный список ролей: модалка со своей прокруткой —
+     вместо разворачивания ленты на странице -->
+<div class="modal-overlay hidden" id="castModal" role="dialog" aria-modal="true" aria-label="Полный список ролей">
+  <div class="cast-modal">
+    <div class="cast-modal-head">
+      <h3 class="cast-modal-title" id="castModalTitle">Все роли</h3>
+      <button class="cast-modal-close" id="castModalClose" aria-label="Закрыть">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="cast-modal-body">
+      <div class="film-grid" id="castGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= СООБЩИТЬ О ПРОБЛЕМЕ ================= -->
+<!-- та же модалка, что у тайтла и манги, но причины — про персону:
+     карточка, данные, фото, фильмография. Отправку подключим
+     к /api/report, когда новый бэкенд будет готов; сейчас — тост -->
+<div class="modal-overlay hidden" id="reportModal" role="dialog" aria-modal="true" aria-label="Сообщить о проблеме">
+  <div class="report-card">
+    <button class="auth-close" id="reportClose" aria-label="Закрыть">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+    <h3>Что не так?</h3>
+    <p class="rp-sub" id="reportTitle"></p>
+    <div class="rp-list">
+      <button class="rp-item" data-reason="wrong_person" type="button">Не та персона / открылся другой человек</button>
+      <button class="rp-item" data-reason="wrong_data" type="button">Неверные данные (имя, биография, факты)</button>
+      <button class="rp-item" data-reason="wrong_photo" type="button">Неверное или устаревшее фото</button>
+      <button class="rp-item" data-reason="filmography" type="button">Ошибка в фильмографии или ролях</button>
+      <button class="rp-item" data-reason="other" type="button">Другое (опиши в комментарии)</button>
+    </div>
+    <textarea class="rp-comment" id="reportComment" rows="2" maxlength="500" placeholder="Комментарий (необязательно)"></textarea>
+    <button class="btn btn-watch rp-send" id="reportSend" type="button">Отправить</button>
+  </div>
+</div>
+
+<!-- ================= ПОЛНОЭКРАННЫЙ ПОИСК ================= -->
+<div id="searchOverlay" class="search-ov hidden" role="dialog" aria-modal="true" aria-label="Поиск по Kuvion">
+  <div class="sov-backdrop" id="sovBack"></div>
+  <div class="sov-panel">
+    <div class="sov-top">
+      <span class="s-big">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </span>
+      <input id="sovInput" type="text" autocomplete="off" spellcheck="false" placeholder="Тайтл, персона, подборка, ID или ссылка…" aria-label="Поиск">
+      <button class="sov-esc" id="sovClose">Esc</button>
+    </div>
+    <div class="sov-body" id="sovBody"></div>
+    <div class="sov-foot">
+      <span><span class="sov-kbd">ID</span>или ссылка · персоны и подборки</span>
+      <span><span class="sov-kbd">Enter</span>открыть первый</span>
+      <span><span class="sov-kbd">Esc</span>закрыть</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ПРЕВЬЮ-ПАНЕЛЬ КАРТОЧКИ ================= -->
+<div id="preview" class="preview hidden" role="dialog" aria-label="Быстрый просмотр тайтла">
+  <div class="pv-wave" aria-hidden="true"></div>
+  <div class="pv-media" id="pvMedia">
+    <img id="pvImg" src="" alt="">
+    <div class="pv-video" aria-hidden="true">
+      <img id="pvVFrame" src="" alt="">
+      <span class="pv-vchip">Трейлер · 0:24</span>
+      <div class="pv-vbar"><span></span></div>
+      <!-- громкость: выдвижной ползунок + мьют, поднята над таймлайном -->
+      <div class="pv-vol" id="pvVol">
+        <div class="pv-vol-track">
+          <div class="pv-vol-slider" id="pvVolSlider" role="slider" aria-label="Громкость" aria-valuemin="0" aria-valuemax="100" aria-valuenow="55" tabindex="0">
+            <span class="vs-rail"><span class="vs-fill" id="vsFill"></span></span>
+            <span class="vs-thumb" id="vsThumb"></span>
+            <span class="vs-bubble" id="vsBubble">55%</span>
+          </div>
+        </div>
+        <button class="pv-vmute" id="pvVMute" aria-label="Звук"></button>
+      </div>
+    </div>
+    <div class="pv-shade"></div>
+    <button class="pv-nav pv-nav--prev" id="pvPrev" aria-label="Предыдущий кадр">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button class="pv-nav pv-nav--next" id="pvNext" aria-label="Следующий кадр">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <button class="pv-play" id="pvPlay" aria-label="Смотреть">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+    </button>
+  </div>
+  <div class="pv-thumbs" id="pvThumbs"></div>
+  <div class="pv-body">
+    <p class="pv-title" id="pvTitle"></p>
+    <div class="pv-meta" id="pvMeta"></div>
+    <p class="pv-desc" id="pvDesc"></p>
+    <div class="pv-actions">
+      <button class="btn btn-watch" id="pvWatchBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        Смотреть
+      </button>
+      <!-- избранное — закладка; «буду смотреть» переехало в меню состояния -->
+      <button class="pv-ico pv-lib" id="pvFav" title="В избранное" aria-label="В избранное">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="pv-ico pv-lib" id="pvStatusBtn" title="Состояние тайтла" aria-label="Состояние тайтла" aria-haspopup="menu">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ЛАЙТБОКС ДЛЯ КАДРОВ ================= -->
+<div class="lb hidden" id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр кадра">
+  <button class="lb-close" id="lbClose" aria-label="Закрыть">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+  </button>
+  <button class="lb-nav lb-nav--prev" id="lbPrev" aria-label="Предыдущий кадр">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+  </button>
+  <div class="lb-frame">
+    <img id="lbImg" src="" alt="Кадр из аниме «Атака титанов»">
+    <span class="lb-count" id="lbCount"></span>
+  </div>
+  <button class="lb-nav lb-nav--next" id="lbNext" aria-label="Следующий кадр">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+</div>
+
+<!-- ================= МЕНЮ СОСТОЯНИЯ ТИТЛА ================= -->
+<div id="statusMenu" class="hidden" role="menu" aria-label="Состояние тайтла"></div>
+
+<!-- ================= МЕНЮ «ПОДЕЛИТЬСЯ» ================= -->
+<!-- как в изначальной версии: копировать ссылку, Telegram, ВКонтакте -->
+<div id="shareMenu" class="hidden" role="menu" aria-label="Поделиться тайтлом">
+  <p class="sm-head">Поделиться</p>
+  <button class="sm-item" id="shCopy" type="button" role="menuitem">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+    <span class="sm-label">Копировать ссылку</span>
+  </button>
+  <div class="sm-sep"></div>
+  <button class="sm-item" id="shTg" type="button" role="menuitem">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+    <span class="sm-label">Telegram</span>
+  </button>
+  <button class="sm-item" id="shVk" type="button" role="menuitem">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M13.162 18.994c.609 0 1.016-.69 1.016-1.63 0-1.63 1.292-2.732 3.017-2.732 1.292 0 2.918.79 3.469 1.48.414.535.305 1.853.305 1.853h2.812s-.449-3.187-2.686-5.51c-2.434-2.528-2.322-2.358.918-6.68C23.979 3.751 24.192 3 24.192 3h-2.965c-.659 0-.854.366-1.175.857-2.482 3.839-3.246 3.551-3.734 3.226-.739-.491-.718-2.545-.718-2.68 0-2.881.423-3.697-1.341-4.107-.293-.068-1.002-.116-2.52-.058-2.212.087-2.79.58-2.932.992-.309.893.15.976.497 1.176.586.452.642 1.46.642 3.899 0 .893-.153 1.991-1.686 1.991-2.229 0-4.013-3.956-4.636-5.441-.282-.676-.64-1.255-1.823-1.255H.477s-.343.01-.525.237c-.148.192-.01.566-.01.566s3.848 9.001 8.216 13.522c3.96 4.106 8.351 3.84 8.351 3.84h4.944s.279-.01.43-.166c.151-.155.151-.416.151-.416s-.089-2.545-2.668-2.545z"/></svg>
+    <span class="sm-label">ВКонтакте</span>
+  </button>
+</div>
+
+<!-- ================= ПОПОВЕР «В ПОДБОРКУ» ================= -->
+<!-- ================= МОБИЛЬНОЕ МЕНЮ (бургер) ================= -->
+<div class="modal-overlay hidden" id="drawerOverlay"></div>
+<nav id="drawer" aria-label="Мобильное меню">
+  <div class="drawer-head">
+    <span class="logo" style="font-size:18px">Kuvion</span>
+    <button class="icobtn" id="drawerClose" aria-label="Закрыть">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <a href="/" class="nav-link is-active" style="display:block;padding:12px 4px">Главная</a>
+  <a href="/catalog/" class="nav-link" style="display:block;padding:12px 4px">Каталог</a>
+  <a href="/mylist/" class="nav-link" style="display:block;padding:12px 4px">Мой список</a>
+  <a href="/catalog/?type=anime" class="nav-link" style="display:block;padding:12px 4px">Аниме</a>
+  <a href="/schedule/" class="nav-link" style="display:block;padding:12px 4px">Расписание</a>
+  <a href="/manga/" class="nav-link" style="display:block;padding:12px 4px">Манга</a>
+  <a href="#" class="nav-link" data-stub="Случайное" style="display:block;padding:12px 4px">Случайное</a>
+  <a href="/collections/" class="nav-link" style="display:block;padding:12px 4px">Подборки</a>
+  <div class="drawer-foot">
+    <button class="btn btn-cta" style="width:100%" id="drawerLogin">Войти</button>
+  </div>
+</nav>
+
+<!-- ================= МОБИЛЬНАЯ НИЖНЯЯ ПАНЕЛЬ ================= -->
+<nav class="bottom-nav" aria-label="Быстрая навигация">
+  <button class="is-active" id="mobHomeBtn">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Главная</span>
+  </button>
+  <button data-stub="Каталог">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span>Каталог</span>
+  </button>
+  <button id="mobSearchBtn">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <span>Поиск</span>
+  </button>
+  <button data-stub="Аниме">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.39 12.06a10 10 0 1 1-8.45-8.45"/><path d="M21.39 12.06 12.34 12.66 21.39 12.06z"/><path d="m12.34 12.66 9.05-.6-6.44-6.44a1 1 0 0 0-1.71.55z"/></svg>
+    <span>Аниме</span>
+  </button>
+  <button data-stub="Меню">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Меню</span>
+  </button>
+</nav>
+
+<!-- ================= ЛАБОРАТОРИЯ ================= -->
+<script>
+'use strict';
+/* ================================================================
+   KUVION — страница персоны · логика демо
+   Все данные тестовые, предназначены только для оценки дизайна.
+   Демо-набор: сэйю Юки Кадзи и актёр Тимоти Шаламе (переключатель
+   «Персона» в «Лаборатории», глубокая ссылка ?mode=people).
+   Фильмография — обычные poster-card: превью-панель, «⋮» и «стена»
+   работают как везде. В проде данные придут с бэкенда (Shikimori
+   для сэйю, Кинопоиск для актёров) — формат карточек тот же.
+   ================================================================ */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const CDN='https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/';
+
+/* ---------- иконки ---------- */
+const I={
+  star:'<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7-5.4-4.7 7.1-.6z"/></svg>',
+  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  playBig:'<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  bookmark:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  dots:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>',
+  check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>',
+  checkSm:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  xSm:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+  clock:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  vol:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>',
+  volLow:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  volX:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>',
+  /* звёзды для оценки: контур + заливка */
+  starO:'<svg class="star-o" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.5l2.8 6.3 6.9.6-5.2 4.5 1.6 6.7-6.1-3.7-6.1 3.7 1.6-6.7-5.2-4.5 6.9-.6z"/></svg>',
+  starF:'<svg class="star-f" width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.8 6.3 6.9.6-5.2 4.5 1.6 6.7-6.1-3.7-6.1 3.7 1.6-6.7-5.2-4.5 6.9-.6z"/></svg>',
+  /* две стрелки в разные стороны — «раскрыть картинку» */
+  expand:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="M9 21H3v-6"/><path d="m3 21 7-7"/></svg>',
+  pause:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1.4"/><rect x="14" y="4" width="4" height="16" rx="1.4"/></svg>',
+  playHuge:'<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  replay:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.4"/><path d="M3 4v5h5"/></svg>',
+};
+
+/* ---------- тестовые данные ----------
+   Тайтлы фильмографии: у карточек те же поля, что в каталоге —
+   превью-панель, рейтинг и «⋮» работают. Рейтинги и описания —
+   демо-оценка дизайна, в проде придут с бэкенда */
+function PT(id,title,year,type,genres,rating,poster,extra){
+  return Object.assign({id,title,year,type,genres,rating,poster},extra||{});
+}
+const TITLES={
+  aot:PT('aot','Атака титанов',2013,'Аниме',['Сёнэн','Экшен','Драма'],9.0,CDN+'9a35191d1d09.jpg',{
+    wide:CDN+'78bad6d9e0a3.jpg',wide2:CDN+'4e0313267f90.jpg',wide3:CDN+'b1e6cdd5049b.jpg',
+    desc:'Человечество сражается за выживание за огромными стенами, защищающими от гигантских пожирателей людей — титанов.'}),
+  bnha:PT('bnha','Моя геройская академия',2016,'Аниме',['Сёнэн','Экшен','Комедия'],8.1,CDN+'45fac6e210a1.jpg',{
+    desc:'В мире суперспособностей мальчик без дара поступает в элитную академию героев, чтобы стать лучшим из лучших.'}),
+  nanatsu:PT('nanatsu','Семь смертных грехов',2014,'Аниме',['Фэнтези','Приключения'],7.8,CDN+'394d89e35fc7.jpeg',{
+    desc:'Принцесса ищет семерых изгнанных рыцарей — единственных, кто способен спасти королевство от тирании святых рыцарей.'}),
+  haikyuu:PT('haikyuu','Хайкю!!',2014,'Аниме',['Спорт','Комедия'],8.4,CDN+'058ba569323e.jpg',{
+    desc:'Невысокий, но прыгучий школьник хочет стать лучшим волейболистом — вопреки росту и насмешкам.'}),
+  magi:PT('magi','Маги: Лабиринт волшебства',2012,'Аниме',['Фэнтези','Приключения'],8.0,CDN+'de4c31463f79.jpeg',{
+    desc:'Юный Аладдин и его друг Али-Баба отправляются покорять подземные лабиринты, скрывающие артефакты древней магии.'}),
+  dxd:PT('dxd','High School DxD',2012,'Аниме',['Экшен','Комедия','Фэнтези'],7.3,CDN+'34126cd5ed13.jpg',{
+    desc:'Школьник, убитый на первом свидании, возрождается демоном и вступает в войну трёх сторон за свой город.'}),
+  dune2:PT('dune2','Дюна: Часть вторая',2024,'Фильм',['Фантастика','Приключения','Драма'],8.5,CDN+'d4500e7dac80.jpg',{
+    desc:'Пол Атрейдес объединяется с Чани и фрименами в войне против дома Харконненов.'}),
+  dune1:PT('dune1','Дюна',2021,'Фильм',['Фантастика','Приключения'],8.0,CDN+'28b659915707.jpg',{
+    desc:'Наследник благородного дома прибывает на пустынную планету, где его семье уготована ловушка.'}),
+  wonka:PT('wonka','Вонка',2023,'Фильм',['Мюзикл','Фэнтези','Комедия'],7.8,CDN+'835ae636c8ce.jpg',{
+    desc:'Юный изобретатель-сладкоежка приезжает в город шоколадных магнатов, чтобы открыть свою лавку.'}),
+  cmycn:PT('cmycn','Назови меня своим именем',2017,'Фильм',['Драма','Мелодрама'],7.9,CDN+'b0b86425ebf6.jpg',{
+    desc:'Италия, лето 1983-го: семнадцатилетний Элио и старший научный помощник отца переживают роман, который изменит обоих.'}),
+  theking:PT('theking','Король',2019,'Фильм',['Историческая драма','Драма'],7.3,CDN+'c2dffa34f3b1.jpg',{
+    desc:'Принц-наследник, не желавший трона, вынужден принять корону и войну, навязанную ему придворными.'}),
+  ladybird:PT('ladybird','Леди Бёрд',2017,'Фильм',['Драма','Комедия'],7.4,CDN+'4b663937ceaa.jpg',{
+    desc:'Старшеклассница из Сакраменто мечтает уехать из родного города — и понемногу понимает, что теряет, покидая его.'}),
+};
+const STATUS={watching:'Смотрю',planned:'Буду смотреть',completed:'Просмотрено',onhold:'Отложено',dropped:'Брошено'};
+
+
+/* ---------- данные страницы персоны ----------
+   Демо-набор из двух людей: сэйю и актёр. Все факты — настоящие
+   (открытые источники), фильмография — ключевые роли; описания
+   тайтлов и рейтинги в TITLES — демо. В проде данные придут
+   с бэкенда: Shikimori (сэйю) и Кинопоиск (актёры) */
+const PERSONS={
+  seiyuu:{
+    name:'Юки Кадзи',orig:'梶裕貴 · Kaji Yuki',
+    photo:CDN+'6bd882e82d3f.jpg',backdrop:CDN+'ad18c000026a.jpg',
+    meta:['Сэйю','Родился 3 сентября 1985','Токио, Япония'],
+    desc:'Японский сэйю, один из самых узнаваемых голосов своего поколения. Голос Эрена Йегера в «Атаке титанов», Шото Тодороки в «Моей геройской академии» и Мэлодиаса в «Семи смертельных грехах» — роли, сделавшие его имя нарицательным у поклонников аниме во всём мире.',
+    facts:[
+      ['Дата рождения','3 сентября 1985'],
+      ['Место рождения','Токио, Япония'],
+      ['Годы активности','2004 — н. в.'],
+      ['Агентство','независимый (ранее — Vims)'],
+      ['Награды','Seiyu Awards — лучший дебют (2009)'],
+      ['Известен по','Эрен Йегер · Шото Тодороки · Мэлодиас'],
+    ],
+    filmTitle:'Озвучивал',
+    film:[
+      {id:'aot',role:'Эрен Йегер',href:'/title/'},
+      {id:'bnha',role:'Шото Тодороки'},
+      {id:'nanatsu',role:'Мэлодиас'},
+      {id:'haikyuu',role:'Кодзумэ Кэнма'},
+      {id:'magi',role:'Али-Баба Салуя'},
+      {id:'dxd',role:'Иссэй Хёдо'},
+    ],
+    chars:[
+      {name:'Эрен Йегер',from:'Атака титанов',img:CDN+'0f6fbc82685d.png'},
+      {name:'Шото Тодороки',from:'Моя геройская академия',img:CDN+'5947df7a6274.png'},
+      {name:'Мэлодиас',from:'Семь смертных грехов',img:CDN+'b6dc22d2075c.jpg'},
+      {name:'Кодзумэ Кэнма',from:'Хайкю!!',img:CDN+'d54f2fa69eb9.png'},
+      {name:'Иссэй Хёдо',from:'High School DxD',img:CDN+'df064805b75d.jpg'},
+    ],
+    photos:[],   /* в демо-базе фотосессий сэйю нет — секция «Фото» спрячется */
+  },
+  people:{
+    name:'Тимоти Шаламе',orig:'Timothée Chalamet',
+    photo:CDN+'05cfd656a9c3.jpg',backdrop:CDN+'0b7ab76ca7ec.jpg',
+    meta:['Актёр','Родился 27 декабря 1995','Нью-Йорк, США'],
+    desc:'Американский актёр, одна из главных молодых звёзд Голливуда. Прорывом стала роль Элио в «Назови меня своим именем» — за неё он получил номинацию на «Оскар» в категории «Лучшая мужская роль», став одним из самых молодых номинантов в истории премии.',
+    facts:[
+      ['Дата рождения','27 декабря 1995'],
+      ['Место рождения','Нью-Йорк, США'],
+      ['Карьера','Актёр'],
+      ['Прорыв','«Назови меня своим именем» (2017)'],
+      ['Награды','номинация на «Оскар» — лучшая мужская роль'],
+      ['Известен по','Пол Атрейдес · Элио Перлман · Вонка'],
+    ],
+    filmTitle:'Где снимался',
+    film:[
+      {id:'dune2',role:'Пол Атрейдес'},
+      {id:'dune1',role:'Пол Атрейдес'},
+      {id:'wonka',role:'Вонка'},
+      {id:'cmycn',role:'Элио Перлман'},
+      {id:'theking',role:'Генрих V'},
+      {id:'ladybird',role:'Кайл Шайбл'},
+    ],
+    chars:[],   /* у актёра кино ленты персонажей нет — секция спрячется */
+    photos:[
+      CDN+'f0a61ef25a3c.jpg',CDN+'016f2f81a6a7.jpg',CDN+'5c456fa07dd2.jpg',
+      CDN+'e17fea9fae8a.jpg',CDN+'e98be379da46.jpg',CDN+'b9f75e0177f6.png',
+    ],
+  },
+};
+let pnMode='seiyuu';
+let PN=PERSONS.seiyuu;
+let PHOTOS=[];
+
+
+function toast(msg){
+  const el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML=I.check+'<span></span>';
+  el.querySelector('span').textContent=msg;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{el.classList.add('is-out');setTimeout(()=>el.remove(),320)},2600);
+}
+
+/* ---------- защита модалок от выделения текста ----------
+   Окно закрывается по фону, только если и нажатие, и отпускание
+   ЛКМ произошли на самом фоне: выделение текста внутри плашки
+   с выходом курсора наружу больше не закрывает модалку/меню. */
+function safeOverlayClose(overlay,closeFn){
+  let downT=null,upT=null;
+  overlay.addEventListener('pointerdown',e=>{downT=e.target;});
+  overlay.addEventListener('pointerup',e=>{upT=e.target;});
+  overlay.addEventListener('click',e=>{
+    const ok=e.target===overlay&&downT===overlay&&upT===overlay;
+    downT=upT=null;
+    if(ok)closeFn();
+  });
+}
+function safeOutsideClose(el,triggers,closeFn){
+  const out=t=>!el.contains(t)&&!triggers.some(b=>b.contains(t));
+  const open=()=>!el.classList.contains('hidden');
+  let started=false;
+  document.addEventListener('pointerdown',e=>{started=out(e.target)&&open();},true);
+  document.addEventListener('click',e=>
+    {if(started&&out(e.target)&&open())closeFn();started=false;});
+}
+
+/* ---------- рендер карточек ---------- */
+const ratingCls=v=>v>=7?'hi':v>=5?'mid':'low';
+const ratingColor=v=>v>=7?'#86EFAC':v>=5?'#FDE047':'#FCA5A5';
+
+function posterCard(t){
+  const st=t.status?STATUS[t.status]:null;
+  return `
+  <article class="poster-card" tabindex="0" role="button" data-id="${t.id}" data-title="${t.title}" aria-label="${t.title}, ${t.year}">
+    <div class="poster-wrap">
+      <img class="poster-img" src="${t.poster}" alt="" loading="lazy">
+      <div class="poster-scrim"></div>
+      <div class="poster-spotlight"></div>
+      <span class="rating-pill rating-pill--${ratingCls(t.rating)}">${I.star} ${t.rating.toFixed(1)}</span>
+      ${t.isNew?'<span class="badge-new"><span class="bn-text">NEW</span></span>':''}
+      ${st?`<span class="status-chip status-chip--${t.status}"><span class="sc-dot"></span><span class="sc-t">${st}</span></span>`:''}
+      <button class="card-dots" data-dots title="Состояние тайтла" aria-label="Состояние тайтла" aria-haspopup="menu">${I.dots}</button>
+      <span class="card-play">${I.playBig}</span>
+    </div>
+    <div class="card-caption">
+      <p class="cc-title">${t.title}</p>
+      <p class="cc-meta">
+        <span>${t.year}</span><span class="cm-sep">·</span>
+        <span class="cm-type">${t.type}</span><span class="cm-sep">·</span>
+        <span class="cm-genres">${t.genres.join(', ')}</span>
+      </p>
+    </div>
+  </article>`;
+}
+
+/* cw-card больше не нужен: «продолжить просмотр» живёт на главной,
+   а прогресс на странице тайтла — в плашке «вы остановились» */
+
+/* ---------- ленты: стрелки, drag-скролл, «невидимая стена» ---------- */
+function wireRows(){
+  $$('.row-group').forEach(g=>{
+    const sc=g.querySelector('.row-scroller');
+    if(!sc)return;
+    const upd=()=>{
+      /* край рамки = фактический padding ленты (max-формула из CSS,
+         уже вычислен браузером — не зависит от способа чтения clamp) */
+      const pad=parseFloat(getComputedStyle(sc).paddingLeft)||20;
+      sc.style.setProperty('--edge-l',pad+'px');
+      sc.style.setProperty('--edge-r',pad+'px');
+      const max=sc.scrollWidth-sc.clientWidth;
+      g.querySelector('.row-arrow[data-dir="-1"]').disabled=sc.scrollLeft<10;
+      g.querySelector('.row-arrow[data-dir="1"]').disabled=sc.scrollLeft>max-10;
+      /* стена вырастает только с той стороны, где ещё есть контент.
+         Короткая (40px): карточка обрезается сразу за краем рамки —
+         как в старой версии Kuvion. В покое оба края режутся
+         жёстко — постоянные отступы слева и справа */
+      sc.style.setProperty('--wall-l',sc.scrollLeft>4?'40px':'0px');
+      sc.style.setProperty('--wall-r',sc.scrollLeft<max-4?'40px':'0px');
+    };
+    sc.addEventListener('scroll',()=>{upd();hidePreview();closeStatusMenu();closeShareMenu();closeCollMenu();},{passive:true});
+    g.querySelectorAll('.row-arrow').forEach(b=>b.addEventListener('click',()=>{
+      sc._dsStopGlide&&sc._dsStopGlide();
+      sc.scrollBy({left:Number(b.dataset.dir)*Math.max(320,sc.clientWidth*.8),behavior:'smooth'});
+    }));
+    requestAnimationFrame(upd);
+    enableDragScroll(sc);
+  });
+  window.addEventListener('resize',()=>$$('.row-scroller').forEach(s=>s.dispatchEvent(new Event('scroll'))),{passive:true});
+}
+
+/* Drag-скролл мышью (порт из старой версии Kuvion): работает по всей
+   ленте, включая сами карточки — зажатая ЛКМ прямо на постере тоже
+   мотает ленту. Горизонтальный порог 5px — меньше считается кликом.
+   Инерция после отпускания, выделение текста и native-drag картинок
+   глушатся. Как только жест стал драгом, карточка-стартер теряет
+   фокус (tabindex + pointerdown) и с неё снимается .is-hover. */
+function enableDragScroll(el){
+  if(el._dsReady)return;
+  el._dsReady=true;
+  el.addEventListener('dragstart',e=>e.preventDefault());
+  el.addEventListener('pointerdown',e=>{
+    if(e.pointerType!=='mouse'||e.button!==0)return;
+    if(e.target.closest('button,a,input,select,textarea'))return;
+    el._dsStopGlide&&el._dsStopGlide();
+    el._dsMoved=false;
+    /* карточка под курсором в момент нажатия: pointerdown отдаёт ей
+       фокус (tabindex) — при реальном драге снимаем и его, и .is-hover */
+    const startCard=e.target.closest('.poster-card,.cw-card');
+    let moved=false;
+    const sx=e.clientX,sy=e.clientY,sl=el.scrollLeft;
+    let lastX=e.clientX,lastT=performance.now(),vel=0,raf=0;
+    const stopGlide=()=>{if(raf){cancelAnimationFrame(raf);raf=0;}};
+    el._dsStopGlide=stopGlide;
+    const finish=()=>{
+      el.classList.remove('is-dragging');
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+      window.removeEventListener('pointercancel',onUp);
+      /* ничего «дочищать» не нужно: оверлеи карточек живут на .is-hover,
+         а его после драга не поставит никто, кроме реального движения
+         мыши. Поддельные pointerover Chrome больше ни на что не влияют */
+      setTimeout(()=>{el._dsMoved=false;},60);
+    };
+    const glide=()=>{
+      vel*=0.93;
+      el.scrollLeft+=vel;
+      const max=el.scrollWidth-el.clientWidth;
+      if(Math.abs(vel)>0.35&&el.scrollLeft>0&&el.scrollLeft<max)raf=requestAnimationFrame(glide);
+      else finish();
+    };
+    const onMove=ev=>{
+      const dx=ev.clientX-sx,dy=ev.clientY-sy;
+      if(!moved){
+        if(Math.abs(dx)<5||Math.abs(dx)<=Math.abs(dy))return;
+        moved=true;el._dsMoved=true;
+        el.classList.add('is-dragging');
+        if(startCard)startCard.blur();
+        clearCardHover();
+        clearTimeout(PVD.showT);hidePreview();
+        try{window.getSelection().removeAllRanges();}catch(_){}
+      }
+      ev.preventDefault();
+      el.scrollLeft=sl-dx;
+      const now=performance.now(),dt=now-lastT;
+      if(dt>0)vel=(lastX-ev.clientX)/dt*16;
+      lastX=ev.clientX;lastT=now;
+    };
+    const onUp=()=>{
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+      window.removeEventListener('pointercancel',onUp);
+      if(moved&&Math.abs(vel)>0.35){raf=requestAnimationFrame(glide);return;}
+      finish();
+    };
+    window.addEventListener('pointermove',onMove,{passive:false});
+    window.addEventListener('pointerup',onUp);
+    window.addEventListener('pointercancel',onUp);
+  });
+  /* клик в конце драга не должен открывать карточку */
+  el.addEventListener('click',e=>{
+    if(el._dsMoved){e.preventDefault();e.stopPropagation();el._dsMoved=false;}
+  },true);
+}
+
+/* ---------- hover карточек: .is-hover вместо :hover ----------
+   Единственный источник состояния — само движение мыши: цель mousemove
+   браузер вычисляет заново при каждом событии, поэтому «залипнуть»
+   здесь невозможно — в отличие от :hover/:focus-within, которые Chrome
+   после драга держит до клика по сайту (pointer-events:none → auto под
+   неподвижным курсором + забытый фокус карточки с tabindex).
+   Здесь же живёт логика открытия превью-панели: после драга Chrome
+   рассылает поддельные pointerover — их слушатели больше не читают. */
+let cardHover=null;
+function clearCardHover(){
+  if(cardHover){cardHover.classList.remove('is-hover');cardHover=null;}
+}
+document.addEventListener('mousemove',e=>{
+  /* зажатая кнопка — драг или выделение: hover не вешаем. Важно
+     проверять ДО работы с классом: compat-mousemove в пакете с
+     pointermove, преодолевшим порог драга, несёт устаревшую цель
+     (hit-test сделан до листенеров) — с карточкой под курсором.
+     На странице тайтла .is-hover носят не только карточки «Похожего»,
+     но и кадры с персонажами — все живут в драг-скроллерах */
+  if(e.buttons)return;
+  if(pv.contains(e.target))return;        /* курсор в панели превью — там своя логика */
+  const el=e.target.closest('.poster-card,.cw-card,.still-card,.char-card');
+  if(el===cardHover)return;               /* под курсором всё тот же элемент */
+  if(cardHover)cardHover.classList.remove('is-hover');
+  cardHover=(el&&el.isConnected)?el:null;
+  if(cardHover)cardHover.classList.add('is-hover');
+  /* превью открывают только карточки тайтлов — и только в лентах:
+     у страницы персоны poster-card есть и в модалке «Все роли»,
+     а панель превью (z-index 105) легла бы под оверлей модалки */
+  const card=(el&&el.matches('.poster-card,.cw-card')&&!el.closest('.modal-overlay'))?el:null;
+  if(!card){
+    clearTimeout(PVD.showT);
+    if(pv.classList.contains('show'))schedulePvHide();
+    return;
+  }
+  /* курсор пришёл на новую карточку — планируем показ превью */
+  clearTimeout(PVD.hideT);
+  if(PVD.card===card&&pv.classList.contains('show'))return;
+  clearTimeout(PVD.showT);
+  const delay=PVD.card&&pv.classList.contains('show')?120:480;
+  PVD.showT=setTimeout(()=>showPreview(card),delay);
+},{passive:true});
+/* курсор покинул окно — гасим hover и прячем превью, как при уходе с карточки */
+document.documentElement.addEventListener('mouseleave',()=>{
+  clearCardHover();
+  clearTimeout(PVD.showT);
+  if(pv.classList.contains('show'))schedulePvHide();
+});
+
+/* ---------- выпадающие панели ---------- */
+function closeAllDd(){
+  ['bellDd','acctDd'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+  $('#bellBtn').setAttribute('aria-expanded','false');
+  $('#avatarBtn').setAttribute('aria-expanded','false');
+}
+function toggleDd(id,btn){
+  const el=document.getElementById(id);
+  const willOpen=el.classList.contains('hidden');
+  closeAllDd();
+  if(willOpen){el.classList.remove('hidden');btn.setAttribute('aria-expanded','true');}
+}
+
+</script>
+<script src="/assets/kuvion-search.js"></script>
+<script>
+"use strict";
+/* ---------- превью-панель карточки ---------- */
+const pv=$('#preview');
+const PVD={showT:null,hideT:null,inPanel:false,hold:false,mediaHover:false,card:null,media:[],idx:0,frameT:null,autoT:null};
+
+function pvRunWave(el){el.classList.remove('waving');void el.offsetWidth;el.classList.add('waving');}
+function pvSetMedia(i,opts){
+  PVD.idx=i;
+  const m=PVD.media[i];
+  const media=$('#pvMedia'),img=$('#pvImg');
+  $$('#pvThumbs .pv-thumb').forEach((b,k)=>b.classList.toggle('is-on',k===i));
+  /* активная миниатюра выезжает в центр, если полоса прокручивается */
+  const strip=$('#pvThumbs'),btn=strip.children[i];
+  if(btn)strip.scrollTo({left:Math.max(0,btn.offsetLeft-(strip.clientWidth-btn.offsetWidth)/2),behavior:'smooth'});
+  clearInterval(PVD.frameT);
+  if(m.kind==='trailer'){
+    media.classList.add('is-trailer');
+    media.classList.remove('is-paused');
+    const frames=PVD.media.filter(x=>x.src).map(x=>x.src);
+    $('#pvVFrame').src=frames[0]||img.src;
+    let f=0;
+    PVD.frameT=setInterval(()=>{          /* живой «трейлер»: кадры сменяют друг друга */
+      f=(f+1)%frames.length;
+      const vf=$('#pvVFrame');
+      vf.style.opacity=.25;
+      setTimeout(()=>{vf.src=frames[f];vf.style.opacity=1;},200);
+    },3200);
+  }else{
+    media.classList.remove('is-trailer','is-paused');
+    img.style.opacity=opts&&opts.auto?.35:0; /* автосмена — мягче, без «провала» */
+    setTimeout(()=>{img.src=m.src;img.style.opacity=1;},opts&&opts.auto?120:160);
+  }
+  audioSync();
+}
+function pvFill(t){
+  $('#pvTitle').textContent=t.title;
+  $('#pvMeta').innerHTML=
+    `<span class="rating-pill rating-pill--${ratingCls(t.rating)}" style="position:static">${I.star} ${t.rating.toFixed(1)}</span>`+
+    `<span>${t.year}</span><span class="hm-sep">·</span><span>${t.type}</span>`+
+    `<span class="hm-sep">·</span><span>${t.genres.join(', ')}</span>`;
+  updatePvStatus(t);
+  $('#pvDesc').textContent=t.desc||'Описание появится позже.';
+  /* кадров может быть сколько угодно: сначала широкие кадры,
+     постер добавляется только если широких меньше двух */
+  const wides=[t.wide,t.wide2,t.wide3,t.wide4].filter(Boolean);
+  const shots=wides.length>=2?wides:wides.concat(t.poster).filter(Boolean);
+  PVD.media=[{kind:'trailer'},...shots.map(s=>({kind:'shot',src:s}))];
+  $('#pvImg').src=shots[0]||t.poster;
+  $('#pvThumbs').innerHTML=PVD.media.map((m,i)=>m.kind==='trailer'
+    ?`<button class="pv-thumb pv-thumb--trailer is-on" data-m="0">${I.play}<span>Трейлер</span></button>`
+    :`<button class="pv-thumb" data-m="${i}"><img src="${m.src}" alt="" loading="lazy"></button>`).join('');
+  const strip=$('#pvThumbs');
+  strip.scrollLeft=0;
+  requestAnimationFrame(()=>strip.classList.toggle('is-scrollable',strip.scrollWidth>strip.clientWidth+4));
+  $('#pvFav').classList.toggle('is-on',!!t.fav);
+  pvSetMedia(0);
+}
+function showPreview(card){
+  const t=TITLES[card.dataset.id];
+  if(!t)return;
+  clearTimeout(PVD.hideT);
+  PVD.card=card;
+  pvFill(t);
+  pv.classList.remove('hidden');
+  const W=pv.offsetWidth,H=pv.offsetHeight;
+  const r=card.getBoundingClientRect();
+  let x=r.right+14;
+  if(x+W>innerWidth-12)x=r.left-W-14;               /* нет места справа — показываем слева */
+  x=Math.max(12,Math.min(x,innerWidth-W-12));
+  let y=r.top-26;
+  y=Math.max(12,Math.min(y,innerHeight-H-12));
+  pv.style.left=Math.round(x)+'px';
+  pv.style.top=Math.round(y)+'px';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    pv.classList.add('show');
+    pvRunWave(pv);                                  /* белая волна сверху вниз — и появляется контент */
+    pvAutoStart();
+    audioSync();
+  }));
+}
+function hidePreview(){
+  clearTimeout(PVD.showT);clearTimeout(PVD.hideT);clearInterval(PVD.frameT);clearInterval(PVD.autoT);
+  PVD.inPanel=false;PVD.mediaHover=false;
+  pv.classList.remove('show');
+  audioSync();
+  if(pv.classList.contains('hidden'))return;
+  setTimeout(()=>{if(!pv.classList.contains('show')){pv.classList.add('hidden');audioSync();}},220);
+}
+function schedulePvHide(){
+  clearTimeout(PVD.hideT);
+  PVD.hideT=setTimeout(()=>{if(!PVD.inPanel&&!PVD.hold&&!pv.matches(':hover'))hidePreview();},200);
+}
+/* показ/скрытие превью полностью в mousemove-трекере (.is-hover)
+   выше по коду: поддельные pointerover/pointerout, которые Chrome
+   рассылает после драга, больше ничего не решают.
+   Курсор ушёл и с панели, и с карточки — превью скрывается: */
+pv.addEventListener('pointerenter',()=>{PVD.inPanel=true;clearTimeout(PVD.hideT);});
+pv.addEventListener('pointerleave',()=>{PVD.inPanel=false;schedulePvHide();});
+window.addEventListener('scroll',()=>{hidePreview();closeStatusMenu();closeShareMenu();closeCollMenu();},{passive:true});
+window.addEventListener('resize',hidePreview);
+$('#pvThumbs').addEventListener('click',e=>{
+  const b=e.target.closest('.pv-thumb');
+  if(!b)return;
+  pvSetMedia(Number(b.dataset.m));
+  pvRunWave($('#pvMedia'));                          /* мини-волна при смене кадра */
+});
+$('#pvMedia').addEventListener('click',e=>{
+  if(e.target.closest('button,.pv-vol'))return;      /* клики по громкости не ставят паузу */
+  if($('#pvMedia').classList.contains('is-trailer')){$('#pvMedia').classList.toggle('is-paused');audioSync();}
+});
+/* курсор на медиаблоке — автосмена кадров ждёт */
+$('#pvMedia').addEventListener('pointerenter',()=>PVD.mediaHover=true);
+$('#pvMedia').addEventListener('pointerleave',()=>PVD.mediaHover=false);
+/* стрелки ‹ › — листаем трейлер и кадры по кругу */
+function pvStep(d){
+  const n=PVD.media.length;
+  if(!n)return;
+  pvSetMedia((PVD.idx+d+n)%n);
+  pvRunWave($('#pvMedia'));
+}
+$('#pvPrev').addEventListener('click',()=>pvStep(-1));
+$('#pvNext').addEventListener('click',()=>pvStep(1));
+/* автосмена кадров: пока превью открыт и курсор не на медиаблоке,
+   кадры сами сменяют друг друга (трейлер не трогаем — он «играет») */
+function pvAutoStart(){
+  clearInterval(PVD.autoT);
+  PVD.autoT=setInterval(()=>{
+    if(!pv.classList.contains('show')||PVD.mediaHover)return;
+    const m=PVD.media[PVD.idx];
+    if(!m||m.kind!=='shot')return;
+    let n=PVD.idx+1;
+    while(n<PVD.media.length&&PVD.media[n].kind!=='shot')n++;
+    if(n>=PVD.media.length){n=0;while(n<PVD.media.length&&PVD.media[n].kind!=='shot')n++;}
+    if(n<PVD.media.length&&n!==PVD.idx)pvSetMedia(n,{auto:true});
+  },3400);
+}
+/* ---------- звук превью ----------
+   На странице тайтла здесь жил синтезатор громкости трейлера
+   (WebAudio). Персона не играет видео — оставляем синхронизацию
+   пустой: превью-панель зовёт её после смены кадров */
+function audioSync(){}
+function volUI(){}
+/* поповера «В подборку» на странице персоны нет, но общие
+   обработчики скролла и дропдаунов зовут его закрытие — заглушка */
+function closeCollMenu(){}
+
+
+/* ---------- портрет в hero: раскрытие в лайтбокс, как кадры ----------
+   Значок — те же две стрелки. Фото персоны всегда одно — стрелки
+   и счётчик лайтбокс спрячет сам */
+$('#ppPoster').addEventListener('click',()=>lbOpen([PN.photo],0,'Фото: '+PN.name));
+$('#ppPoster').addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key===' '){e.preventDefault();lbOpen([PN.photo],0,'Фото: '+PN.name);}
+});
+
+/* ---------- меню состояния тайтла («⋮» на карточке и в превью) ---------- */
+const SM={open:false,titleId:null,trigger:null,card:null};
+const smEl=$('#statusMenu');
+const DOT_COLOR={watching:'var(--ok)',planned:'var(--info)',watched:'rgba(255,255,255,.75)',onhold:'var(--warn)',dropped:'var(--bad)'};
+function buildStatusItems(t){
+  const items=[['watching','Смотрю'],['planned','Буду смотреть'],['watched','Просмотрено'],['onhold','Отложено'],['dropped','Брошено']];
+  let html='<p class="sm-head">Состояние тайтла</p>';
+  html+=items.map(([k,label])=>
+    `<button class="sm-item${t.status===k?' is-cur':''}" data-st="${k}" role="menuitem">`+
+    `<span class="sm-dot" style="background:${DOT_COLOR[k]}"></span>`+
+    `<span class="sm-label">${label}</span>`+
+    (t.status===k?I.checkSm:'')+`</button>`).join('');
+  if(t.status)html+=
+    `<div class="sm-sep"></div>`+
+    `<button class="sm-item sm-item--clear" data-st="" role="menuitem">`+
+    `<span class="sm-x">${I.xSm}</span><span class="sm-label">Убрать статус</span></button>`;
+  return html;
+}
+function openStatusMenu(btn,titleId,card){
+  const t=TITLES[titleId];
+  if(!t)return;
+  closeShareMenu();                  /* дисциплина поповеров: открыто максимум одно меню */
+  closeCollMenu();                   /* поповер подборок — под тем же правилом */
+  SM.open=true;SM.titleId=titleId;SM.trigger=btn;SM.card=card||btn.closest('.poster-card')||PVD.card;
+  PVD.hold=true;clearTimeout(PVD.hideT);      /* пока открыто меню — превью не прячем */
+  smEl.innerHTML=buildStatusItems(t);
+  smEl.classList.remove('hidden');
+  const r=btn.getBoundingClientRect();
+  const w=smEl.offsetWidth,h=smEl.offsetHeight;
+  let x=r.left+r.width/2-w/2;
+  x=Math.max(10,Math.min(x,innerWidth-w-10));
+  let y=r.top-h-10;                           /* предпочитаем открыть над кнопкой */
+  if(y<10)y=Math.min(r.bottom+10,innerHeight-h-10);
+  smEl.style.left=Math.round(x)+'px';
+  smEl.style.top=Math.round(y)+'px';
+}
+function closeStatusMenu(){
+  if(!SM.open)return;
+  smEl.classList.add('hidden');smEl.innerHTML='';
+  SM.open=false;SM.titleId=null;SM.trigger=null;SM.card=null;
+  PVD.hold=false;
+  if(pv.classList.contains('show'))schedulePvHide();
+}
+smEl.addEventListener('click',e=>{
+  const it=e.target.closest('.sm-item');
+  if(!it)return;
+  const t=TITLES[SM.titleId];
+  if(!t){closeStatusMenu();return;}
+  const k=it.dataset.st||null;
+  t.status=k||undefined;
+  if(SM.card&&SM.card.isConnected)syncCardStatus(SM.card,t);
+  updatePvStatus(t);
+  if(typeof tpSyncStatus==='function')tpSyncStatus(t);   /* чип в hero страницы тайтла */
+  closeStatusMenu();
+  toast(k?('Отмечено: '+STATUS[k]):'Статус убран');
+});
+document.addEventListener('pointerdown',e=>{
+  if(!SM.open)return;
+  if(smEl.contains(e.target))return;
+  if(SM.trigger&&SM.trigger.contains(e.target))return;
+  closeStatusMenu();
+},true);
+function syncCardStatus(card,t){
+  if(!card)return;
+  const wrap=card.querySelector('.poster-wrap');
+  if(!wrap)return;
+  let chip=wrap.querySelector('.status-chip');
+  if(!t.status){chip&&chip.remove();return;}
+  if(!chip){chip=document.createElement('span');wrap.appendChild(chip);}
+  chip.className='status-chip status-chip--'+t.status;
+  chip.innerHTML='<span class="sc-dot"></span><span class="sc-t">'+STATUS[t.status]+'</span>';
+}
+function updatePvStatus(t){
+  let chip=$('#pvStatus');
+  if(!t.status){chip&&chip.remove();return;}
+  if(!chip){chip=document.createElement('span');chip.id='pvStatus';$('#pvMeta').appendChild(chip);}
+  chip.className='pv-status';
+  chip.innerHTML=`<span class="sc-dot" style="background:${DOT_COLOR[t.status]}"></span><span class="sc-t">${STATUS[t.status]}</span>`;
+}
+
+/* ---------- гость / пользователь ---------- */
+function setUser(mode){
+  const guest=mode==='guest';
+  closeStatusMenu();
+  document.body.classList.toggle('is-guest',guest);
+  $('#userArea').style.display=guest?'none':'';
+  $('#userDivider').style.display=guest?'none':'';
+  $('#avatarWrap').style.display=guest?'none':'';
+  $('#loginBtn').classList.toggle('hidden',!guest);
+  /* у персоны нет пользовательских состояний — гость видит то же,
+     что и юзер, различается только шапка */
+  $$('#userSeg button').forEach(b=>b.classList.toggle('is-on',b.dataset.user===mode));
+}
+
+</script>
+<script src="/assets/kuvion-auth.js"></script>
+<script>
+"use strict";
+/* ---------- подтверждение выхода ---------- */
+$('#logoutBtn').addEventListener('click',()=>{
+  hidePreview();
+  closeAllDd();
+  $('#logoutModal').classList.remove('hidden');
+});
+$('#logoutCancel').addEventListener('click',()=>$('#logoutModal').classList.add('hidden'));
+$('#logoutConfirm').addEventListener('click',()=>{
+  $('#logoutModal').classList.add('hidden');
+  setUser('guest');
+  toast('Вы вышли из аккаунта');
+});
+safeOverlayClose($('#logoutModal'),()=>$('#logoutModal').classList.add('hidden'));
+
+/* ---------- поделиться (как в изначальной версии) ----------
+   Копирование ссылки и шаринги в Telegram / ВКонтакте. В проде
+   URL построит роутер страницы тайтла; в макете делимся текущим
+   адресом. Поведение единое с меню состояния: скролл страницы
+   или ленты и открытие соседнего поповера закрывают это меню. */
+const shEl=$('#shareMenu');
+function openShareMenu(btn){
+  closeStatusMenu();                 /* зеркально: статус-меню уступает место «Поделиться» */
+  closeCollMenu();                   /* и поповер подборок — открыто максимум одно меню */
+  shEl.classList.remove('hidden');
+  const r=btn.getBoundingClientRect();
+  const w=shEl.offsetWidth,h=shEl.offsetHeight;
+  let x=r.left+r.width/2-w/2;
+  x=Math.max(10,Math.min(x,innerWidth-w-10));
+  let y=r.top-h-10;                           /* предпочитаем открыть над кнопкой */
+  if(y<10)y=Math.min(r.bottom+10,innerHeight-h-10);
+  shEl.style.left=x+'px';shEl.style.top=y+'px';
+}
+function closeShareMenu(){shEl.classList.add('hidden');}
+$('#tpShare').addEventListener('click',e=>{
+  e.stopPropagation();
+  shEl.classList.contains('hidden')?openShareMenu(e.currentTarget):closeShareMenu();
+});
+safeOutsideClose(shEl,[$('#tpShare')],closeShareMenu);
+function fallbackCopy(url){
+  const ta=document.createElement('textarea');
+  ta.value=url;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');toast('Ссылка скопирована');}
+  catch(_){toast('Не удалось скопировать');}
+  ta.remove();
+}
+function copyShareLink(){
+  const url=location.href;
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(url).then(()=>toast('Ссылка скопирована')).catch(()=>fallbackCopy(url));
+  else fallbackCopy(url);
+}
+function shareSocial(net){
+  const url=encodeURIComponent(location.href);
+  const title=encodeURIComponent(PN.name+' — Kuvion');
+  const link=net==='tg'
+    ?'https://t.me/share/url?url='+url+'&text='+title
+    :'https://vk.com/share.php?url='+url+'&title='+title;
+  window.open(link,'_blank','noopener,width=680,height=540');
+}
+$('#shCopy').addEventListener('click',()=>{copyShareLink();closeShareMenu();});
+$('#shTg').addEventListener('click',()=>{shareSocial('tg');closeShareMenu();});
+$('#shVk').addEventListener('click',()=>{shareSocial('vk');closeShareMenu();});
+/* ---------- сообщить о проблеме (причины — про персону) ----------
+   Причина + необязательный комментарий. Отправку подключим к
+   /api/report, когда новый бэкенд будет готов; сейчас — тост.
+   Гостю — как раньше: тост и предложение войти. */
+let rpReason='';
+function openReportModal(){
+  if(document.body.classList.contains('is-guest')){
+    toast('Войди в аккаунт, чтобы отправить жалобу');
+    openAuth('login');
+    return;
+  }
+  $('#reportTitle').textContent=PN.name;
+  $('#reportComment').value='';rpReason='';
+  $$('#reportModal .rp-item').forEach(b=>b.classList.remove('is-on'));
+  $('#reportModal').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+const closeReportModal=()=>{
+  $('#reportModal').classList.add('hidden');
+  document.body.style.overflow='';
+};
+$('#tpReport').addEventListener('click',openReportModal);
+$('#reportClose').addEventListener('click',closeReportModal);
+safeOverlayClose($('#reportModal'),closeReportModal);
+$$('#reportModal .rp-item').forEach(b=>b.addEventListener('click',()=>{
+  rpReason=b.dataset.reason;
+  $$('#reportModal .rp-item').forEach(x=>x.classList.toggle('is-on',x===b));
+}));
+$('#reportSend').addEventListener('click',()=>{
+  if(!rpReason){toast('Выбери, что не так');return;}
+  closeReportModal();
+  toast('Жалоба отправлена — спасибо!');
+});
+
+/* ---------- лайтбокс ----------
+   Принимает любой список: фото персоны, портрет из hero, кадры.
+   Одиночная картинка — без стрелок и счётчика */
+const LB={list:[],idx:0};
+function lbOpen(list,i,cap){
+  LB.list=list;
+  LB.idx=(i+list.length)%list.length;
+  $('#lbImg').src=LB.list[LB.idx];
+  $('#lbImg').alt=cap||'Кадр из аниме «Атака титанов»';
+  const one=LB.list.length<2;                    /* одиночный постер — без стрелок и счётчика */
+  $('#lbPrev').style.display=one?'none':'';
+  $('#lbNext').style.display=one?'none':'';
+  $('#lbCount').textContent=one?'':(LB.idx+1)+' / '+LB.list.length;
+  const lb=$('#lightbox');
+  lb.classList.remove('hidden');
+  requestAnimationFrame(()=>lb.classList.add('show'));
+  document.body.style.overflow='hidden';
+}
+function lbClose(){
+  const lb=$('#lightbox');
+  lb.classList.remove('show');
+  document.body.style.overflow='';
+  setTimeout(()=>{if(!lb.classList.contains('show'))lb.classList.add('hidden');},260);
+}
+const lbStep=d=>lbOpen(LB.list,LB.idx+d);
+$('#lbClose').addEventListener('click',lbClose);
+$('#lbPrev').addEventListener('click',()=>lbStep(-1));
+$('#lbNext').addEventListener('click',()=>lbStep(1));
+safeOverlayClose($('#lightbox'),lbClose);
+document.addEventListener('keydown',e=>{
+  if(!$('#lightbox').classList.contains('show'))return;
+  if(e.key==='ArrowLeft')lbStep(-1);
+  else if(e.key==='ArrowRight')lbStep(1);
+});
+
+/* ---------- рендер страницы персоны ----------
+   Один шаблон на оба типа: у сэйю фильмография называется
+   «Озвучивал» и есть лента персонажей, у актёра — «Где снимался»
+   и лента фото. Секции без данных прячутся — страница не держит
+   пустых мест, сколько бы ни прислал бэкенд */
+function filmCard(f){
+  const t=TITLES[f.id];
+  const st=t.status?STATUS[t.status]:null;
+  return `
+  <article class="poster-card"${f.href?' data-href="'+f.href+'"':''} tabindex="0" role="button" data-id="${t.id}" data-title="${t.title}" aria-label="${t.title}, ${t.year}">
+    <div class="poster-wrap">
+      <img class="poster-img" src="${t.poster}" alt="" loading="lazy">
+      <div class="poster-scrim"></div>
+      <div class="poster-spotlight"></div>
+      <span class="rating-pill rating-pill--${ratingCls(t.rating)}">${I.star} ${t.rating.toFixed(1)}</span>
+      ${t.isNew?'<span class="badge-new"><span class="bn-text">NEW</span></span>':''}
+      ${st?`<span class="status-chip status-chip--${t.status}"><span class="sc-dot"></span><span class="sc-t">${st}</span></span>`:''}
+      <button class="card-dots" data-dots title="Состояние тайтла" aria-label="Состояние тайтла" aria-haspopup="menu">${I.dots}</button>
+      <span class="card-play">${I.playBig}</span>
+    </div>
+    <div class="card-caption">
+      <p class="cc-title">${t.title}</p>
+      <p class="cc-meta">
+        <span>${t.year}</span><span class="cm-sep">·</span>
+        <span class="cm-type">${t.type}</span><span class="cm-sep">·</span>
+        <span class="cm-genres">${t.genres.join(', ')}</span>
+      </p>
+      <p class="film-role">Роль: ${f.role}</p>
+    </div>
+  </article>`;
+}
+function renderPerson(){
+  PN=PERSONS[pnMode];
+  document.title='Kuvion — '+PN.name;
+  $('#ppCrumb').textContent=PN.name;
+  $('#ppPosterImg').src=PN.photo;
+  $('#ppPosterImg').alt=PN.name;
+  $('#ppBackdrop').src=PN.backdrop;
+  $('#ppName').textContent=PN.name;
+  $('#ppOrig').textContent=PN.orig;
+  $('#ppMeta').innerHTML=PN.meta.map(m=>'<span>'+m+'</span>').join('<span class="hm-sep">·</span>');
+  $('#ppDesc').textContent=PN.desc;
+  $('#ppFacts').innerHTML=PN.facts.map(f=>
+    '<div class="fact"><p class="f-label">'+f[0]+'</p><p class="f-value">'+f[1]+'</p></div>').join('');
+  /* фильмография: лента на странице + сетка в модалке */
+  $('#filmTitle').innerHTML=PN.filmTitle+' <span class="rt-count">'+PN.film.length+'</span>';
+  $('#castAll').innerHTML='Все · '+PN.film.length+
+    ' <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+  $('#castModalTitle').innerHTML=PN.filmTitle+' <span class="rt-count">'+PN.film.length+'</span>';
+  const cards=PN.film.map(filmCard).join('');
+  $('#row-film').innerHTML=cards;
+  $('#castGrid').innerHTML=cards;
+  /* персонажи — только у сэйю */
+  $('#sectionChars').classList.toggle('hidden',!PN.chars.length);
+  if(PN.chars.length){
+    $('#charsTitle').innerHTML='Озвученные персонажи <span class="rt-count">'+PN.chars.length+'</span>';
+    $('#row-chars').innerHTML=PN.chars.map(c=>`
+      <figure class="char-card">
+        <div class="char-photo"><img src="${c.img}" alt="${c.name}" loading="lazy"></div>
+        <figcaption>
+          <p class="char-name">${c.name}</p>
+          <p class="char-role">${c.from}</p>
+        </figcaption>
+      </figure>`).join('');
+  }
+  /* фото — только у актёра (в демо-базе нет фотосессий сэйю) */
+  PHOTOS=PN.photos;
+  $('#sectionPhotos').classList.toggle('hidden',!PHOTOS.length);
+  if(PHOTOS.length){
+    $('#photosTitle').innerHTML='Фото <span class="rt-count">'+PHOTOS.length+'</span>';
+    $('#row-photos').innerHTML=PHOTOS.map((src,i)=>`
+      <figure class="still-card pp-photo" data-i="${i}" tabindex="0" role="button" aria-label="Фото ${i+1} из ${PHOTOS.length}">
+        <img src="${src}" alt="${PN.name} — фото ${i+1}" loading="lazy">
+        <span class="still-zoom">${I.expand}</span>
+      </figure>`).join('');
+  }
+  requestAnimationFrame(()=>$$('.row-scroller').forEach(s=>s.dispatchEvent(new Event('scroll'))));
+}
+/* модалка «Все роли»: та же дисциплина, что у списка каста тайтла */
+const openCastModal=()=>{
+  $('#castModal').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  $('#castModalClose').focus({preventScroll:true});
+};
+const closeCastModal=()=>{
+  $('#castModal').classList.add('hidden');
+  document.body.style.overflow='';
+};
+$('#castAll').addEventListener('click',openCastModal);
+$('#castModalClose').addEventListener('click',closeCastModal);
+safeOverlayClose($('#castModal'),closeCastModal);
+/* переключение персоны: «Лаборатория» + глубокая ссылка ?mode=people */
+function setPersona(mode){
+  pnMode=PERSONS[mode]?mode:'seiyuu';
+  $$('#personaSeg button').forEach(b=>b.classList.toggle('is-on',b.dataset.persona===pnMode));
+  renderPerson();
+}
+$$('#personaSeg button').forEach(b=>b.addEventListener('click',()=>setPersona(b.dataset.persona)));
+
+
+/* ---------- инициализация ---------- */
+renderPerson();
+wireRows();
+setUser('user');
+/* глубокая ссылка из блока каста страницы тайтла: ?mode=people */
+try{
+  const q=new URLSearchParams(location.search).get('mode');
+  if(q==='people')setPersona('people');
+}catch(_){}
+
+/* шапка: фон при скролле */
+window.addEventListener('scroll',()=>$('#appHeader').classList.toggle('scrolled',scrollY>40),{passive:true});
+
+/* дропдауны: закрытие по клику вне — с защитой от выделения текста */
+$('#bellBtn').addEventListener('click',e=>{e.stopPropagation();toggleDd('bellDd',e.currentTarget);});
+$('#avatarBtn').addEventListener('click',e=>{e.stopPropagation();toggleDd('acctDd',e.currentTarget);});
+safeOutsideClose($('#bellDd'),[$('#bellBtn')],closeAllDd);
+safeOutsideClose($('#acctDd'),[$('#avatarBtn')],closeAllDd);
+
+/* ---------- уведомления: живая лента v2 ----------
+   Было (v1): движок с шестью демо-событиями и кнопкой «Показать
+   ещё» в дропдауне. Стало: демо-набор охватывает два месяца
+   (группы «Сегодня / Вчера / На этой неделе / Ранее»), а внизу
+   дропдауна вместо «Показать ещё» — строка «Все уведомления · N»,
+   открывающая отдельную страницу /notifications/ (тот же
+   паттерн, что у «Все результаты» в поиске). Состояние
+   «прочитано» — по-прежнему честное, в localStorage
+   (kuvion_notifs_v1), и общее для дропдауна и страницы.
+   Движок один на все страницы; после каждого рендера он зовёт
+   хук nfsAfterRender — его определяет только страница
+   уведомлений, остальные страницы не замечают. */
+const NT_KEY='kuvion_notifs_v1';
+const NT_IC={
+  ep:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5.5v13a1 1 0 0 0 1.53.85l10.2-6.5a1 1 0 0 0 0-1.7L8.53 4.65A1 1 0 0 0 7 5.5Z"/></svg>',
+  ch:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+  reply:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>',
+  like:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',
+  plus:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9Z"/></svg>',
+  sys:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+};
+/* миниатюры серий — те же постеры, что в каталоге */
+const NT_THUMB={
+  aot:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9a35191d1d09.jpg',
+  jjk:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/235414089ff8.jpg',
+  tlou:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/078136c3e9d7.jpg',
+  frieren:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/c458046a4f08.jpg',
+};
+
+/* демо-набор: ts — сколько часов назад от якоря «сейчас»
+   (5 ноября 2026, как у комментариев); read:1 — прочитанные
+   при первом визите. Непрочитанных в свежем профиле три:
+   серия, глава и Kuvion+; у серий — постер-миниатюра, у глав
+   и служебных событий — цветная иконка */
+const NT_DEMO=[
+  {id:'n-ep-aot19',k:'ep',ts:2,
+   title:'Вышла новая серия',text:'«Атака титанов» — 4 сезон, серия 19',
+   thumb:NT_THUMB.aot,href:'/title/'},
+  {id:'n-ch-csm',k:'ch',ts:5,
+   title:'Вышла новая глава',text:'«Человек-бензопила» — глава 209',
+   href:'/manga/?m=csm'},
+  {id:'n-ep-jjk',k:'ep',ts:9,read:1,
+   title:'Вышла новая серия',text:'«Магическая битва» — 2 сезон, серия 11',
+   thumb:NT_THUMB.jjk,href:'/catalog/'},
+  {id:'n-sys-plus',k:'plus',ts:26,
+   title:'Kuvion+',text:'Ранний доступ к главам манги — на три дня раньше бесплатного релиза',
+   href:'/plus/'},
+  {id:'n-ep-tlou',k:'ep',ts:30,read:1,
+   title:'Вышла новая серия',text:'«Последние из нас» — 2 сезон, серия 3',
+   thumb:NT_THUMB.tlou,href:'/catalog/'},
+  {id:'n-ep-aot18',k:'ep',ts:50,read:1,
+   title:'Вышла новая серия',text:'«Атака титанов» — 4 сезон, серия 18',
+   thumb:NT_THUMB.aot,href:'/title/'},
+  {id:'n-sys-manga',k:'sys',ts:74,read:1,
+   title:'Манга уже на Kuvion',text:'Читайте любимые тайтлы в новой читалке — манга, манхва и маньхуа',
+   href:'/manga/'},
+  {id:'n-ch-op',k:'ch',ts:96,read:1,
+   title:'Вышла новая глава',text:'«Ван Пис» — глава 1129',
+   href:'/manga/?m=onepiece'},
+  {id:'n-ch-csm208',k:'ch',ts:120,read:1,
+   title:'Вышла новая глава',text:'«Человек-бензопила» — глава 208',
+   href:'/manga/?m=csm'},
+  {id:'n-sys-dune',k:'sys',ts:880,read:1,
+   title:'Новый тайтл в каталоге',text:'«Дюна: Часть вторая» — уже доступна к просмотру',
+   href:'/catalog/'},
+  {id:'n-ep-frieren',k:'ep',ts:900,read:1,
+   title:'Вышла новая серия',text:'«Провожающая в последний путь Фрирен» — 2 сезон, серия 12',
+   thumb:NT_THUMB.frieren,href:'/catalog/'},
+  {id:'n-sys-hi',k:'sys',ts:1400,read:1,
+   title:'Добро пожаловать в Kuvion',text:'Соберите первый список и оцените просмотренное — так заработают рекомендации',
+   href:'/profile/'},
+];
+
+/* живые события: ответ и лайк на самый свежий свой комментарий
+   (появляются, только если вы уже писали на странице тайтла) */
+function ntMine(){
+  let arr=null;
+  try{arr=JSON.parse(localStorage.getItem('kuvion_tcomments_v1')||'null')}catch(e){}
+  if(!Array.isArray(arr)||!arr.length)return [];
+  /* цель — самый свежий корневой комментарий: на ответ никто
+     не «отвечает» (один уровень вложенности), уведомление о
+     ответе на ответ не соберётся */
+  const m=arr.find(x=>!x.parent)||arr[0];
+  const ntEsc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const cut=ntEsc(String(m.text||'').replace(/\s+/g,' ').trim().slice(0,54));
+  return [
+    {id:'n-reply-'+m.id,k:'reply',ts:3,
+     title:'Новый ответ',text:'kira ответил(а) на ваш комментарий «'+cut+'…»',
+     href:'/title/?cmt='+encodeURIComponent(m.id)},
+    {id:'n-like-'+m.id,k:'like',ts:8,
+     title:'Ваш комментарий оценили',text:'vega и ещё 3 человека поставили лайк комментарию «'+cut+'…»',
+     href:'/title/?cmt='+encodeURIComponent(m.id)},
+  ];
+}
+
+/* состояние: набор прочитанных id */
+let NT_READ=new Set(),NT_TOP=5;
+try{
+  const s=JSON.parse(localStorage.getItem(NT_KEY)||'null');
+  if(s&&Array.isArray(s.read))s.read.forEach(id=>NT_READ.add(id));
+}catch(e){}
+function ntSave(){try{localStorage.setItem(NT_KEY,JSON.stringify({read:[...NT_READ]}))}catch(e){}}
+function ntList(){return ntMine().concat(NT_DEMO).sort((a,b)=>a.ts-b.ts)}
+
+function ntWhen(h){
+  const pl=(n,a,b,c)=>{const m=n%10,k=n%100;return m===1&&k!==11?a:(m>=2&&m<=4&&(k<10||k>=20)?b:c)};
+  if(h<=0)return 'только что';
+  if(h<24)return h+' '+pl(h,'час','часа','часов')+' назад';
+  const d=Math.round(h/24);
+  if(d===1)return 'вчера';
+  if(d<7)return d+' '+pl(d,'день','дня','дней')+' назад';
+  if(d<31){const w=Math.round(d/7);return w===1?'неделю назад':w+' '+pl(w,'неделю','недели','недель')+' назад'}
+  const mo=Math.round(d/30);
+  return mo===1?'месяц назад':mo+' '+pl(mo,'месяц','месяца','месяцев')+' назад';
+}
+function ntItemHTML(n){
+  const read=!!n.read||NT_READ.has(n.id);
+  const media=n.thumb
+    ?`<img class="n-thumb" src="${n.thumb}" alt="" loading="lazy">`
+    :`<span class="n-icon" aria-hidden="true">${NT_IC[n.k]}</span>`;
+  return `<a class="notif notif--${n.k}${read?' is-read':''}" href="${n.href}" data-id="${n.id}">`+
+    media+
+    `<div style="min-width:0">`+
+    `<p class="n-title">${n.title}</p>`+
+    `<p class="n-text">${n.text}</p>`+
+    `<p class="n-time">${ntWhen(n.ts)}</p></div>`+
+    (read?'':'<span class="n-dot"></span>')+
+    `</a>`;
+}
+function ntRender(){
+  const list=ntList();
+  $('#bellList').innerHTML=list.slice(0,NT_TOP).map(ntItemHTML).join('');
+  const unread=list.filter(n=>!n.read&&!NT_READ.has(n.id)).length;
+  const badge=$('#bellBadge');
+  if(unread){badge.textContent=unread;badge.classList.remove('is-hidden')}
+  else badge.classList.add('is-hidden');
+  /* «Все уведомления · N»: полная лента живёт на отдельной
+     странице; при короткой ленте строка не нужна */
+  const all=$('#bellAll');
+  if(all){
+    all.style.display=list.length>NT_TOP?'':'none';
+    const n=$('#bellAllN');
+    if(n)n.textContent=list.length;
+  }
+  /* страница уведомлений (если мы на ней) перерисовывается следом */
+  if(typeof nfsAfterRender==='function')nfsAfterRender();
+}
+
+/* «Отметить прочитанными»: помним выбор между визитами */
+$('#bellClear').addEventListener('click',()=>{
+  ntList().forEach(n=>NT_READ.add(n.id));
+  ntSave();ntRender();
+  toast('Уведомления отмечены прочитанными');
+});
+/* клик по уведомлению: помечаем прочитанным и уходим по ссылке */
+$('#bellList').addEventListener('click',e=>{
+  const a=e.target.closest('.notif');
+  if(!a)return;
+  NT_READ.add(a.dataset.id);
+  ntSave();
+});
+ntRender();
+
+/* вход: кнопки-триггеры */
+$('#loginBtn').addEventListener('click',()=>openAuth('login'));
+$('#drawerLogin').addEventListener('click',()=>{closeDrawer();openAuth('login');});
+
+/* бургер */
+const openDrawer=()=>{hidePreview();$('#drawer').classList.add('open');$('#drawerOverlay').classList.remove('hidden');};
+const closeDrawer=()=>{$('#drawer').classList.remove('open');$('#drawerOverlay').classList.add('hidden');};
+$('#btnBurger').addEventListener('click',openDrawer);
+$('#drawerClose').addEventListener('click',closeDrawer);
+safeOverlayClose($('#drawerOverlay'),closeDrawer);
+
+
+/* горячие клавиши */
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch();return;}
+  if(e.key!=='Escape')return;
+  if(!$('#searchOverlay').classList.contains('hidden')){closeSearch();return;}
+  if($('#lightbox').classList.contains('show')){lbClose();return;}
+  if(!$('#castModal').classList.contains('hidden')){closeCastModal();return;}
+  if(!$('#reportModal').classList.contains('hidden')){closeReportModal();return;}
+  if(!$('#shareMenu').classList.contains('hidden')){closeShareMenu();return;}
+  hidePreview();
+  closeStatusMenu();
+  closeAllDd();
+  closeAuth();
+  $('#logoutModal').classList.add('hidden');
+  closeDrawer();
+});
+
+/* заглушки и действия на карточках — делегирование */
+document.addEventListener('click',e=>{
+  const stl=e.target.closest('.still-card');
+  if(stl){lbOpen(PHOTOS,Number(stl.dataset.i));return;}
+  const dots=e.target.closest('.card-dots');
+  if(dots){
+    e.preventDefault();e.stopPropagation();
+    if(SM.open){closeStatusMenu();return;}
+    const card=dots.closest('.poster-card');
+    if(card)openStatusMenu(dots,card.dataset.id,card);
+    return;
+  }
+  const card=e.target.closest('.poster-card');
+  if(card){
+    hidePreview();
+    /* живые ссылки фильмографии — по-настоящему (демо: «Атака титанов») */
+    if(card.dataset.href){location.href=card.dataset.href;return;}
+    toast('Страница «'+card.dataset.title+'» — в разработке');return;}
+  const sr=e.target.closest('.sr-item');
+  if(sr){
+    sovSaveRecent(sovInput.value);
+    closeSearch();closeAllDd();
+    if(sr.dataset.local==='1'){showManga(sr.dataset.srid);return;}
+    if(sr.dataset.href){location.href=sr.dataset.href;return;}
+    toast('Страница «'+sr.dataset.title+'» — в разработке');return;
+  }
+  const stub=e.target.closest('[data-stub]');
+  if(stub){
+    e.preventDefault();
+    if(stub.closest('.dd'))closeAllDd();
+    if(stub.closest('#drawer'))closeDrawer();
+    /* навигация между готовыми макетами — по-настоящему */
+    if(stub.dataset.stub==='Каталог'){location.href='/catalog/';return;}
+    if(stub.dataset.stub==='Аниме'){location.href='/catalog/?type=anime';return;}
+    if(stub.dataset.stub==='Случайное'){location.href='/catalog/?random=1';return;}
+    if(stub.dataset.stub==='Главная'){location.href='/';return;}
+    toast('«'+stub.dataset.stub+'» — в разработке');
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const stl=e.target.closest?.('.still-card');
+  if(stl){lbOpen(PHOTOS,Number(stl.dataset.i));return;}
+  const card=e.target.closest?.('.poster-card');
+  if(card){
+    if(card.dataset.href){location.href=card.dataset.href;return;}
+    toast('Страница «'+card.dataset.title+'» — в разработке');
+  }
+});
+</script>
+<script>
+/* ---- reveal рядов: секции ниже первого экрана мягко всплывают при
+   попадании в экран (один раз); видимое при загрузке не трогаем;
+   после показа классы снимаются — финальная разметка чистая;
+   при prefers-reduced-motion и без JS всё видно как раньше ---- */
+(function(){
+  try{
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    setTimeout(function(){
+      var SEL='.facts,#sectionFilm,#sectionChars';
+      var els=[].slice.call(document.querySelectorAll(SEL)).filter(function(el){
+        var s=getComputedStyle(el);
+        return s.display!=='none'&&s.visibility!=='hidden'&&el.getBoundingClientRect().height>0;
+      });
+      if(!els.length||!('IntersectionObserver' in window))return;
+      var H=window.innerHeight||document.documentElement.clientHeight;
+      var marked=els.filter(function(el){
+        return el.getBoundingClientRect().top>=H;
+      });
+      if(!marked.length)return;
+      var io=new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if(!e.isIntersecting)return;
+          var el=e.target;
+          io.unobserve(el);
+          el.classList.add('rv-in');
+          setTimeout(function(){el.classList.remove('rv-hide','rv-in');},750);
+        });
+      },{rootMargin:'0px 0px -10% 0px',threshold:0});
+      marked.forEach(function(el){el.classList.add('rv-hide');io.observe(el);});
+    },60);
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

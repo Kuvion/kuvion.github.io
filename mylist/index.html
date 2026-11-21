@@ -1,0 +1,3066 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="Мой список на Kuvion — тайтлы по статусам: смотрю, запланировано, просмотрено и брошено, с оценками.">
+<meta property="og:title" content="Kuvion — мой список">
+<meta property="og:description" content="Мой список на Kuvion — тайтлы по статусам: смотрю, запланировано, просмотрено и брошено, с оценками.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%230b0b0e'/%3E%3Crect%20x='1.5'%20y='1.5'%20width='61'%20height='61'%20rx='12.5'%20fill='none'%20stroke='rgba(255,255,255,.18)'%20stroke-width='3'/%3E%3Cpath%20d='M17%2014h8v14l12-14h11l-16%2017%2016%2019h-11l-12-14v14h-8z'%20fill='%23fff'/%3E%3C/svg%3E">
+<title>Kuvion — мой список</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@300;400;500;600;700;800;900&family=Rubik:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/kuvion-common.css">
+<style>
+
+/* ================================================================
+   KUVION — «Мой список», дизайн-макет v1 (собран из
+   дизайн-системы v4; черновой, для просмотра и тестов)
+   Философия та же: абсолютный чёрный, белый как главный акцент,
+   градиент — только для аккаунта и подписки. Весь цвет несут
+   постеры + семантика рейтингов и статусов.
+   Что здесь:
+   • личная коллекция пользователя: вкладки-категории —
+     «Все / Смотрю / Буду смотреть / Просмотрено / Отложено /
+     Брошено / Избранное» — с живыми счётчиками; выбранная
+     категория заливается белым;
+   • строки коллекции: постер 2:3, название, статусный чип (та
+     же семантика цветов, что на карточках), прогресс «серия
+     N из M» с полосой, собственная оценка N/10 со звездой,
+     дата попадания в список и жанры;
+   • действия прямо в строке: закладка избранного и меню «⋮» —
+     смена статуса, избранное, «убрать из списка» (поповер в
+     дисциплине каталога: закрывается кликом мимо и на скролле);
+   • сортировка: сначала добавленные / по названию / по моей
+     оценке / по году выхода;
+   • статистика в голове: сколько тайтлов и эпизодов,
+     приблизительно часов — всё считается из данных, а не
+     пишется руками;
+   • гостю — приветствие с входом и регистрацией (открывают
+     модалку v4), пользователю — коллекция; переключатель
+     «Гость / Юзер» в «Лаборатории» показывает оба состояния;
+   • пустая категория — вежливое состояние со ссылкой в каталог;
+     строки кликабельны, как карточки каталога («Атака
+     титанов» — на страницу тайтла);
+   • данные — демо: 18 тайтлов из набора каталога со статусами,
+     прогрессом и оценками; в продакшене список приходит с
+     бэкенда и наполняется отметками.
+   Связи макетов: «Главная», «Каталог», «Аниме», «Случайное» и
+   «Расписание» ведут на свои макеты (/,
+   /catalog/, ?type=anime, ?random=1,
+   /schedule/).
+   ================================================================ */
+
+:root{
+  --bg:#000;
+  --surface:rgba(255,255,255,.04);
+  --surface-2:rgba(255,255,255,.07);
+  --surface-3:rgba(255,255,255,.11);
+  --border:rgba(255,255,255,.08);
+  --border-2:rgba(255,255,255,.14);
+  --border-3:rgba(255,255,255,.24);
+  --text:#fff;
+  --text-2:rgba(255,255,255,.62);
+  --text-3:rgba(255,255,255,.4);
+  --accent-1:#7C4DFF;
+  --accent-2:#D946EF;
+  --accent-glow:rgba(168,85,247,.35);
+  --ok:#4ADE80;
+  --warn:#FACC15;
+  --bad:#F87171;
+  --info:#60A5FA;
+  --r-s:10px;   /* радиус малый */
+  --r-m:14px;   /* радиус карточек */
+  --r-l:18px;   /* радиус панелей */
+  --font-display:'Dela Gothic One','Onest',system-ui,sans-serif;
+  --font-body:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --header-h:64px;
+  --page-x:clamp(20px,4vw,56px);
+  --rail-gap:16px;                                   /* единый шаг между карточками */
+  --card-w:clamp(168px,13.5vw,204px);                /* размер карточки M (по умолчанию) */
+}
+
+body:not([data-displayfont="dela"]) :is(.logo,.hero-title,.row-title,.pv-title,.auth-logo,.footer-logo,.soon-title,.lab-title,.sub-card .sc-name){font-weight:800}
+
+
+.nav-link{
+  position:relative;font-size:14px;font-weight:500;color:var(--text-2);
+  padding:6px 1px;transition:color .2s ease;white-space:nowrap;
+}
+
+/* ============ МОЙ СПИСОК: ГОЛОВА, ВКЛАДКИ, СТРОКИ КОЛЛЕКЦИИ ============
+   Страница живёт в той же рамке контента, что каталог и расписание:
+   одна колонка, те же отступы. Носитель страницы — лента вкладок-
+   категорий («Все / Смотрю / … / Избранное») со счётчиками; прилипнув
+   под шапкой, она получает ту же стеклянную подложку, что тулбар
+   каталога и лента недели. Ниже — строки коллекции: постер 2:3,
+   статусный чип (та же семантика цветов, что на карточках), прогресс
+   «серия N из M», собственная оценка и дата попадания в список. */
+
+.ml{padding:calc(var(--header-h) + 28px) 0 26px}   
+/* контент начинается ПОД фиксированной шапкой */
+.ml-head{
+  padding:0 max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x)));
+}
+
+.ml-title{
+  font-family:var(--font-display);
+  font-size:clamp(30px,4vw,46px);line-height:1.02;color:#fff;
+}
+
+.ml-sub{margin-top:10px;font-size:13.5px;color:var(--text-3)}
+
+.ml-sub .cs-strong{color:var(--text-2);font-weight:700;font-variant-numeric:tabular-nums}
+
+
+/* --- вкладки-категории: липкая строка-хром ---
+   Пилюли со счётчиками: выбранная заливается белим, как дни недели
+   в расписании и фильтры каталога. На узком экране лента
+   прокручивается горизонтально, растворение у края подсказывает,
+   что есть ещё. */
+.ml-tabsbar{
+  position:sticky;top:var(--header-h);z-index:55;
+  margin:18px 0 0;
+  padding:0 max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x)));
+  min-height:56px;
+  display:flex;align-items:center;
+  border-bottom:1px solid transparent;
+  transition:background .22s ease,border-color .22s ease,box-shadow .22s ease;
+}
+
+.ml-tabsbar.is-stuck{
+  background:rgba(8,8,10,.88);
+  backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
+  border-bottom-color:var(--border-2);
+  box-shadow:0 22px 50px -24px rgba(0,0,0,.9);
+}
+
+.ml-tabs{
+  display:flex;align-items:center;gap:6px;min-width:0;
+  overflow-x:auto;scrollbar-width:none;position:relative;
+  padding:9px 0;
+}
+
+.ml-tabs::-webkit-scrollbar{display:none}
+
+.mt-pill{
+  flex:none;display:inline-flex;align-items:center;gap:8px;
+  height:34px;padding:0 13px;border-radius:10px;
+  border:1px solid var(--border);background:var(--surface-1);
+  color:var(--text-2);font-family:var(--font-body);font-size:12.5px;font-weight:700;
+  cursor:pointer;transition:.15s;white-space:nowrap;
+}
+
+.mt-pill:hover{color:#fff;border-color:var(--border-2);background:var(--surface-2)}
+
+.mt-pill.is-cur{background:#fff;color:#000;border-color:#fff}
+
+.mt-pill .mt-cnt{
+  min-width:18px;height:18px;padding:0 5px;border-radius:6px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.1);color:var(--text-3);
+  font-size:10px;font-weight:800;font-variant-numeric:tabular-nums;
+}
+
+.mt-pill.is-cur .mt-cnt{background:rgba(0,0,0,.12);color:rgba(0,0,0,.65)}
+
+
+/* --- тулбар над списком: счётчик показанного + сортировка --- */
+.ml-toolbar{
+  margin:22px max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x))) 0;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+
+.ml-shown{font-size:12.5px;color:var(--text-3)}
+
+/* Сортировка — копия кнопки каталога (.ct-btn): «призрак» без
+   заливки и контуров — только иконка, значение и стрелка. Панель —
+   та же «стекляшка», что фильтры каталога (.fdd) и меню состояния:
+   fixed, позицию считает JS. Один язык на всех страницах. */
+.ml-sortbtn{
+  display:inline-flex;align-items:center;gap:7px;
+  height:36px;padding:0 10px;background:none;border:0;
+  color:var(--text-3);font-family:var(--font-body);font-size:13px;font-weight:600;
+  cursor:pointer;transition:color .15s;white-space:nowrap;
+}
+
+.ml-sortbtn:hover{color:#fff}
+
+.ml-sortbtn.is-open{color:#fff}
+
+/* контур — только клавиатуре: клик мышью ничего не обводит */
+.ml-sortbtn:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px;border-radius:8px}
+
+.ml-sort-cur{min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+.ml-caret{display:inline-flex;color:var(--text-3);transition:transform .18s,color .15s}
+
+.ml-sortbtn:hover .ml-caret,.ml-sortbtn.is-open .ml-caret{color:currentColor}
+
+.ml-sortbtn.is-open .ml-caret{transform:rotate(180deg)}
+
+.ml-sortpop{
+  position:fixed;z-index:112;width:250px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:0 28px 70px -14px rgba(0,0,0,.9);
+  padding:6px;animation:dd-in .16s ease;
+}
+
+
+/* --- строка коллекции ---
+   Постер строгого формата 2:3, слева направо: название со статусным
+   чипом, прогресс с полосой, жанры; справа — оценка, дата и действия.
+   Ховер подсвечивает строку — вся строка кликабельна, как карточка. */
+.ml-list{
+  margin:14px max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x))) 0;
+  display:flex;flex-direction:column;gap:8px;
+}
+
+.mlr{
+  display:flex;align-items:center;gap:18px;
+  padding:12px;border-radius:16px;
+  border:1px solid transparent;transition:.15s;cursor:pointer;
+  animation:dd-in .16s ease;
+}
+
+.mlr:hover{background:var(--surface-1);border-color:var(--border-2)}
+
+.mlr:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:-2px}
+
+.mlr-poster{
+  flex:none;width:56px;height:84px;border-radius:10px;overflow:hidden;
+  background:var(--surface-2);border:1px solid var(--border);
+}
+
+.mlr-poster img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* сохранённая подборка: обложка-коллаж вместо постера 2:3 */
+.mlr-collage{width:84px;height:84px;display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:2px}
+
+.mlr-collage[data-n="1"]{grid-template-columns:1fr;grid-template-rows:1fr}
+
+.mlr-collage img{object-fit:cover;object-position:center 28%}
+
+.mlr-collage .mlc-fill{background:rgba(255,255,255,.06);border-radius:3px}
+
+.mlr-main{min-width:0;flex:1 1 auto}
+
+.mlr-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* Чип статуса в строке — обычный элемент рядом с названием:
+   абсолютное позиционирование (нижний угол постера) — это про
+   карточки каталога, здесь оно собрало бы все чипы в одну кучу
+   у первого позиционированного предка. */
+.mlr .status-chip{
+  /* базовый чип абсолютен (bottom/left 10px) — в строке он в потоке,
+     поэтому офсеты обязательно сбрасываем: иначе relative сдвигает
+     пилюлю вверх-вправо на эти самые 10px */
+  position:relative;top:auto;right:auto;bottom:auto;left:auto;flex:none;max-width:none;
+  height:24px;padding:0 11px;gap:6px;border-radius:8px;
+  font-size:11px;
+}
+
+/* v1.7: геометрия и типографика — целиком из дизайн-системы v2, как у
+   всех пилюль сайта (24px / 11px / радиус 8 / кегль 11/600 / точка 6px);
+   отдельные правила точки и подписи не нужны — база уже такая */
+.mlr-title{
+  font-family:var(--font-body);font-size:15px;font-weight:700;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;
+}
+
+.mlr-sub{margin-top:3px;font-size:12.5px;color:var(--text-3)}
+
+.mlr-prog{margin-top:9px;display:flex;align-items:center;gap:10px;max-width:420px}
+
+.mlp-bar{flex:1 1 auto;height:4px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden}
+
+.mlp-bar i{display:block;height:100%;border-radius:2px;background:#fff}
+
+.mlp-txt{flex:none;font-size:11.5px;font-weight:700;color:var(--text-2);font-variant-numeric:tabular-nums}
+
+.mlr-note{margin-top:7px;font-size:11.5px;color:var(--text-3)}
+
+.mlr-genres{
+  margin-top:5px;font-size:12.5px;color:var(--text-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.mlr-side{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+
+.mlr-info{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+
+.ml-score{
+  display:inline-flex;align-items:center;gap:5px;color:#fff;
+  font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;
+}
+
+.ml-score svg{width:12px;height:12px;flex:none}
+
+.ml-score small{font-size:10px;font-weight:700;color:var(--text-3)}
+
+.mlr-added{font-size:11px;color:var(--text-3)}
+
+.mlr-actions{display:flex;gap:4px}
+
+.mlr-btn{
+  width:32px;height:32px;border-radius:9px;border:1px solid transparent;
+  background:none;color:var(--text-3);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;transition:.15s;
+}
+
+.mlr-btn:hover{color:#fff;background:var(--surface-2);border-color:var(--border-2)}
+
+.mlr-btn:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+
+.mlr-fav.is-on{color:#fff}
+
+.mlr-fav.is-on svg{fill:currentColor}
+
+
+/* --- меню строки «⋮»: та же дисциплина, что статусное меню каталога ---
+   Элементы .sm-head/.sm-item/.sm-sep приходят из инфраструктуры v4 —
+   здесь только контейнер. */
+.ml-menu{
+  position:fixed;z-index:112;width:236px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:0 28px 70px -14px rgba(0,0,0,.9);
+  padding:6px;animation:dd-in .16s ease;
+}
+
+.ml-menu.hidden{display:none}
+
+.ml-menu .mlm-ic{width:14px;display:inline-flex;justify-content:center;flex:none;color:var(--text-3)}
+
+
+/* --- пустая категория --- */
+.ml-empty{
+  padding:40px 26px;border-radius:18px;text-align:center;
+  border:1px dashed var(--border-2);background:rgba(255,255,255,.02);
+}
+
+.ml-empty h3{font-family:var(--font-display);font-size:16px;color:#fff}
+
+.ml-empty p{margin-top:7px;font-size:12.5px;color:var(--text-3);line-height:1.55;max-width:420px;margin-left:auto;margin-right:auto}
+
+.ml-empty a{display:inline-flex;margin-top:16px}
+
+
+/* --- гостевое состояние --- */
+.ml-guest{
+  margin:26px max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x))) 0;
+  display:flex;justify-content:center;
+}
+
+.mlg-card{
+  max-width:540px;padding:46px 40px;border-radius:20px;text-align:center;
+  border:1px dashed var(--border-2);background:rgba(255,255,255,.02);
+}
+
+.mlg-ic{
+  width:60px;height:60px;border-radius:16px;margin:0 auto 16px;
+  background:var(--surface-2);border:1px solid var(--border-2);
+  display:flex;align-items:center;justify-content:center;color:var(--text-3);
+}
+
+.mlg-card h2{font-family:var(--font-display);font-size:20px;color:#fff}
+
+.mlg-lead{margin-top:9px;font-size:13px;color:var(--text-3);line-height:1.6}
+
+.mlg-feats{margin:20px 0 0;padding:0;list-style:none;text-align:left;display:flex;flex-direction:column;gap:10px}
+
+.mlg-feats li{
+  display:flex;gap:11px;align-items:flex-start;
+  font-size:12.5px;color:var(--text-2);line-height:1.5;
+}
+
+.mlg-feats li::before{
+  content:'';flex:none;width:5px;height:5px;border-radius:50%;
+  background:var(--text-3);margin-top:7px;
+}
+
+.mlg-cta{margin-top:26px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+
+.mlg-reg{
+  background:none;border:0;color:var(--text-2);
+  font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;
+  padding:6px 2px;border-bottom:1px solid var(--border-3);transition:.15s;
+}
+
+.mlg-reg:hover{color:#fff;border-color:#fff}
+
+
+/* --- примечание под списком --- */
+.ml-note{
+  margin:22px max(var(--page-x),calc((100% - 1760px)/2 + var(--page-x))) 0;
+  font-size:11.5px;color:var(--text-3);line-height:1.6;max-width:820px;
+}
+
+
+/* ============ КАРТОЧКА-ПОСТЕР ============ */
+.poster-card{position:relative;width:var(--card-w);transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+
+.poster-card.is-hover,.poster-card:focus-visible{transform:translateY(-5px)}
+
+.poster-wrap{
+  position:relative;aspect-ratio:2/3;border-radius:var(--r-m);overflow:hidden;
+  background:#0b0b0e;isolation:isolate;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);
+  transition:box-shadow .3s ease;
+}
+
+.poster-card.is-hover .poster-wrap{
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 18px 44px -8px rgba(0,0,0,.85);
+}
+
+.poster-wrap img.poster-img{width:100%;height:100%;object-fit:cover;transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+
+.poster-card.is-hover .poster-img{transform:scale(1.06)}
+
+.poster-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,transparent 26%,transparent 52%,rgba(0,0,0,.66) 100%);pointer-events:none}
+
+.poster-spotlight{
+  position:absolute;inset:0;opacity:0;transition:opacity .35s;pointer-events:none;
+  background:radial-gradient(180px 180px at 50% 26%,rgba(255,255,255,.1),transparent 70%);
+}
+
+.poster-card.is-hover .poster-spotlight{opacity:1}
+
+
+/* ---- бейджи: геометрия из дизайн-системы v2 («Чипы и статусы»):
+   высота 24px, паддинг 11px, радиус 8px; на постере — стекло ---- */
+/* рейтинг — семантический цвет, слева сверху */
+.rating-pill{
+  position:absolute;top:10px;left:10px;z-index:4;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:24px;padding:0 11px;border-radius:8px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;color:#fff;
+}
+
+.rating-pill svg{width:9px;height:9px}
+
+.rating-pill--hi{color:#86EFAC;border-color:rgba(74,222,128,.4)}
+
+.rating-pill--mid{color:#FDE047;border-color:rgba(250,204,21,.4)}
+
+.rating-pill--low{color:#FCA5A5;border-color:rgba(248,113,113,.38)}
+
+
+/* бейдж NEW — белый, справа сверху, текст строго по центру */
+.badge-new{
+  position:absolute;top:10px;right:10px;z-index:4;
+  display:inline-flex;align-items:center;justify-content:center;
+  height:24px;padding:0 11px;border-radius:8px;
+  background:#fff;color:#000;font-size:11px;font-weight:800;
+}
+
+.badge-new .bn-text{letter-spacing:.12em;margin-right:-.12em}
+
+
+/* статус тайтла: внизу слева (справа — меню «⋮»), точка — семантика */
+.status-chip{
+  position:absolute;bottom:10px;left:10px;z-index:4;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:24px;padding:0 11px;border-radius:8px;max-width:calc(100% - 58px);
+  background:rgba(0,0,0,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:11px;font-weight:600;color:rgba(255,255,255,.94);white-space:nowrap;
+  overflow:hidden;
+}
+
+/* геометрия и типографика — из дизайн-системы («черновик v2», блок
+   «Чипы и статусы»): высота 24px, паддинги 11px, радиус 8px, зазор 6px,
+   кегль 11/600, точка 6px, обычный регистр без трекинга. Группа
+   «точка + подпись» центрируется целиком; при нехватке места подпись
+   режется многоточием — точка остаётся видна */
+.status-chip .sc-dot{position:static;width:6px;height:6px;border-radius:50%;flex:none}
+
+.status-chip .sc-t{line-height:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+/* гость ничего не хранит — статусы пользователя не показываем */
+body.is-guest .status-chip{display:none}
+
+.status-chip--watching .sc-dot{background:var(--ok)}
+
+.status-chip--planned .sc-dot{background:var(--info)}
+
+.status-chip--watched .sc-dot{background:rgba(255,255,255,.75)}
+
+.status-chip--onhold .sc-dot{background:var(--warn)}
+
+.status-chip--dropped .sc-dot{background:var(--bad)}
+
+
+/* меню состояния тайтла — «⋮» в правом нижнем углу карточки */
+.card-dots{
+  position:absolute;right:8px;bottom:8px;z-index:6;
+  width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.22);
+  background:rgba(0,0,0,.5);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  color:#fff;display:flex;align-items:center;justify-content:center;padding:0;
+  opacity:0;transform:translateY(4px);transition:.2s ease;
+}
+
+.poster-card.is-hover .card-dots,.poster-card:focus-visible .card-dots{opacity:1;transform:none}
+
+.card-dots:hover{background:#fff;color:#000;border-color:#fff}
+
+/* гость статусы не хранит — меню состояния не показываем */
+body.is-guest .card-dots{display:none}
+
+
+/* центральная play-кнопка */
+.card-play{
+  position:absolute;top:50%;left:50%;z-index:5;
+  width:46px;height:46px;border-radius:50%;
+  transform:translate(-50%,-50%) scale(.55);
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.34);
+  backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 30px rgba(0,0,0,.5);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .22s,transform .25s cubic-bezier(.2,.7,.2,1.5);
+}
+
+.poster-card.is-hover .card-play,.poster-card:focus-visible .card-play{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+.card-play:hover{background:rgba(255,255,255,.28)}
+
+
+/* подпись под постером */
+.card-caption{padding:9px 2px 0}
+
+.card-caption .cc-title{
+  font-size:13.5px;font-weight:600;line-height:1.35;color:#fff;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  min-height:2.6em;
+}
+
+.card-caption .cc-meta{
+  margin-top:3px;display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;
+}
+
+.cc-meta .cm-sep{color:rgba(255,255,255,.18);flex:none}
+
+.cc-meta .cm-type{font-weight:700;flex:none;color:rgba(255,255,255,.55)}
+
+.cc-meta .cm-genres{overflow:hidden;text-overflow:ellipsis}
+
+
+/* ============ ПРЕВЬЮ-ПАНЕЛЬ КАРТОЧКИ (сбоку при наведении) ============ */
+.preview{
+  position:fixed;z-index:105;width:360px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:16px;
+  box-shadow:0 32px 80px -12px rgba(0,0,0,.95);
+  overflow:hidden;
+  opacity:0;transform:translateY(10px) scale(.97);
+  transition:opacity .22s ease,transform .22s cubic-bezier(.2,.7,.2,1);
+  pointer-events:none;
+}
+
+.preview.show{opacity:1;transform:none;pointer-events:auto}
+
+.preview.hidden{display:none}
+
+
+/* «волна»: полупрозрачная белая полоса проходит сверху вниз,
+   и только после неё проявляется содержимое превью */
+.pv-wave{position:absolute;inset:0;z-index:9;pointer-events:none;overflow:hidden;border-radius:inherit}
+
+.pv-wave::before{
+  content:'';position:absolute;left:0;right:0;top:-42%;height:34%;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.04) 28%,rgba(255,255,255,.2) 47%,rgba(255,255,255,.34) 52%,rgba(255,255,255,.04) 72%,transparent);
+  opacity:0;
+}
+
+.preview.waving .pv-wave::before{animation:pv-sweep .55s cubic-bezier(.45,0,.2,1) forwards}
+
+@keyframes pv-sweep{
+  0%{transform:translateY(0);opacity:0}
+  14%{opacity:1}
+  86%{opacity:1}
+  100%{transform:translateY(470%);opacity:0}
+}
+
+.pv-media,.pv-thumbs,.pv-body{opacity:0;transform:translateY(6px);transition:opacity .12s ease,transform .12s ease}
+
+.preview.show .pv-media,.preview.show .pv-thumbs,.preview.show .pv-body{
+  opacity:1;transform:none;
+  transition:opacity .34s ease .16s,transform .34s cubic-bezier(.2,.7,.2,1) .16s;
+}
+
+
+.pv-media{position:relative;aspect-ratio:16/9;background:#0b0b0e;overflow:hidden}
+
+.pv-media>img{width:100%;height:100%;object-fit:cover;transition:opacity .18s ease}
+
+/* мини-волна при переключении кадра */
+.pv-media::after{
+  content:'';position:absolute;left:0;right:0;top:-64%;height:55%;z-index:8;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.24) 47%,rgba(255,255,255,.38) 52%,transparent);
+  opacity:0;
+}
+
+.pv-media.waving::after{animation:pv-sweep .42s cubic-bezier(.45,0,.2,1) forwards}
+
+.pv-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.06),transparent 34%,rgba(0,0,0,.52) 90%);z-index:2}
+
+.pv-play{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.34);
+  backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  color:#fff;display:flex;align-items:center;justify-content:center;transition:.18s;padding:0;
+}
+
+.preview:hover .pv-play{background:rgba(255,255,255,.28);transform:translate(-50%,-50%) scale(1.07)}
+
+
+/* «трейлер»: имитация видео — кен-бёрнс, полоса прогресса, звук */
+.pv-video{position:absolute;inset:0;z-index:1;display:none;background:#0b0b0e;overflow:hidden}
+
+.pv-media.is-trailer .pv-video{display:block}
+
+.pv-media.is-trailer>img{opacity:0}
+
+.pv-media.is-trailer{cursor:pointer}
+
+.pv-video img{width:100%;height:100%;object-fit:cover;transition:opacity .2s ease;animation:pv-kb 6.5s ease-in-out infinite alternate}
+
+@keyframes pv-kb{from{transform:scale(1.03) translate(-1.4%,0)}to{transform:scale(1.16) translate(1.4%,0)}}
+
+.pv-vchip{
+  position:absolute;top:10px;left:10px;z-index:3;
+  display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:7px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+}
+
+.pv-vbar{position:absolute;left:12px;right:12px;bottom:12px;height:3px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden;z-index:3}
+
+.pv-vbar span{display:block;height:100%;background:#fff;border-radius:99px;transform-origin:left;transform:scaleX(0)}
+
+.pv-media.is-trailer:not(.is-paused) .pv-vbar span{animation:pv-progress 24s linear infinite}
+
+@keyframes pv-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+.pv-media.is-paused .pv-video img{animation-play-state:paused}
+
+/* громкость трейлера: кнопка + выдвижной ползунок. Поднята над
+   полосой таймлайна (bottom:26px), чтобы не наезжать на неё.
+   В проде слайдер управляет плеером YouTube (IFrame API:
+   player.setVolume(0..100)); в макете звук синтезирует WebAudio. */
+.pv-vol{
+  position:absolute;right:10px;bottom:26px;z-index:4;
+  display:flex;align-items:center;gap:7px;
+}
+
+.pv-vol-track{width:0;overflow:hidden;transition:width .28s cubic-bezier(.2,.7,.2,1)}
+
+.pv-vol:hover .pv-vol-track,.pv-vol.dragging .pv-vol-track{width:80px}
+
+.pv-vol-slider{position:relative;width:80px;height:28px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+
+.vs-rail{position:relative;display:block;width:100%;height:4px;border-radius:99px;background:rgba(255,255,255,.28);overflow:hidden}
+
+.vs-fill{position:absolute;top:0;bottom:0;left:0;width:55%;background:#fff;border-radius:99px}
+
+.pv-vol-slider:hover .vs-fill,.pv-vol.dragging .vs-fill{box-shadow:0 0 10px rgba(255,255,255,.45)}
+
+.vs-thumb{
+  position:absolute;top:50%;left:55%;width:11px;height:11px;border-radius:50%;
+  transform:translate(-50%,-50%);background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.6);
+  transition:transform .15s;pointer-events:none;
+}
+
+.pv-vol-slider:hover .vs-thumb,.pv-vol.dragging .vs-thumb{transform:translate(-50%,-50%) scale(1.3)}
+
+.pv-vol.is-muted .vs-rail{opacity:.45}
+
+.vs-bubble{
+  position:absolute;bottom:calc(100% - 2px);left:50%;transform:translateX(-50%);
+  padding:2px 7px;border-radius:7px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.18);
+  font-size:10px;font-weight:800;color:#fff;white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .15s;
+}
+
+.pv-vol:hover .vs-bubble,.pv-vol.dragging .vs-bubble{opacity:1}
+
+.pv-vmute{
+  flex:none;width:30px;height:30px;border-radius:9px;
+  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;display:flex;align-items:center;justify-content:center;transition:.15s;padding:0;
+}
+
+.pv-vmute:hover{background:rgba(255,255,255,.22)}
+
+.pv-vmute.is-off{color:var(--text-3)}
+
+/* стрелки переключения кадров прямо на превью */
+.pv-nav{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:5;
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .18s,background .15s;padding:0;
+}
+
+.pv-nav--prev{left:8px}
+
+.pv-nav--next{right:8px}
+
+.pv-media:hover .pv-nav,.pv-media:focus-within .pv-nav{opacity:1}
+
+.pv-nav:hover{background:rgba(255,255,255,.24)}
+
+
+/* миниатюры: вручную переключаем «трейлер / кадры»; кадров может
+   быть много — полоса прокручивается, активная выезжает в центр */
+.pv-thumbs{
+  display:flex;gap:6px;padding:10px 12px 0;
+  overflow-x:auto;scrollbar-width:none;
+}
+
+.pv-thumbs::-webkit-scrollbar{display:none}
+
+.pv-thumbs.is-scrollable{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 10px),transparent);
+  mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 10px),transparent);
+}
+
+.pv-thumb{
+  position:relative;height:42px;flex:1;min-width:44px;border-radius:8px;overflow:hidden;padding:0;
+  border:1px solid var(--border-2);background:var(--surface-2);transition:.15s;
+}
+
+.pv-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+.pv-thumb:hover{border-color:var(--border-3)}
+
+.pv-thumb.is-on{border-color:#fff;box-shadow:0 0 0 1px #fff}
+
+.pv-thumb--trailer{
+  flex:1.35;min-width:66px;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:10px;font-weight:700;color:var(--text-2);white-space:nowrap;
+}
+
+.pv-thumb--trailer svg{color:#fff}
+
+.pv-thumb--trailer.is-on{color:#fff}
+
+.pv-body{padding:12px 16px 16px}
+
+.pv-title{font-family:var(--font-display);font-size:16px;line-height:1.25;letter-spacing:.2px}
+
+.pv-meta{margin-top:7px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;color:var(--text-2);font-weight:600}
+
+.pv-meta .hm-sep{color:rgba(255,255,255,.25)}
+
+.pv-desc{
+  margin-top:9px;font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.66);
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+.pv-actions{margin-top:13px;display:flex;gap:8px;align-items:center}
+
+.pv-actions .btn{height:38px;padding:0 16px;font-size:13px;border-radius:10px}
+
+.pv-ico{
+  width:38px;height:38px;border-radius:10px;
+  border:1px solid var(--border-2);background:var(--surface-2);color:var(--text-2);
+  display:inline-flex;align-items:center;justify-content:center;transition:.15s;
+}
+
+.pv-ico:hover{background:var(--surface-3);color:#fff}
+
+.pv-ico.is-on{background:#fff;color:#000;border-color:#fff}
+
+
+/* чип состояния в мета-строке превью — геометрия из дизайн-системы v2,
+   как у статусной пилюли карточек: 24px / паддинги 11px / радиус 8px,
+   кегль 11/600, точка 6px, обычный регистр без трекинга */
+.pv-status{
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:24px;padding:0 11px;border-radius:8px;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.16);
+  font-size:11px;font-weight:600;
+  color:rgba(255,255,255,.94);white-space:nowrap;
+}
+
+.pv-status .sc-dot{position:static;width:6px;height:6px;border-radius:50%;flex:none}
+
+.pv-status .sc-t{line-height:1}
+
+/* гость статусы и списки не хранит */
+body.is-guest .pv-lib,body.is-guest .pv-status{display:none}
+
+
+/* ============ МЕНЮ СОСТОЯНИЯ ТИТЛА («⋮» у карточки и в превью) ============ */
+#statusMenu{
+  position:fixed;z-index:112;width:216px;
+  background:rgba(12,12,15,.97);
+  border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:0 28px 70px -14px rgba(0,0,0,.9);
+  padding:6px;animation:dd-in .16s ease;
+}
+
+#statusMenu.hidden{display:none}
+
+.sm-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:8px 10px 6px}
+
+.sm-item{
+  display:flex;align-items:center;gap:10px;width:100%;
+  padding:8px 10px;border-radius:10px;border:0;background:none;
+  color:var(--text-2);font-size:13px;font-weight:600;text-align:left;transition:.14s;
+}
+
+.sm-item:hover{background:var(--surface-2);color:#fff}
+
+.sm-item .sm-dot{width:7px;height:7px;border-radius:50%;flex:none}
+
+.sm-item .sm-label{flex:1;text-align:left}
+
+.sm-item.is-cur{background:var(--surface-2);color:#fff}
+
+.sm-item.is-cur svg{flex:none;color:#fff}
+
+.sm-sep{height:1px;background:var(--border);margin:5px 6px}
+
+.sm-x{width:7px;display:inline-flex;justify-content:center;flex:none;color:var(--text-3)}
+
+.sm-item--clear{color:var(--text-3)}
+
+.sm-item--clear:hover{color:#FCA5A5}
+
+.sm-item--clear:hover .sm-x{color:#FCA5A5}
+
+
+/* ============ АДАПТИВ ============ */
+@media (max-width:1240px){
+  .s-kbd{display:none}
+}
+
+/* средние ширины: центрированный поиск не должен наезжать на правую
+   навигацию — «Мой список» прячется (он доступен в меню аккаунта,
+   drawer и футере), пилюля поиска сжимается до свободного места */
+@media (max-width:1560px) and (min-width:1081px){
+  .main-nav [data-nav="mylist"],#navRandom{display:none}   /* «Мой список» и «Случайное» уступают место «Подборкам» — оба доступны в бургере */
+  .search-fake{width:max(200px,min(360px,calc(100vw - 1000px)))}
+}
+
+@media (max-width:1080px){
+  .main-nav{gap:14px}
+  #navRandom,.main-nav [data-nav="mylist"],.main-nav [data-nav="colls"]{display:none}   /* второстепенные ссылки уходят в бургер */
+  .main-nav .nav-link[data-nav="manga"]{display:none}      /* раздел «Скоро» прячется первым */
+  .search-fake{width:min(300px,28vw)}
+  .footer-grid{grid-template-columns:1fr 1fr}
+
+  /* мой список: вкладки прокручиваются горизонтально; у края —
+     растворение-намёк (sticky-псевдоэлемент прилипает к видимому
+     краю, JS прячет его, когда доехали до конца) */
+  .ml-tabs{flex-wrap:nowrap}
+  .ml-tabs::after{
+    content:'';position:sticky;right:0;flex:none;z-index:1;
+    width:30px;min-width:30px;margin-left:-30px;
+    background:linear-gradient(90deg,transparent,#000);
+    pointer-events:none;transition:opacity .2s;
+  }
+  .ml-tabs.at-end::after{opacity:0}
+  .ml-tabsbar.is-stuck .ml-tabs::after{background:linear-gradient(90deg,transparent,rgba(8,8,10,.88))}
+}
+
+@media (max-width:930px){
+  .search-fake{width:220px}
+}
+
+@media (max-width:860px){
+  .main-nav{display:none}
+  #btnBurger{display:inline-flex}
+  .header-inner{gap:10px}
+  .h-left{gap:12px}
+  .h-right{gap:10px}
+  .logo{font-size:18px}
+  .search-fake{display:none}
+  #hdrSearchIcon{display:inline-flex}
+  .bottom-nav{display:flex}
+  #toasts{bottom:84px;right:12px}
+  .lab{right:12px;bottom:78px}
+  .footer-grid{grid-template-columns:1fr}
+  footer{padding-bottom:130px}
+  .sov-panel{margin-top:6vh}
+  .preview{display:none!important} /* на тач-устройствах превью не нужно */
+
+  /* мой список: компактнее голова и строки; правая колонка
+     превращается в строку под контентом — оценка и дата слева,
+     действия справа */
+  .ml{padding-top:calc(var(--header-h) + 14px)}
+  .ml-tabsbar{margin-top:10px;min-height:52px}
+  .ml-toolbar{margin-top:16px;gap:10px}
+  .ml-list{margin-top:10px;gap:6px}
+  .mlr{flex-wrap:wrap;gap:12px;padding:10px}
+  .mlr-poster{width:46px;height:69px;border-radius:8px}
+  .mlr-collage{width:60px;height:60px}
+  .mlr-title{font-size:14px}
+  .mlr-genres{display:none}
+  .mlr-side{
+    order:3;width:calc(100% - 58px);margin-left:58px;
+    flex-direction:row;align-items:center;justify-content:space-between;margin-top:2px;
+  }
+  .mlr-info{flex-direction:row;align-items:center;gap:10px}
+  .ml-empty{margin:0 12px;padding:36px 18px}
+  .ml-note{margin-left:12px;margin-right:12px}
+  .mlg-card{margin:0 12px;padding:36px 22px}
+  .mlg-feats li{font-size:12px}
+}
+
+
+/* дисциплина движения: меньше анимации тем, кто её не просил */
+@media (prefers-reduced-motion:reduce){
+  #grain{animation:none}
+  .preview{transition:none}
+  .preview.waving .pv-wave::before,.pv-media.waving::after{animation:none}
+  .sov-panel.is-searching::after,.sov-spin,.sov-sk-img,.sov-sk-ln i,.sov-sk-side,.srs-sk-img,.srs-sk-ln i,.srs-sk-side{animation:none}
+  .pv-video img{animation:none}
+  .pv-media.is-trailer:not(.is-paused) .pv-vbar span{animation:none}
+  *{scroll-behavior:auto}
+}
+
+
+
+</style>
+</head>
+
+<body data-btnwatch="solid" data-displayfont="dela">
+
+<div id="grain" aria-hidden="true"></div>
+<script>
+/* зерно: уважаем выбор из «Настроек» (kuvion_appearance_v1);
+   тумблер «Лаборатории» по-прежнему работает поверх — он сессионный */
+try{if(localStorage.getItem('kuvion_appearance_v1')==='grain-off'){
+  document.body.classList.add('no-grain');
+  addEventListener('DOMContentLoaded',function(){
+    var s=document.getElementById('grainSwitch');
+    if(s)s.classList.remove('is-on');
+  });
+}}catch(e){}
+</script>
+<script>
+/* размер карточек: уважаем выбор из «Настроек» (kuvion_cardsize_v1);
+   сегмент «Лаборатории» работает поверх — он сессионный */
+try{var __cs=localStorage.getItem('kuvion_cardsize_v1');
+if(__cs==='s'||__cs==='l'){
+  document.body.dataset.cardsize=__cs;
+  addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('#sizeSeg button').forEach(function(b){
+      b.classList.toggle('is-on',b.dataset.cardsize===__cs);
+    });
+  });
+}}catch(e){}
+</script>
+<div id="toasts" aria-live="polite"></div>
+
+<!-- ================= ШАПКА ================= -->
+<header class="app-header" id="appHeader">
+  <div class="header-inner">
+
+    <!-- левая зона: логотип + основная навигация -->
+    <div class="h-left">
+      <button id="btnBurger" class="icobtn" aria-label="Открыть меню">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <a href="/" class="logo">Kuvion</a>
+      <nav class="main-nav" aria-label="Основная навигация">
+        <a href="/" class="nav-link" data-nav="home">Главная</a>
+        <a href="/catalog/" class="nav-link" data-nav="catalog">Каталог</a>
+        <a href="#" class="nav-link" id="navRandom" data-stub="Случайное">Случайное</a>
+        <a href="/collections/" class="nav-link" data-nav="colls">Подборки</a>
+      </nav>
+    </div>
+
+    <!-- центр: поиск строго по середине шапки -->
+    <div class="h-center">
+      <button class="search-fake" id="searchOpen" aria-label="Открыть поиск">
+        <span class="s-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </span>
+        <span class="sf-ph">Поиск фильмов, сериалов, аниме…</span>
+        <span class="s-kbd">Ctrl K</span>
+      </button>
+      <button class="icobtn" id="hdrSearchIcon" aria-label="Поиск">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+
+    <!-- правая зона: разделы + аккаунт -->
+    <div class="h-right">
+      <nav class="main-nav" aria-label="Разделы">
+        <a class="nav-link is-active" data-nav="mylist" aria-current="page">Мой список</a>
+        <a href="/catalog/?type=anime" class="nav-link" data-nav="anime">Аниме</a>
+        <a href="/schedule/" class="nav-link" data-nav="sched">Расписание</a>
+        <a href="/manga/" class="nav-link" data-nav="manga">Манга</a>
+      </nav>
+
+      <div class="header-right">
+
+        <!-- Уведомления -->
+        <div style="position:relative" id="userArea">
+          <button class="icobtn" id="bellBtn" aria-label="Уведомления" aria-expanded="false">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="bell-badge" id="bellBadge">2</span>
+          </button>
+
+          <div class="dd bell-dd dd-right hidden" id="bellDd" role="menu">
+            <div class="bell-head">
+              <span class="bell-title">Уведомления</span>
+              <button class="bell-clear" id="bellClear">Отметить прочитанными</button>
+            </div>
+<div class="bell-list" id="bellList"></div>
+            <a class="bell-all" href="/notifications/" id="bellAll"><span>Все уведомления</span><span class="bell-all-n" id="bellAllN"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></a>
+          </div>
+        </div>
+
+        <span class="a-divider" id="userDivider"></span>
+
+        <!-- Аватар: клик открывает меню (как на YouTube) -->
+        <div style="position:relative" id="avatarWrap">
+          <button class="avatar-btn" id="avatarBtn" aria-label="Аккаунт" aria-expanded="false">
+            <span class="avatar-core" id="avatarCore">D</span>
+          </button>
+
+          <div class="dd acct-dd dd-right hidden" id="acctDd" role="menu">
+            <div class="acct-head">
+              <span class="avatar-core" id="avatarCoreMenu">D</span>
+              <div style="min-width:0">
+                <p class="acct-name">danil</p>
+                <p class="acct-handle"><span class="acct-dot"></span>в сети</p>
+              </div>
+            </div>
+            <div class="dd-sep"></div>
+            <a class="dd-item" href="/profile/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Мой профиль
+            </a>
+            <a class="dd-item" href="/mylist/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H3"/><path d="M10 12H3"/><path d="M10 19H3"/><path d="m15 12 5 3-5 3z"/></svg>
+              Мой список
+            </a>
+            <a class="dd-item" href="/settings/">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              Настройки
+            </a>
+
+            <div class="dd-sep"></div>
+
+            <div class="sub-card">
+              <p class="sc-name">Kuvion+</p>
+              <p class="sc-desc">Без рекламы, 4K-качество и ранний доступ к главам манги</p>
+              <a class="sc-btn" href="/plus/" style="display:inline-flex;align-items:center;justify-content:center">Оформить</a>
+            </div>
+
+            <div class="dd-sep"></div>
+            <button class="dd-item dd-item--danger" id="logoutBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+              Выйти
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-cta btn-login hidden" id="loginBtn">Войти</button>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- ================= МОЙ СПИСОК ================= -->
+<main class="ml" id="mylist">
+
+  <!-- голова: заголовок + статистика коллекции -->
+  <div class="ml-head">
+    <h1 class="ml-title">Мой список</h1>
+    <p class="ml-sub">
+      <span class="cs-strong" id="mlStats">…</span>
+    </p>
+  </div>
+
+  <!-- вкладки-категории: липкая строка-хром (наполняет JS) -->
+  <div class="ml-tabsbar" id="mlTabsBar">
+    <div class="ml-tabs" id="mlTabs" role="tablist" aria-label="Категории списка"></div>
+  </div>
+
+  <!-- вид пользователя: сортировка + строки коллекции -->
+  <div id="mlMain">
+    <div class="ml-toolbar">
+      <p class="ml-shown" id="mlShown"></p>
+      <div class="ml-sortwrap">
+        <button class="ml-sortbtn" id="mlSortBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h10"/><path d="M11 8h7"/><path d="M11 12h4"/></svg>
+          <span class="ml-sort-cur" id="mlSortCur">Сначала добавленные</span>
+          <span class="ml-caret"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
+        </button>
+        <div class="ml-sortpop hidden" id="mlSortPop" role="menu" aria-label="Сортировка"></div>
+      </div>
+    </div>
+    <section class="ml-list" id="mlList" aria-live="polite"></section>
+  </div>
+
+  <!-- гостевое состояние: коллекция откроется после входа -->
+  <div class="ml-guest hidden" id="mlGuest">
+    <div class="mlg-card">
+      <div class="mlg-ic" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <h2>Здесь появится ваша коллекция</h2>
+      <p class="mlg-lead">«Мой список» собирает всё, что вы отметили на сервисе, — и синхронизируется между устройствами.</p>
+      <ul class="mlg-feats">
+        <li>Статусы: смотрю, буду смотреть, просмотрено, отложено, брошено</li>
+        <li>Прогресс: серия, на которой вы остановились, — как «продолжить просмотр» на главной</li>
+        <li>Собственная оценка по 10-звёздной шкале и избранное</li>
+      </ul>
+      <div class="mlg-cta">
+        <button class="btn btn-cta" id="mlgLogin">Войти</button>
+        <button class="mlg-reg" id="mlgReg">Создать аккаунт</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- меню строки «⋮»: статусы, избранное, удаление (наполняет JS) -->
+  <div class="ml-menu hidden" id="mlMenu" role="menu" aria-label="Действия с тайтлом"></div>
+
+  <p class="ml-note">
+    Состав списка, статусы, прогресс и оценки — демо-данные для макета: в продакшене «Мой список»
+    наполняется отметками с карточек каталога и страниц тайтлов и приходит с бэкенда. Переключатель
+    «Гость / Юзер» в «Лаборатории» показывает оба состояния страницы.
+  </p>
+</main>
+
+<!-- ================= ФУТЕР ================= -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <p class="footer-logo">Kuvion</p>
+      <p class="footer-tag">Фильмы, сериалы, аниме и манга в одном месте. Всё, что вы смотрите и читаете, всегда под рукой.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Разделы</h4>
+      <a href="/">Главная</a>
+      <a href="/catalog/">Каталог</a>
+      <a href="/catalog/?type=anime">Аниме</a>
+      <a href="/manga/">Манга</a>
+      <a href="/schedule/">Расписание</a>
+      <a href="/collections/">Подборки</a>
+    </div>
+    <div class="footer-col">
+      <h4>Аккаунт</h4>
+      <a href="/profile/">Профиль</a>
+      <a href="/mylist/">Мой список</a>
+      <a href="/notifications/">Уведомления</a>
+      <a href="/settings/">Настройки</a>
+      <a href="/plus/">Kuvion+</a>
+    </div>
+    <div class="footer-col">
+      <h4>Проект</h4>
+      <a href="#" data-stub="О проекте">О проекте</a>
+      <a href="#" data-stub="Поддержка">Поддержка</a>
+      <a href="#" data-stub="Telegram">Telegram</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Kuvion</span>
+    <span class="footer-version">Демо-прототип интерфейса</span>
+  </div>
+</footer>
+
+<!-- ================= АВТОРИЗАЦИЯ: вход + регистрация в 3 шага ================= -->
+<div class="modal-overlay hidden" id="authModal" role="dialog" aria-modal="true" aria-label="Вход в Kuvion">
+  <div class="auth-card">
+    <button class="auth-close" id="authClose" aria-label="Закрыть"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    <p class="auth-logo">Kuvion</p>
+    <p class="auth-sub" id="authSub">Войдите, чтобы синхронизировать список и прогресс</p>
+    <div class="auth-tabs" id="authTabs" role="tablist">
+      <button class="is-on" data-atab="login" role="tab" aria-selected="true">Вход</button>
+      <button data-atab="register" role="tab" aria-selected="false">Регистрация</button>
+    </div>
+
+    <!-- обе панели в одной grid-ячейке: карточка не меняет размер при переключении -->
+    <div class="auth-panels">
+
+      <!-- панель: ВХОД -->
+      <div id="loginPanel" class="auth-panel">
+        <form id="loginForm" novalidate>
+          <div class="auth-field" id="lfEmail">
+            <label for="loginEmail">Email</label>
+            <div class="af-box">
+              <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg></span>
+              <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <p class="f-err">Похоже, в адресе опечатка</p>
+          </div>
+          <div class="auth-field" id="lfPass">
+            <div class="lb-row">
+              <label for="loginPass">Пароль</label>
+              <button type="button" class="forgot" id="forgotBtn">Забыли пароль?</button>
+            </div>
+            <div class="af-box has-eye">
+              <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+              <input id="loginPass" type="password" placeholder="Ваш пароль" autocomplete="current-password">
+              <button type="button" class="af-eye" data-eye="loginPass" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+            </div>
+            <p class="f-err">Введите пароль</p>
+          </div>
+          <label class="auth-remember">
+            <input type="checkbox" id="rememberMe" checked>
+            <span class="ar-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+            <span>Запомнить меня</span>
+          </label>
+          <button type="submit" class="btn btn-cta btn-block auth-submit">Войти</button>
+        </form>
+        <div class="auth-alt"><span>или</span></div>
+        <button class="btn-google" id="googleLogin">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.6 44 30.3 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+          Войти через Google
+        </button>
+        <p class="auth-swap">Нет аккаунта? <button type="button" id="toRegister">Создать</button></p>
+      </div>
+
+      <!-- панель: РЕГИСТРАЦИЯ (3 шага) -->
+      <div id="registerPanel" class="auth-panel is-off">
+        <div class="auth-steps" id="regSteps">
+          <span class="auth-step is-cur"></span>
+          <span class="auth-step"></span>
+          <span class="auth-step"></span>
+        </div>
+        <div class="auth-stephead">
+          <button type="button" class="auth-back" id="regBack" aria-label="Назад" style="visibility:hidden"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+          <div>
+            <p class="as-title">Создание аккаунта</p>
+            <p class="as-sub" id="regStepLabel">Шаг 1 из 3 · Email</p>
+          </div>
+        </div>
+        <form id="regForm" novalidate>
+          <!-- шаги в одной grid-ячейке: форма не меняет высоту между шагами -->
+          <div class="reg-steps">
+            <div class="reg-step" data-rstep="1">
+              <div class="auth-field" id="rfEmail">
+                <label for="regEmail">Email</label>
+                <div class="af-box">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg></span>
+                  <input id="regEmail" type="email" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <p class="f-err">Похоже, в адресе опечатка</p>
+              </div>
+              <p class="reg-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Дальше — пароль и никнейм: займёт не больше минуты. Если аккаунт уже есть, вернитесь на вкладку «Вход».</span></p>
+            </div>
+            <div class="reg-step is-off" data-rstep="2">
+              <div class="auth-field" id="rfPass">
+                <label for="regPass">Пароль</label>
+                <div class="af-box has-eye">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                  <input id="regPass" type="password" placeholder="Минимум 6 символов" autocomplete="new-password">
+                  <button type="button" class="af-eye" data-eye="regPass" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+                </div>
+                <p class="f-err">Минимум 6 символов</p>
+              </div>
+              <div class="auth-field" id="rfPass2">
+                <label for="regPass2">Повторите пароль</label>
+                <div class="af-box has-eye">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                  <input id="regPass2" type="password" placeholder="Ещё раз" autocomplete="new-password">
+                  <button type="button" class="af-eye" data-eye="regPass2" aria-label="Показать пароль"><svg class="ic-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg></button>
+                </div>
+                <p class="f-err">Пароли не совпадают</p>
+              </div>
+            </div>
+            <div class="reg-step is-off" data-rstep="3">
+              <div class="auth-field" id="rfName">
+                <label for="regName">Никнейм</label>
+                <div class="af-box">
+                  <span class="af-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                  <input id="regName" placeholder="Как к вам обращаться?" autocomplete="nickname">
+                </div>
+                <p class="f-err">Минимум 2 символа</p>
+              </div>
+              <p class="reg-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Никнейм увидят другие пользователи — например, в комментариях. Сменить его можно в настройках профиля.</span></p>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-cta btn-block auth-submit" id="regSubmit">Далее</button>
+        </form>
+        <div class="auth-alt"><span>или</span></div>
+        <button class="btn-google" id="googleReg">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41 35.6 44 30.3 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+          Зарегистрироваться через Google
+        </button>
+      </div>
+
+    </div>
+    <p class="auth-note">Демо-макет: подойдут любые email и пароль.</p>
+  </div>
+</div>
+
+<!-- ================= ПОДТВЕРЖДЕНИЕ ВЫХОДА ================= -->
+<div class="modal-overlay hidden" id="logoutModal" role="dialog" aria-modal="true" aria-label="Подтверждение выхода">
+  <div class="confirm-card">
+    <div class="cf-ic">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>
+    </div>
+    <h3>Выйти из аккаунта?</h3>
+    <p>Списки, история и прогресс сохранятся в аккаунте — они будут ждать вас после следующего входа.</p>
+    <div class="cf-actions">
+      <button class="btn btn-ghost" id="logoutCancel">Отмена</button>
+      <button class="btn btn-danger" id="logoutConfirm">Выйти</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ПОЛНОЭКРАННЫЙ ПОИСК ================= -->
+<div id="searchOverlay" class="search-ov hidden" role="dialog" aria-modal="true" aria-label="Поиск по Kuvion">
+  <div class="sov-backdrop" id="sovBack"></div>
+  <div class="sov-panel">
+    <div class="sov-top">
+      <span class="s-big">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </span>
+      <input id="sovInput" type="text" autocomplete="off" spellcheck="false" placeholder="Тайтл, персона, подборка, ID или ссылка…" aria-label="Поиск">
+      <button class="sov-esc" id="sovClose">Esc</button>
+    </div>
+    <div class="sov-body" id="sovBody"></div>
+    <div class="sov-foot">
+      <span><span class="sov-kbd">ID</span>или ссылка · персоны и подборки</span>
+      <span><span class="sov-kbd">Enter</span>открыть первый</span>
+      <span><span class="sov-kbd">Esc</span>закрыть</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ПРЕВЬЮ-ПАНЕЛЬ КАРТОЧКИ ================= -->
+<div id="preview" class="preview hidden" role="dialog" aria-label="Быстрый просмотр тайтла">
+  <div class="pv-wave" aria-hidden="true"></div>
+  <div class="pv-media" id="pvMedia">
+    <img id="pvImg" src="" alt="">
+    <div class="pv-video" aria-hidden="true">
+      <img id="pvVFrame" src="" alt="">
+      <span class="pv-vchip">Трейлер · 0:24</span>
+      <div class="pv-vbar"><span></span></div>
+      <!-- громкость: выдвижной ползунок + мьют, поднята над таймлайном -->
+      <div class="pv-vol" id="pvVol">
+        <div class="pv-vol-track">
+          <div class="pv-vol-slider" id="pvVolSlider" role="slider" aria-label="Громкость" aria-valuemin="0" aria-valuemax="100" aria-valuenow="55" tabindex="0">
+            <span class="vs-rail"><span class="vs-fill" id="vsFill"></span></span>
+            <span class="vs-thumb" id="vsThumb"></span>
+            <span class="vs-bubble" id="vsBubble">55%</span>
+          </div>
+        </div>
+        <button class="pv-vmute" id="pvVMute" aria-label="Звук"></button>
+      </div>
+    </div>
+    <div class="pv-shade"></div>
+    <button class="pv-nav pv-nav--prev" id="pvPrev" aria-label="Предыдущий кадр">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button class="pv-nav pv-nav--next" id="pvNext" aria-label="Следующий кадр">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <button class="pv-play" id="pvPlay" aria-label="Смотреть">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+    </button>
+  </div>
+  <div class="pv-thumbs" id="pvThumbs"></div>
+  <div class="pv-body">
+    <p class="pv-title" id="pvTitle"></p>
+    <div class="pv-meta" id="pvMeta"></div>
+    <p class="pv-desc" id="pvDesc"></p>
+    <div class="pv-actions">
+      <button class="btn btn-watch" id="pvWatchBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+        Смотреть
+      </button>
+      <!-- избранное — закладка; «буду смотреть» переехало в меню состояния -->
+      <button class="pv-ico pv-lib" id="pvFav" title="В избранное" aria-label="В избранное">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </button>
+      <button class="pv-ico pv-lib" id="pvStatusBtn" title="Состояние тайтла" aria-label="Состояние тайтла" aria-haspopup="menu">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= МЕНЮ СОСТОЯНИЯ ТИТЛА ================= -->
+<div id="statusMenu" class="hidden" role="menu" aria-label="Состояние тайтла"></div>
+
+<!-- ================= МОБИЛЬНОЕ МЕНЮ (бургер) ================= -->
+<div class="modal-overlay hidden" id="drawerOverlay"></div>
+<nav id="drawer" aria-label="Мобильное меню">
+  <div class="drawer-head">
+    <span class="logo" style="font-size:18px">Kuvion</span>
+    <button class="icobtn" id="drawerClose" aria-label="Закрыть">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <a href="/" class="nav-link" style="display:block;padding:12px 4px">Главная</a>
+  <a href="/catalog/" class="nav-link" style="display:block;padding:12px 4px">Каталог</a>
+  <a href="/mylist/" class="nav-link" style="display:block;padding:12px 4px">Мой список</a>
+  <a href="/catalog/?type=anime" class="nav-link" style="display:block;padding:12px 4px">Аниме</a>
+  <a href="/schedule/" class="nav-link" style="display:block;padding:12px 4px">Расписание</a>
+  <a href="/manga/" class="nav-link" style="display:block;padding:12px 4px">Манга</a>
+  <a href="#" class="nav-link" data-stub="Случайное" style="display:block;padding:12px 4px">Случайное</a>
+  <a href="/collections/" class="nav-link" style="display:block;padding:12px 4px">Подборки</a>
+  <div class="drawer-foot">
+    <button class="btn btn-cta" style="width:100%" id="drawerLogin">Войти</button>
+  </div>
+</nav>
+
+<!-- ================= МОБИЛЬНАЯ НИЖНЯЯ ПАНЕЛЬ ================= -->
+<nav class="bottom-nav" aria-label="Быстрая навигация">
+  <button id="mobHomeBtn">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Главная</span>
+  </button>
+  <button data-stub="Каталог">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+    <span>Каталог</span>
+  </button>
+  <button id="mobSearchBtn">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <span>Поиск</span>
+  </button>
+  <button data-stub="Аниме">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.39 12.06a10 10 0 1 1-8.45-8.45"/><path d="M21.39 12.06 12.34 12.66 21.39 12.06z"/><path d="m12.34 12.66 9.05-.6-6.44-6.44a1 1 0 0 0-1.71.55z"/></svg>
+    <span>Аниме</span>
+  </button>
+  <button id="mobMenuBtn" data-stub="Меню">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Меню</span>
+  </button>
+</nav>
+
+<!-- ================= ЛАБОРАТОРИЯ ================= -->
+<script>
+'use strict';
+/* ================================================================
+   KUVION — «Мой список» v1 · логика демо (инфраструктура v4)
+   Все данные тестовые, предназначены только для оценки дизайна.
+   ================================================================ */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const CDN='https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/';
+
+/* ---------- иконки ---------- */
+const I={
+  star:'<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7-5.4-4.7 7.1-.6z"/></svg>',
+  play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  playBig:'<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  bookmark:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+  dots:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>',
+  check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m22 4-10 10.01-3-3"/></svg>',
+  checkSm:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  xSm:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+  clock:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  vol:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>',
+  volLow:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  volX:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>',
+};
+
+/* ---------- тестовые данные ----------
+   Каталог шире главной: 44 тайтла, у каждого есть pop (популярность
+   для сортировки по умолчанию), added (дата появления на сервисе —
+   сортировка «сначала новые» и бейдж NEW) и ongoing (выходит ли
+   сейчас). Аниме-рейтинги — как в Shikimori, западные — как в
+   справочниках; всё равно это демо-данные для оценки дизайна. */
+const STATUS={watching:'Смотрю',planned:'Буду смотреть',watched:'Просмотрено',onhold:'Отложено',dropped:'Брошено'};
+const T=(id,title,year,type,genres,rating,poster,extra={})=>({id,title,year,type,genres,rating,poster:poster.startsWith('http')?poster:CDN+poster,...extra});
+
+const TITLES={
+  /* ===== главная страница: прежние 13 ===== */
+  interstellar:T('interstellar','Интерстеллар',2014,'Фильм',['Фантастика','Драма','Приключения'],8.6,'85bb955e60e9.jpg',{
+    country:['США','Великобритания','Канада'],
+    wide:CDN+'1290a963615d.jpg',wide2:CDN+'ec06a3bbfb4e.jpg',wide3:CDN+'2bdc37cad2cd.jpg',status:'watched',
+    pop:95,added:'2025-08-14',
+    desc:'Команда исследователей отправляется через червоточину в космосе, чтобы найти новый дом для человечества.'}),
+  dune2:T('dune2','Дюна: Часть вторая',2024,'Фильм',['Фантастика','Приключения','Драма'],8.5,'d4500e7dac80.jpg',{
+    country:['США'],
+    wide:CDN+'12422b422cee.jpg',wide2:CDN+'c7f684d95f5b.jpeg',wide3:CDN+'4cb1149f3eaf.jpg',wide4:CDN+'86e0bf71e647.jpg',status:'planned',isNew:true,
+    pop:87,added:'2026-09-30',
+    desc:'Пол Атрейдес объединяется с Чани и фрименами в войне против дома Харконненов, пытаясь предотвратить ужасное будущее, которое видит только он.'}),
+  br2049:T('br2049','Бегущий по лезвию 2049',2017,'Фильм',['Фантастика','Нуар','Детектив'],8.0,'71b996fefac1.jpg',{
+    country:['США','Великобритания'],
+    wide:CDN+'9cc1a8a277d3.png',wide2:CDN+'de002094f2aa.jpg',wide3:CDN+'1662efa80442.jpg',
+    pop:71,added:'2025-11-02',
+    desc:'Служащий Лос-Анджелеса К, новый блейд-раннер, раскрывает тайну, спрятанную десятилетиями, способную погрузить мир в хаос.'}),
+  oppenheimer:T('oppenheimer','Оппенгеймер',2023,'Фильм',['Драма','История','Военное'],8.3,'a1fd704339d9.jpg',{
+    country:['США','Великобритания'],
+    wide:CDN+'9e0a5f93f220.jpg',isNew:true,
+    pop:78,added:'2026-08-21',
+    desc:'История жизни физика-теоретика Роберта Оппенгеймера, возглавившего разработку атомной бомбы.'}),
+  aot:T('aot','Атака титанов',2013,'Аниме',['Экшен','Драма','Трагедия'],9.0,'9a35191d1d09.jpg',{
+    country:['Япония'],
+    wide:CDN+'7e53c74c6dda.jpg',wide2:CDN+'5b0f4111e774.jpg',status:'watching',
+    pop:96,added:'2025-06-10',
+    desc:'Человечество сражается за выживание за огромными стенами, защищающими от гигантских пожирателей людей — титанов.'}),
+  aotFinal:T('aotFinal','Атака титанов: Финальный сезон',2023,'Аниме',['Экшен','Драма','Военное'],9.1,'bbc4ed32da5c.jpg',{
+    country:['Япония'],
+    wide:CDN+'be104465fb7f.jpg',isNew:true,
+    pop:55,added:'2026-07-15',
+    desc:'Последняя глава истории Эрена Йегера и битвы за судьбу человечества за стенами.'}),
+  jjk:T('jjk','Магическая битва',2020,'Аниме',['Экшен','Сёнэн','Сверхъестественное'],8.6,'235414089ff8.jpg',{
+    country:['Япония'],
+    wide:CDN+'ba2f5e6b7ab4.jpg',ongoing:true,
+    pop:88,added:'2025-09-18',
+    desc:'Школьник Юдзи Итадори проглатывает проклятый палец и становится сосудом для древнего проклятия.'}),
+  onepiece:T('onepiece','Ван Пис',1999,'Аниме',['Приключения','Сёнэн','Комедия'],9.0,'136bb118e1b5.jpg',{
+    country:['Япония'],
+    wide:CDN+'556492005b92.jpg',ongoing:true,
+    pop:99,added:'2025-05-02',
+    desc:'Мальчишка из резинки Люффи собирает команду пиратов и отправляется за легендарным сокровищем — Ван Пис.'}),
+  onepieceRed:T('onepieceRed','Ван Пис: Фильм Ред',2022,'Аниме',['Приключения','Экшен','Музыка'],8.5,'6e4fc8a0fbe9.png',{
+    country:['Япония'],
+    pop:62,added:'2025-10-05',
+    desc:'Люффи и его команда отправляются на музыкальный фестиваль, где встречают мировую звезду Уту.'}),
+  tlou:T('tlou','Последние из нас',2023,'Сериал',['Драма','Хоррор','Триллер'],8.7,'078136c3e9d7.jpg',{
+    country:['США','Канада'],
+    wide:CDN+'4cc4e52e05d7.jpeg',wide2:CDN+'20165b080b81.jpg',isNew:true,ongoing:true,
+    pop:86,added:'2026-08-30',
+    desc:'Через двадцать лет после пандемии контрабандист Джоэл получает задание вывести из города 14-летнюю Элли.'}),
+  spiderverse:T('spiderverse','Человек-паук: Паутина вселенных',2023,'Мультфильм',['Экшен','Приключения','Комедия'],8.6,'401cfa55ea89.jpg',{
+    country:['США'],
+    wide:CDN+'5d05fbe9bf0c.jpeg',isNew:true,
+    pop:75,added:'2026-06-12',
+    desc:'Майлз Моралес отправляется в путешествие по мультивселенной, где встречает команду людей-пауков.'}),
+  arcane:T('arcane','Аркейн',2021,'Сериал',['Фэнтези','Драма','Трагедия'],9.0,'2023ce392d04.jpg',{
+    country:['США','Франция'],
+    wide:CDN+'70d04bc79f91.jpg',
+    pop:68,added:'2025-12-01',
+    desc:'История двух сестёр, Вай и Джинкс, на фоне конфликта утопического Пилтовера и подземного Зауна.'}),
+  arcane2:T('arcane2','Аркейн: Сезон 2',2024,'Сериал',['Фэнтези','Драма','Экшен'],9.2,'5379c8a0c07a.jpg',{
+    country:['США','Франция'],
+    wide:CDN+'81d0d4679ff5.jpg',isNew:true,
+    pop:76,added:'2026-05-20',
+    desc:'Вай и Джинкс оказываются по разные стороны баррикад, когда Пилтовер и Заун стоят на грани войны.'}),
+
+  /* ===== новые для каталога ===== */
+  fmab:T('fmab','Стальной алхимик: Братство',2009,'Аниме',['Экшен','Фэнтези','Драма','Приключения'],9.1,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0b4034f752c6.jpg',{
+    country:['Япония'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/463c0adcff57.jpg',status:'watched',
+    pop:83,added:'2025-07-08',
+    desc:'Братья Эдвард и Альфонс Элрики ищут философский камень, чтобы вернуть телам первоначальный вид после провалившегося алхимического ритуала.'}),
+  demonslayer:T('demonslayer','Клинок, рассекающий демонов',2019,'Аниме',['Экшен','Сёнэн','Сверхъестественное'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/debab583d0ba.jpg',{
+    country:['Япония'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/4e79cf981e25.jpg',ongoing:true,
+    pop:73,added:'2025-09-12',
+    desc:'Тандзиро Камадо становится охотником на демонов, чтобы вернуть сестре Нэдзуко, обращённой в демона, человеческий облик.'}),
+  yourname:T('yourname','Твоё имя',2016,'Аниме',['Романтика','Драма','Мистика'],8.8,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0b6a6b5e4164.jpeg',{
+    country:['Япония'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/609242e7fd78.jpg',
+    pop:81,added:'2025-10-18',
+    desc:'Токи и Мицуха — подростки из разных городов — неожиданно начинают меняться телами и пытаются найти друг друга, пока не стало поздно.'}),
+  spirited:T('spirited','Унесённые призраками',2001,'Аниме',['Фэнтези','Приключения','Сверхъестественное'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/1bea669ab3af.jpg',{
+    country:['Япония'],
+    pop:80,added:'2025-04-15',
+    desc:'Девочка Тихиро попадает в мир духов, где родителей превращают в свиней, а вернуть их можно, только работая в купальне богов.'}),
+  fireflies:T('fireflies','Могила светлячков',1988,'Аниме',['Драма','Трагедия','Военное'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/4ce765f0c314.jpg',{
+    country:['Япония'],
+    pop:57,added:'2025-03-20',
+    desc:'Сэйта и его младшая сестра Сусэку пытаются выжить в Японии последних месяцев Второй мировой после бомбёжки Кобэ.'}),
+  howl:T('howl','Ходячий замок',2004,'Аниме',['Фэнтези','Романтика','Приключения'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/fab348fd8713.jpg',{
+    country:['Япония'],
+    pop:65,added:'2025-05-27',
+    desc:'Заколдованная ведьмой-шляпницей Софи отправляется в странствующий замок чародея Хаула, чтобы снять проклятие.'}),
+  mononoke:T('mononoke','Принцесса Мононоке',1997,'Аниме',['Фэнтези','Приключения','Сверхъестественное'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/3ff66b83d9c0.jpg',{
+    country:['Япония'],
+    pop:64,added:'2025-04-22',
+    desc:'Принц Аситака вмешивается в войну между людьми Железного города и духами леса, ища лекарство от собственного проклятия.'}),
+  deathnote:T('deathnote','Тетрадь смерти',2006,'Аниме',['Триллер','Драма','Психологическое','Детектив'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/dbae99da2de3.jpeg',{
+    country:['Япония'],
+    pop:74,added:'2025-06-30',
+    desc:'Школьник Лайт Ягами находит тетрадь, убивающую любого, чьё имя в ней записано, и начинает войну умов с детективом Элом.'}),
+  bebop:T('bebop','Ковбой Бибоп',1998,'Аниме',['Экшен','Фантастика','Нуар'],8.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9f9b3348ec9e.jpg',{
+    country:['Япония'],
+    pop:61,added:'2025-05-11',
+    desc:'Экипаж космического корабля «Бибоп» — охотники за головами, перебивающиеся сомнительными заказами и собственным прошлым.'}),
+  monster:T('monster','Монстр',2004,'Аниме',['Триллер','Драма','Психологическое','Детектив'],8.8,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/bbf81394593e.jpg',{
+    country:['Япония'],
+    pop:72,added:'2025-07-25',
+    desc:'Талантливый нейрохирург Кэндзо Тэндма спасает мальчика и годами спустя узнаёт, что вырос тот серийным убийцей.'}),
+  psychopass:T('psychopass','Психопаспорт',2012,'Аниме',['Фантастика','Триллер','Психологическое'],8.2,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/139d2fea5700.jpg',{
+    country:['Япония'],
+    pop:58,added:'2025-08-05',
+    desc:'В обществе, где «цвет преступности» просчитывает система, инспектор Аканэ охотится на тех, кого нельзя судить по закону.'}),
+  eva:T('eva','Евангелион',1995,'Аниме',['Фантастика','Драма','Меха','Психологическое'],8.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/18cd40b094d3.jpg',{
+    country:['Япония'],
+    pop:67,added:'2025-03-02',
+    desc:'Подросток Синдзи Икари садится за управление биороботом ЕВА, чтобы защищать Токио-3 от ангелов — и от собственного одиночества.'}),
+  naruto:T('naruto','Наруто',2002,'Аниме',['Экшен','Сёнэн','Приключения'],7.9,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/5beeaab7cf76.jpg',{
+    country:['Япония'],
+    pop:70,added:'2025-02-14',
+    desc:'Шумный юный ниндзя Наруто Узумаки мечтает стать Хокаге — лидером деревни — и вернуть её доверие.'}),
+  frieren:T('frieren','Провожающая в последний путь Фрирен',2023,'Аниме',['Фэнтези','Драма','Приключения','Сэйнэн'],9.0,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/c458046a4f08.jpg',{
+    country:['Япония'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/c33e95bd7dca.jpeg',isNew:true,ongoing:true,status:'planned',
+    pop:91,added:'2026-10-12',
+    desc:'Эльфийка-магиня Фрирен, пережившая своих товарищей по отряду, отправляется в новое путешествие, чтобы понять людей.'}),
+  oshinoko:T('oshinoko','Оши но ко',2023,'Аниме',['Драма','Музыка','Мистика'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/7315e1024447.png',{
+    country:['Япония'],
+    isNew:true,ongoing:true,
+    pop:56,added:'2026-09-21',
+    desc:'Сияние и тьма шоу-бизнеса: врач-акушер Горо и его падчерица Руби идут к тайне легендарной идола.'}),
+  breaking:T('breaking','Во все тяжкие',2008,'Сериал',['Драма','Криминал','Триллер'],9.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/895101998087.jpg',{
+    country:['США'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/00772fbee985.jpg',status:'watched',
+    pop:97,added:'2025-01-25',
+    desc:'Школьный учитель химии Уолтер Уайт, узнав о смертельном диагнозе, начинает варить метамфетамин и постепенно превращается в того, кого сам боялся.'}),
+  chernobyl:T('chernobyl','Чернобыль',2019,'Сериал',['Драма','История','Трагедия'],9.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9eefa807d02a.jpg',{
+    country:['США','Великобритания'],
+    pop:69,added:'2025-04-03',
+    desc:'Хроника аварии на Чернобыльской АЭС: от минут до взрыва до суда над виновными и цены лжи.'}),
+  dark:T('dark','Тьма',2017,'Сериал',['Фантастика','Триллер','Мистика'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0d1c6d89dfa4.jpg',{
+    country:['Германия'],
+    pop:79,added:'2025-06-19',
+    desc:'Пропажа детей в немецком городке Виннден раскрывает временную петлю, связывающую четыре семьи и три эпохи.'}),
+  stranger:T('stranger','Очень странные дела',2016,'Сериал',['Фантастика','Хоррор','Детектив'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d7aa7aa98ff8.jpg',{
+    country:['США'],
+    ongoing:true,status:'watching',
+    pop:93,added:'2025-05-30',
+    desc:'В маленьком американском городке пропадает мальчик, а его друзья находят девочку с телекинезом и портал в Изнанку.'}),
+  squid:T('squid','Игра в кальмара',2021,'Сериал',['Триллер','Драма','Трагедия'],7.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d69134429911.jpg',{
+    country:['Южная Корея'],
+    ongoing:true,
+    pop:94,added:'2025-09-05',
+    desc:'Должники играют в детские игры на выживание ради денежного приза, за которым стоят очень богатые зрители.'}),
+  hotd:T('hotd','Дом Дракона',2022,'Сериал',['Фэнтези','Драма','Военное'],8.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/28853c314411.jpg',{
+    country:['США','Великобритания'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/072b7e1d7703.jpg',ongoing:true,
+    pop:82,added:'2026-06-28',
+    desc:'За двести лет до «Игры престолов» дом Таргариенов рвёт династию на части в танце драконов.'}),
+  severance:T('severance','Разделение',2022,'Сериал',['Фантастика','Триллер','Психологическое'],8.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b22e1179a791.jpg',{
+    country:['США'],
+    ongoing:true,
+    pop:77,added:'2026-07-09',
+    desc:'Сотрудники Lumon соглашаются на процедуру, разделяющую сознание на рабочее и личное, — и «внутри» начинают сомневаться.'}),
+  inception:T('inception','Начало',2010,'Фильм',['Фантастика','Триллер','Экшен'],8.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/f77c053f518d.jpeg',{
+    country:['США','Великобритания'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/bc8f8c7be2db.jpg',
+    pop:90,added:'2025-08-11',
+    desc:'Команда специалистов по проникновению в сны берётся не украсть идею, а внушить её — на самом глубоком уровне сна.'}),
+  darkknight:T('darkknight','Тёмный рыцарь',2008,'Фильм',['Экшен','Криминал','Детектив'],8.9,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/82a5f83fce15.jpg',{
+    country:['США','Великобритания'],
+    pop:92,added:'2025-02-28',
+    desc:'Бэтмен против Джокера, для которого хаос — философия, и против вопроса, на что готов Готэм ради покоя.'}),
+  matrix:T('matrix','Матрица',1999,'Фильм',['Фантастика','Экшен','Триллер'],8.7,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/55b87ebaa5b2.jpg',{
+    country:['США','Австралия'],
+    pop:89,added:'2025-01-15',
+    desc:'Программист Нео узнаёт, что мир — симуляция, и присоединяется к подполью, воюющему с машинами.'}),
+  pulp:T('pulp','Криминальное чтиво',1994,'Фильм',['Криминал','Драма','Комедия'],8.9,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b015d90fa0de.jpeg',{
+    country:['США'],
+    pop:84,added:'2025-03-08',
+    desc:'Несколько криминальных историй Лос-Анджелеса сплетаются в один нелинейный рассказ о выборе и бургерах.'}),
+  shawshank:T('shawshank','Побег из Шоушенка',1994,'Фильм',['Драма','Криминал'],9.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/503afd663b47.jpg',{
+    country:['США'],
+    pop:85,added:'2025-02-03',
+    desc:'Банкир Энди Дюфрейн, осуждённый за убийство жены, годами хранит надежду в тюрьме Шоушенк.'}),
+  martian:T('martian','Марсианин',2015,'Фильм',['Фантастика','Приключения','Комедия'],8.0,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9257150c70e5.jpg',{
+    country:['США','Великобритания'],
+    pop:63,added:'2025-10-12',
+    desc:'Астронавт Марк Уотни, оставленный на Марсе в одиночку, выживает, выращивая картофель и налаживая связь с Землёй.'}),
+  coco:T('coco','Тайна Коко',2017,'Мультфильм',['Фэнтези','Приключения','Музыка'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/e18e3257cac8.jpg',{
+    country:['США'],
+    wide:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b151b1662f57.jpg',
+    pop:66,added:'2025-11-09',
+    desc:'Мальчик Мигель попадает в Страну мёртвых и ищет там прапрадеда, чтобы разгадать семейную тайну.'}),
+  lionking:T('lionking','Король Лев',1994,'Мультфильм',['Драма','Приключения','Трагедия'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/36c3dd5e2997.jpg',{
+    country:['США'],
+    pop:59,added:'2025-01-20',
+    desc:'Львёнок Симба теряет отца и становится изгнанником, чтобы вернуться и занять своё место на скале.'}),
+  walle:T('walle','ВАЛЛ·И',2008,'Мультфильм',['Фантастика','Романтика','Приключения'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/a4c63836c432.jpg',{
+    country:['США'],
+    pop:60,added:'2025-07-01',
+    desc:'Робот-уборщик, оставленный на пустой Земле, влюбляется в робота-разведчика Еву и отправляется за ней в космос.'}),
+
+  /* ===== онгоинги для страницы расписания (v1.3) ===== */
+  conan:T('conan','Детектив Конан',1996,'Аниме',['Детектив','Комедия','Экшен'],7.8,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/ac3d8be922f8.jpg',{
+    country:['Япония'],ongoing:true,
+    pop:52,added:'2026-02-10',
+    desc:'Старшеклассник Синъити Кудо, обращённый таинственным ядом в ребёнка, расследует преступления под именем Конан Эдогава.'}),
+  opm:T('opm','Ванпанчмен',2015,'Аниме',['Экшен','Комедия','Сверхъестественное'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/22989602a31a.jpg',{
+    country:['Япония'],ongoing:true,
+    pop:58,added:'2026-03-14',
+    desc:'Сайтама, герой ради хобби, положил любого врага одним ударом — и от скуки ищет достойного противника.'}),
+  csm:T('csm','Человек-бензопила',2022,'Аниме',['Экшен','Сверхъестественное','Хоррор'],8.5,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/26c985572f2e.jpg',{
+    country:['Япония'],ongoing:true,isNew:true,
+    pop:63,added:'2026-10-07',
+    desc:'Дэндзи, живущий в долгах, сливается с демоном-бензопилой Почитой и встаёт в ряды охотников на демонов.'}),
+  dandadan:T('dandadan','Дандадан',2024,'Аниме',['Экшен','Комедия','Романтика'],8.6,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/84646f7e875b.jpg',{
+    country:['Япония'],ongoing:true,isNew:true,
+    pop:60,added:'2026-09-30',
+    desc:'Скептик Окобун и верящая в духов Момо объединяются против пришельцев и ёкаев, пробудив в себе странные силы.'}),
+  solo:T('solo','Поднятие уровня в одиночку',2024,'Аниме',['Экшен','Фэнтези'],8.1,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/dd92af4988a9.jpg',{
+    country:['Япония'],ongoing:true,
+    pop:55,added:'2026-04-18',
+    desc:'Слабейший из охотников Сон Чин У после смерти получает право расти в уровнях — и становится тем, кого боятся ранги S.'}),
+  kaiju:T('kaiju','Кайдзю № 8',2024,'Аниме',['Экшен','Фантастика','Комедия'],8.3,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/da192b822591.jpg',{
+    country:['Япония'],ongoing:true,
+    pop:54,added:'2026-05-06',
+    desc:'Уборщик после атак кайдзю Хибино Кафка сам становится кайдзю и, скрывая это, вступает в Силы обороны ради обещания другу.'}),
+  rezero:T('rezero','Re:Zero. Жизнь с нуля в альтернативном мире',2016,'Аниме',['Фэнтези','Драма','Психологическое'],8.4,'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d3687f77d518.jpg',{
+    country:['Япония'],ongoing:true,isNew:true,
+    pop:57,added:'2026-10-14',
+    desc:'Субару Нацуки переносится в фэнтезийный мир, где после каждой смерти возвращается к контрольной точке — и платит за это рассудком.'}),
+};
+
+
+/* ---------- тосты ---------- */
+function toast(msg){
+  const el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML=I.check+'<span></span>';
+  el.querySelector('span').textContent=msg;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{el.classList.add('is-out');setTimeout(()=>el.remove(),320)},2600);
+}
+
+/* ---------- защита модалок от выделения текста ----------
+   Окно закрывается по фону, только если и нажатие, и отпускание
+   ЛКМ произошли на самом фоне: выделение текста внутри плашки
+   с выходом курсора наружу больше не закрывает модалку/меню. */
+function safeOverlayClose(overlay,closeFn){
+  let downT=null,upT=null;
+  overlay.addEventListener('pointerdown',e=>{downT=e.target;});
+  overlay.addEventListener('pointerup',e=>{upT=e.target;});
+  overlay.addEventListener('click',e=>{
+    const ok=e.target===overlay&&downT===overlay&&upT===overlay;
+    downT=upT=null;
+    if(ok)closeFn();
+  });
+}
+function safeOutsideClose(el,triggers,closeFn){
+  const out=t=>!el.contains(t)&&!triggers.some(b=>b.contains(t));
+  const open=()=>!el.classList.contains('hidden');
+  let started=false;
+  document.addEventListener('pointerdown',e=>{started=out(e.target)&&open();},true);
+  document.addEventListener('click',e=>
+    {if(started&&out(e.target)&&open())closeFn();started=false;});
+}
+
+/* ---------- рендер карточек ---------- */
+const ratingCls=v=>v>=7?'hi':v>=5?'mid':'low';
+const ratingColor=v=>v>=7?'#86EFAC':v>=5?'#FDE047':'#FCA5A5';
+
+function posterCard(t){
+  const st=t.status?STATUS[t.status]:null;
+  return `
+  <article class="poster-card" tabindex="0" role="button" data-id="${t.id}" data-title="${t.title}" aria-label="${t.title}, ${t.year}">
+    <div class="poster-wrap">
+      <img class="poster-img" src="${t.poster}" alt="" loading="lazy">
+      <div class="poster-scrim"></div>
+      <div class="poster-spotlight"></div>
+      <span class="rating-pill rating-pill--${ratingCls(t.rating)}">${I.star} ${t.rating.toFixed(1)}</span>
+      ${t.isNew?'<span class="badge-new"><span class="bn-text">NEW</span></span>':''}
+      ${st?`<span class="status-chip status-chip--${t.status}"><span class="sc-dot"></span><span class="sc-t">${st}</span></span>`:''}
+      <button class="card-dots" data-dots title="Состояние тайтла" aria-label="Состояние тайтла" aria-haspopup="menu">${I.dots}</button>
+      <span class="card-play">${I.playBig}</span>
+    </div>
+    <div class="card-caption">
+      <p class="cc-title">${t.title}</p>
+      <p class="cc-meta">
+        <span>${t.year}</span><span class="cm-sep">·</span>
+        <span class="cm-type">${t.type}</span><span class="cm-sep">·</span>
+        <span class="cm-genres" title="${t.genres.join(', ')}">${t.genres.join(', ')}</span>
+      </p>
+    </div>
+  </article>`;
+}
+
+/* ---------- hover карточек: .is-hover вместо :hover ----------
+   Единственный источник состояния — само движение мыши: цель mousemove
+   браузер вычисляет заново при каждом событии, поэтому «залипнуть»
+   здесь невозможно — в отличие от :hover/:focus-within, которые Chrome
+   после драга держит до клика по сайту (pointer-events:none → auto под
+   неподвижным курсором + забытый фокус карточки с tabindex).
+   Здесь же живёт логика открытия превью-панели: после драга Chrome
+   рассылает поддельные pointerover — их слушатели больше не читают. */
+let cardHover=null;
+function clearCardHover(){
+  if(cardHover){cardHover.classList.remove('is-hover');cardHover=null;}
+}
+document.addEventListener('mousemove',e=>{
+  /* зажатая кнопка — драг или выделение: hover не вешаем. Важно
+     проверять ДО работы с классом: compat-mousemove в пакете с
+     pointermove, преодолевшим порог драга, несёт устаревшую цель
+     (hit-test сделан до листенеров) — с карточкой под курсором */
+  if(e.buttons)return;
+  if(pv.contains(e.target))return;        /* курсор в панели превью — там своя логика */
+  const card=e.target.closest('.poster-card,.cw-card');
+  if(card===cardHover)return;             /* под курсором всё та же карточка */
+  if(cardHover)cardHover.classList.remove('is-hover');
+  cardHover=(card&&card.isConnected)?card:null;
+  if(cardHover)cardHover.classList.add('is-hover');
+  /* курсор ушёл с карточки — гасим отложенный показ */
+  if(!cardHover){
+    clearTimeout(PVD.showT);
+    if(pv.classList.contains('show'))schedulePvHide();
+    return;
+  }
+  /* курсор пришёл на новую карточку — планируем показ превью */
+  clearTimeout(PVD.hideT);
+  if(PVD.card===cardHover&&pv.classList.contains('show'))return;
+  clearTimeout(PVD.showT);
+  const delay=PVD.card&&pv.classList.contains('show')?120:480;
+  PVD.showT=setTimeout(()=>showPreview(cardHover),delay);
+},{passive:true});
+/* курсор покинул окно — гасим hover и прячем превью, как при уходе с карточки */
+document.documentElement.addEventListener('mouseleave',()=>{
+  clearCardHover();
+  clearTimeout(PVD.showT);
+  if(pv.classList.contains('show'))schedulePvHide();
+});
+
+/* ---------- выпадающие панели ---------- */
+function closeAllDd(){
+  ['bellDd','acctDd'].forEach(id=>document.getElementById(id)?.classList.add('hidden'));
+  $('#bellBtn').setAttribute('aria-expanded','false');
+  $('#avatarBtn').setAttribute('aria-expanded','false');
+}
+function toggleDd(id,btn){
+  const el=document.getElementById(id);
+  const willOpen=el.classList.contains('hidden');
+  closeAllDd();
+  if(willOpen){el.classList.remove('hidden');btn.setAttribute('aria-expanded','true');}
+}
+
+</script>
+<script src="/assets/kuvion-search.js"></script>
+<script>
+"use strict";
+/* ---------- превью-панель карточки ---------- */
+const pv=$('#preview');
+const PVD={showT:null,hideT:null,inPanel:false,hold:false,mediaHover:false,card:null,media:[],idx:0,frameT:null,autoT:null};
+
+function pvRunWave(el){el.classList.remove('waving');void el.offsetWidth;el.classList.add('waving');}
+function pvSetMedia(i,opts){
+  PVD.idx=i;
+  const m=PVD.media[i];
+  const media=$('#pvMedia'),img=$('#pvImg');
+  $$('#pvThumbs .pv-thumb').forEach((b,k)=>b.classList.toggle('is-on',k===i));
+  /* активная миниатюра выезжает в центр, если полоса прокручивается */
+  const strip=$('#pvThumbs'),btn=strip.children[i];
+  if(btn)strip.scrollTo({left:Math.max(0,btn.offsetLeft-(strip.clientWidth-btn.offsetWidth)/2),behavior:'smooth'});
+  clearInterval(PVD.frameT);
+  if(m.kind==='trailer'){
+    media.classList.add('is-trailer');
+    media.classList.remove('is-paused');
+    const frames=PVD.media.filter(x=>x.src).map(x=>x.src);
+    $('#pvVFrame').src=frames[0]||img.src;
+    let f=0;
+    PVD.frameT=setInterval(()=>{          /* живой «трейлер»: кадры сменяют друг друга */
+      f=(f+1)%frames.length;
+      const vf=$('#pvVFrame');
+      vf.style.opacity=.25;
+      setTimeout(()=>{vf.src=frames[f];vf.style.opacity=1;},200);
+    },3200);
+  }else{
+    media.classList.remove('is-trailer','is-paused');
+    img.style.opacity=opts&&opts.auto?.35:0; /* автосмена — мягче, без «провала» */
+    setTimeout(()=>{img.src=m.src;img.style.opacity=1;},opts&&opts.auto?120:160);
+  }
+  audioSync();
+}
+function pvFill(t){
+  $('#pvTitle').textContent=t.title;
+  $('#pvMeta').innerHTML=
+    `<span class="rating-pill rating-pill--${ratingCls(t.rating)}" style="position:static">${I.star} ${t.rating.toFixed(1)}</span>`+
+    `<span>${t.year}</span><span class="hm-sep">·</span><span>${t.type}</span>`+
+    `<span class="hm-sep">·</span><span>${t.genres.join(', ')}</span>`;
+  updatePvStatus(t);
+  $('#pvDesc').textContent=t.desc||'Описание появится позже.';
+  /* кадров может быть сколько угодно: сначала широкие кадры,
+     постер добавляется только если широких меньше двух */
+  const wides=[t.wide,t.wide2,t.wide3,t.wide4].filter(Boolean);
+  const shots=wides.length>=2?wides:wides.concat(t.poster).filter(Boolean);
+  PVD.media=[{kind:'trailer'},...shots.map(s=>({kind:'shot',src:s}))];
+  $('#pvImg').src=shots[0]||t.poster;
+  $('#pvThumbs').innerHTML=PVD.media.map((m,i)=>m.kind==='trailer'
+    ?`<button class="pv-thumb pv-thumb--trailer is-on" data-m="0">${I.play}<span>Трейлер</span></button>`
+    :`<button class="pv-thumb" data-m="${i}"><img src="${m.src}" alt="" loading="lazy"></button>`).join('');
+  const strip=$('#pvThumbs');
+  strip.scrollLeft=0;
+  requestAnimationFrame(()=>strip.classList.toggle('is-scrollable',strip.scrollWidth>strip.clientWidth+4));
+  $('#pvFav').classList.toggle('is-on',!!t.fav);
+  pvSetMedia(0);
+}
+function showPreview(card){
+  const t=TITLES[card.dataset.id];
+  if(!t)return;
+  clearTimeout(PVD.hideT);
+  PVD.card=card;
+  pvFill(t);
+  pv.classList.remove('hidden');
+  const W=pv.offsetWidth,H=pv.offsetHeight;
+  const r=card.getBoundingClientRect();
+  let x=r.right+14;
+  if(x+W>innerWidth-12)x=r.left-W-14;               /* нет места справа — показываем слева */
+  x=Math.max(12,Math.min(x,innerWidth-W-12));
+  let y=r.top-26;
+  y=Math.max(12,Math.min(y,innerHeight-H-12));
+  pv.style.left=Math.round(x)+'px';
+  pv.style.top=Math.round(y)+'px';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    pv.classList.add('show');
+    pvRunWave(pv);                                  /* белая волна сверху вниз — и появляется контент */
+    pvAutoStart();
+    audioSync();
+  }));
+}
+function hidePreview(){
+  clearTimeout(PVD.showT);clearTimeout(PVD.hideT);clearInterval(PVD.frameT);clearInterval(PVD.autoT);
+  PVD.inPanel=false;PVD.mediaHover=false;
+  pv.classList.remove('show');
+  audioSync();
+  if(pv.classList.contains('hidden'))return;
+  setTimeout(()=>{if(!pv.classList.contains('show')){pv.classList.add('hidden');audioSync();}},220);
+}
+function schedulePvHide(){
+  clearTimeout(PVD.hideT);
+  PVD.hideT=setTimeout(()=>{if(!PVD.inPanel&&!PVD.hold&&!pv.matches(':hover'))hidePreview();},200);
+}
+/* показ/скрытие превью полностью в mousemove-трекере (.is-hover)
+   выше по коду: поддельные pointerover/pointerout, которые Chrome
+   рассылает после драга, больше ничего не решают.
+   Курсор ушёл и с панели, и с карточки — превью скрывается: */
+pv.addEventListener('pointerenter',()=>{PVD.inPanel=true;clearTimeout(PVD.hideT);});
+pv.addEventListener('pointerleave',()=>{PVD.inPanel=false;schedulePvHide();});
+window.addEventListener('scroll',()=>{hidePreview();closeStatusMenu();},{passive:true});
+window.addEventListener('resize',hidePreview);
+$('#pvThumbs').addEventListener('click',e=>{
+  const b=e.target.closest('.pv-thumb');
+  if(!b)return;
+  pvSetMedia(Number(b.dataset.m));
+  pvRunWave($('#pvMedia'));                          /* мини-волна при смене кадра */
+});
+$('#pvMedia').addEventListener('click',e=>{
+  if(e.target.closest('button,.pv-vol'))return;      /* клики по громкости не ставят паузу */
+  if($('#pvMedia').classList.contains('is-trailer')){$('#pvMedia').classList.toggle('is-paused');audioSync();}
+});
+/* курсор на медиаблоке — автосмена кадров ждёт */
+$('#pvMedia').addEventListener('pointerenter',()=>PVD.mediaHover=true);
+$('#pvMedia').addEventListener('pointerleave',()=>PVD.mediaHover=false);
+/* стрелки ‹ › — листаем трейлер и кадры по кругу */
+function pvStep(d){
+  const n=PVD.media.length;
+  if(!n)return;
+  pvSetMedia((PVD.idx+d+n)%n);
+  pvRunWave($('#pvMedia'));
+}
+$('#pvPrev').addEventListener('click',()=>pvStep(-1));
+$('#pvNext').addEventListener('click',()=>pvStep(1));
+/* автосмена кадров: пока превью открыт и курсор не на медиаблоке,
+   кадры сами сменяют друг друга (трейлер не трогаем — он «играет») */
+function pvAutoStart(){
+  clearInterval(PVD.autoT);
+  PVD.autoT=setInterval(()=>{
+    if(!pv.classList.contains('show')||PVD.mediaHover)return;
+    const m=PVD.media[PVD.idx];
+    if(!m||m.kind!=='shot')return;
+    let n=PVD.idx+1;
+    while(n<PVD.media.length&&PVD.media[n].kind!=='shot')n++;
+    if(n>=PVD.media.length){n=0;while(n<PVD.media.length&&PVD.media[n].kind!=='shot')n++;}
+    if(n<PVD.media.length&&n!==PVD.idx)pvSetMedia(n,{auto:true});
+  },3400);
+}
+/* ---------- громкость трейлера ----------
+   Трейлеры мы не храним (HLS-потоков нет) — в проде они будут
+   отдаваться через YouTube IFrame API, и этот же слайдер будет
+   дёргать плеер напрямую:
+     yt.setVolume(Math.round(VOL.level*100)); yt.mute(); yt.unMute();
+   Чтобы в макете громкость можно было реально пощупать, звук
+   синтезируется локально через WebAudio: тихий «кинематографичный»
+   гул, громкость которого и управляет ползунком. */
+const VOL={level:.55,muted:true,ctx:null,master:null};
+const volEff=()=>VOL.muted?0:VOL.level;
+const volIcon=()=>(VOL.muted||VOL.level===0)?I.volX:(VOL.level<=.5?I.volLow:I.vol);
+function volUI(){
+  $('#vsFill').style.width=(VOL.level*100)+'%';
+  $('#vsThumb').style.left=(VOL.level*100)+'%';
+  $('#vsBubble').textContent=Math.round(VOL.level*100)+'%';
+  $('#pvVolSlider').setAttribute('aria-valuenow',String(Math.round(VOL.level*100)));
+  const vm=$('#pvVMute');
+  vm.innerHTML=volIcon();
+  vm.classList.toggle('is-off',VOL.muted||VOL.level===0);
+  vm.setAttribute('aria-label',VOL.muted?'Включить звук':'Выключить звук');
+  $('#pvVol').classList.toggle('is-muted',VOL.muted);
+}
+function audioEnsure(){
+  if(VOL.ctx)return;
+  const C=window.AudioContext||window.webkitAudioContext;
+  if(!C)return;
+  const ctx=VOL.ctx=new C();
+  const master=ctx.createGain();
+  master.gain.value=0;
+  master.connect(ctx.destination);
+  const lp=ctx.createBiquadFilter();
+  lp.type='lowpass';lp.frequency.value=420;lp.Q.value=.7;
+  lp.connect(master);
+  const voice=(freq,type,amp,detune)=>{
+    const o=ctx.createOscillator();o.type=type;o.frequency.value=freq;o.detune.value=detune||0;
+    const g=ctx.createGain();g.gain.value=amp;
+    o.connect(g);g.connect(lp);o.start();
+  };
+  voice(55,'sine',.5);voice(110,'triangle',.4);voice(110.7,'triangle',.3);voice(220,'sine',.14);
+  const lfo=ctx.createOscillator();lfo.frequency.value=.07;   /* медленное «дыхание» фильтра */
+  const lg=ctx.createGain();lg.gain.value=140;
+  lfo.connect(lg);lg.connect(lp.frequency);lfo.start();
+  VOL.master=master;
+}
+function audioSync(){
+  const media=$('#pvMedia');
+  const active=pv.classList.contains('show')
+    &&media.classList.contains('is-trailer')
+    &&!media.classList.contains('is-paused');
+  const target=active?volEff()*.16:0;
+  if(target>0){
+    audioEnsure();
+    VOL.ctx&&VOL.ctx.resume&&VOL.ctx.resume();
+  }
+  if(!VOL.master)return;
+  const g=VOL.master.gain,n=VOL.ctx.currentTime;
+  g.cancelScheduledValues(n);
+  g.setTargetAtTime(target,n,.09);
+}
+$('#pvVMute').addEventListener('click',()=>{
+  VOL.muted=!VOL.muted;
+  volUI();audioSync();
+});
+(function(){
+  const slider=$('#pvVolSlider'),wrap=$('#pvVol');
+  let drag=false;
+  const setFromX=x=>{
+    const r=slider.getBoundingClientRect();
+    VOL.level=Math.min(1,Math.max(0,(x-r.left)/r.width));
+    if(VOL.muted&&VOL.level>0)VOL.muted=false;   /* крутанули громкость — снимаем мьют */
+    volUI();audioSync();
+  };
+  slider.addEventListener('pointerdown',e=>{
+    drag=true;wrap.classList.add('dragging');
+    try{slider.setPointerCapture(e.pointerId);}catch(_){}
+    setFromX(e.clientX);
+    e.preventDefault();
+  });
+  slider.addEventListener('pointermove',e=>{if(drag)setFromX(e.clientX);});
+  const end=()=>{drag=false;wrap.classList.remove('dragging');};
+  slider.addEventListener('pointerup',end);
+  slider.addEventListener('pointercancel',end);
+  /* колесо мыши над зоной звука — тише/громче */
+  wrap.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const d=e.deltaY<0?.05:-.05;
+    VOL.level=Math.min(1,Math.max(0,Math.round((VOL.level+d)*20)/20));
+    if(VOL.muted&&VOL.level>0)VOL.muted=false;
+    volUI();audioSync();
+  },{passive:false});
+  volUI();
+})();
+$('#pvPlay').addEventListener('click',()=>toast('Плеер — в разработке (демо-макет)'));
+$('#pvWatchBtn').addEventListener('click',()=>toast('Плеер — в разработке (демо-макет)'));
+$('#pvFav').addEventListener('click',()=>{
+  const t=TITLES[PVD.card?.dataset.id];
+  if(t)t.fav=!t.fav;
+  const on=$('#pvFav').classList.toggle('is-on');
+  toast(on?'Добавлено в избранное':'Убрано из избранного');
+});
+$('#pvStatusBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  if(SM.open){closeStatusMenu();return;}
+  if(!PVD.card)return;
+  openStatusMenu(e.currentTarget,PVD.card.dataset.id,PVD.card);
+});
+
+/* ---------- меню состояния тайтла («⋮» на карточке и в превью) ---------- */
+const SM={open:false,titleId:null,trigger:null,card:null};
+const smEl=$('#statusMenu');
+const DOT_COLOR={watching:'var(--ok)',planned:'var(--info)',watched:'rgba(255,255,255,.75)',onhold:'var(--warn)',dropped:'var(--bad)'};
+function buildStatusItems(t){
+  const items=[['watching','Смотрю'],['planned','Буду смотреть'],['watched','Просмотрено'],['onhold','Отложено'],['dropped','Брошено']];
+  let html='<p class="sm-head">Состояние тайтла</p>';
+  html+=items.map(([k,label])=>
+    `<button class="sm-item${t.status===k?' is-cur':''}" data-st="${k}" role="menuitem">`+
+    `<span class="sm-dot" style="background:${DOT_COLOR[k]}"></span>`+
+    `<span class="sm-label">${label}</span>`+
+    (t.status===k?I.checkSm:'')+`</button>`).join('');
+  if(t.status)html+=
+    `<div class="sm-sep"></div>`+
+    `<button class="sm-item sm-item--clear" data-st="" role="menuitem">`+
+    `<span class="sm-x">${I.xSm}</span><span class="sm-label">Убрать статус</span></button>`;
+  return html;
+}
+function openStatusMenu(btn,titleId,card){
+  const t=TITLES[titleId];
+  if(!t)return;
+  SM.open=true;SM.titleId=titleId;SM.trigger=btn;SM.card=card||btn.closest('.poster-card')||PVD.card;
+  PVD.hold=true;clearTimeout(PVD.hideT);      /* пока открыто меню — превью не прячем */
+  smEl.innerHTML=buildStatusItems(t);
+  smEl.classList.remove('hidden');
+  const r=btn.getBoundingClientRect();
+  const w=smEl.offsetWidth,h=smEl.offsetHeight;
+  let x=r.left+r.width/2-w/2;
+  x=Math.max(10,Math.min(x,innerWidth-w-10));
+  let y=r.top-h-10;                           /* предпочитаем открыть над кнопкой */
+  if(y<10)y=Math.min(r.bottom+10,innerHeight-h-10);
+  smEl.style.left=Math.round(x)+'px';
+  smEl.style.top=Math.round(y)+'px';
+}
+function closeStatusMenu(){
+  if(!SM.open)return;
+  smEl.classList.add('hidden');smEl.innerHTML='';
+  SM.open=false;SM.titleId=null;SM.trigger=null;SM.card=null;
+  PVD.hold=false;
+  if(pv.classList.contains('show'))schedulePvHide();
+}
+smEl.addEventListener('click',e=>{
+  const it=e.target.closest('.sm-item');
+  if(!it)return;
+  const t=TITLES[SM.titleId];
+  if(!t){closeStatusMenu();return;}
+  const k=it.dataset.st||null;
+  t.status=k||undefined;
+  if(SM.card&&SM.card.isConnected)syncCardStatus(SM.card,t);
+  updatePvStatus(t);
+  closeStatusMenu();
+  toast(k?('Отмечено: '+STATUS[k]):'Статус убран');
+});
+document.addEventListener('pointerdown',e=>{
+  if(!SM.open)return;
+  if(smEl.contains(e.target))return;
+  if(SM.trigger&&SM.trigger.contains(e.target))return;
+  closeStatusMenu();
+},true);
+function syncCardStatus(card,t){
+  if(!card)return;
+  const wrap=card.querySelector('.poster-wrap');
+  if(!wrap)return;
+  let chip=wrap.querySelector('.status-chip');
+  if(!t.status){chip&&chip.remove();return;}
+  if(!chip){chip=document.createElement('span');wrap.appendChild(chip);}
+  chip.className='status-chip status-chip--'+t.status;
+  chip.innerHTML='<span class="sc-dot"></span><span class="sc-t">'+STATUS[t.status]+'</span>';
+}
+function updatePvStatus(t){
+  let chip=$('#pvStatus');
+  if(!t.status){chip&&chip.remove();return;}
+  if(!chip){chip=document.createElement('span');chip.id='pvStatus';$('#pvMeta').appendChild(chip);}
+  chip.className='pv-status';
+  chip.innerHTML=`<span class="sc-dot" style="background:${DOT_COLOR[t.status]}"></span><span class="sc-t">${STATUS[t.status]}</span>`;
+}
+
+
+/* ---------- мой список: данные, вкладки, сортировка ----------
+   MYLIST — демо-состояние коллекции пользователя. У каждой записи:
+   st — статус (тот же словарь STATUS, что на карточках и странице
+   тайтла), ep/of — серия, на которой остановились, и всего серий,
+   score — собственная оценка по 10-балльной шкале, added — дата
+   попадания в список, fav — избранное (живёт поверх статуса).
+   В продакшене массив приходит с бэкенда и наполняется отметками
+   с карточек каталога и страниц тайтлов. */
+const MYLIST=[
+  /* смотрю */
+  {id:'aot',       st:'watching', ep:18, of:25, score:9,  added:'2026-09-02', fav:true},
+  {id:'dandadan',  st:'watching', ep:7,  of:12, score:8,  added:'2026-10-21'},
+  {id:'kaiju',     st:'watching', ep:11, of:12,           added:'2026-10-28'},
+  {id:'severance', st:'watching', ep:15, of:19, score:9,  added:'2026-10-05', fav:true},
+  /* буду смотреть */
+  {id:'dune2',     st:'planned',  added:'2026-09-30', fav:true},
+  {id:'frieren',   st:'planned',  added:'2026-10-12'},
+  {id:'tlou',      st:'planned',  added:'2026-08-30'},
+  {id:'solo',      st:'planned',  added:'2026-10-19'},
+  {id:'hotd',      st:'planned',  added:'2026-06-28'},
+  /* просмотрено */
+  {id:'interstellar',st:'watched', ep:1,  of:1,  score:10, added:'2025-08-14', fav:true},
+  {id:'fmab',      st:'watched', ep:64, of:64, score:10, added:'2025-07-08'},
+  {id:'breaking',  st:'watched', ep:62, of:62, score:10, added:'2025-01-25'},
+  {id:'yourname',  st:'watched', ep:1,  of:1,  score:9,  added:'2025-10-18'},
+  {id:'darkknight',st:'watched', ep:1,  of:1,  score:9,  added:'2025-03-14'},
+  /* отложено */
+  {id:'monster',   st:'onhold', ep:24, of:74, score:8, added:'2025-07-25'},
+  {id:'dark',      st:'onhold', ep:9,  of:26,          added:'2025-06-19'},
+  /* брошено */
+  {id:'naruto',    st:'dropped', ep:120, of:220, score:6, added:'2025-02-14'},
+  {id:'squid',     st:'dropped', ep:3,  of:9,           added:'2025-09-05'},
+];
+
+/* каталог манги для строк списка (выжимка из раздела «Манга»:
+   постер, год, тип, число глав, жанры; в проде — один бэкенд) */
+const MGDATA={
+  'aot':{"title": "Атака титанов", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/79c6eeb6a0aa.jpg", "year": 2009, "type": "Манга", "chapters": 139, "genres": ["Экшен", "Драма", "Тёмное фэнтези"]},
+  'onepiece':{"title": "Ван Пис", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/306108982d99.jpg", "year": 1997, "type": "Манга", "chapters": 1128, "genres": ["Приключения", "Сёнэн", "Фэнтези"]},
+  'fmab':{"title": "Стальной алхимик", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/66da3352847d.jpg", "year": 2001, "type": "Манга", "chapters": 116, "genres": ["Экшен", "Фэнтези", "Драма"]},
+  'demonslayer':{"title": "Клинок, рассекающий демонов", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0096bfaf4a86.jpeg", "year": 2016, "type": "Манга", "chapters": 205, "genres": ["Экшен", "Сёнэн", "Сверхъестественное"]},
+  'jjk':{"title": "Магическая битва", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/5b3078fa95b2.jpg", "year": 2018, "type": "Манга", "chapters": 271, "genres": ["Экшен", "Сверхъестественное", "Драма"]},
+  'deathnote':{"title": "Тетрадь смерти", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/8ae63b852f2c.jpg", "year": 2003, "type": "Манга", "chapters": 108, "genres": ["Триллер", "Драма", "Психологическое"]},
+  'berserk':{"title": "Берсерк", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/8822a7d2f6e1.jpg", "year": 1989, "type": "Манга", "chapters": 375, "genres": ["Экшен", "Тёмное фэнтези", "Драма"]},
+  'vagabond':{"title": "Странник", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/a749569c450e.jpeg", "year": 1998, "type": "Манга", "chapters": 327, "genres": ["Дзидайгэки", "Драма", "Экшен"]},
+  'csm':{"title": "Человек-бензопила", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/3781d6ec1d0b.jpg", "year": 2018, "type": "Манга", "chapters": 208, "genres": ["Экшен", "Комедия", "Хоррор"]},
+  'dandadan':{"title": "Дандадан", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/07580587b7e9.jpg", "year": 2021, "type": "Манга", "chapters": 185, "genres": ["Экшен", "Комедия", "Сверхъестественное"]},
+  'nausicaa':{"title": "Наусикая из Долины Ветров", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/76ff46aa0786.jpg", "year": 1982, "type": "Манга", "chapters": 59, "genres": ["Фантастика", "Драма", "Приключения"]},
+  'monster':{"title": "Монстр", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/a864f2ddb669.jpg", "year": 1994, "type": "Манга", "chapters": 162, "genres": ["Триллер", "Драма", "Детектив"]},
+  'cb20':{"title": "20th Century Boys", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/49380e77b905.jpg", "year": 1999, "type": "Манга", "chapters": 249, "genres": ["Триллер", "Детектив", "Фантастика"]},
+  'kaiju8':{"title": "Кайдзю № 8", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/ecc0afaea159.jpg", "year": 2020, "type": "Манга", "chapters": 112, "genres": ["Экшен", "Фантастика", "Сёнэн"]},
+  'tokyorev':{"title": "Токийские мстители", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/7dcd042641e8.jpg", "year": 2017, "type": "Манга", "chapters": 278, "genres": ["Экшен", "Драма", "Фантастика"]},
+  'fireforce':{"title": "Пламенная бригада пожарных", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/96f00771ad46.png", "year": 2015, "type": "Манга", "chapters": 304, "genres": ["Экшен", "Сёнэн", "Сверхъестественное"]},
+  'opm':{"title": "Ван-Панчмен", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/743806d9698b.jpeg", "year": 2012, "type": "Манга", "chapters": 248, "genres": ["Экшен", "Комедия", "Сверхъестественное"]},
+  'slamdunk':{"title": "Слэм-данк", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/7f8dc39f29e0.jpg", "year": 1990, "type": "Манга", "chapters": 276, "genres": ["Спорт", "Драма", "Комедия"]},
+  'solo':{"title": "Соло левеллинг", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b2df6c694eb1.png", "year": 2018, "type": "Манхва", "chapters": 179, "genres": ["Экшен", "Фэнтези", "Сёнэн"]},
+  'tog':{"title": "Властелин башни", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d9cf1f70604e.jpg", "year": 2010, "type": "Манхва", "chapters": 551, "genres": ["Фэнтези", "Экшен", "Мистика"]},
+  'lookism':{"title": "Внешность", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/5c243cc95e73.jpg", "year": 2017, "type": "Манхва", "chapters": 512, "genres": ["Драма", "Комедия", "Экшен"]},
+  'gohs':{"title": "Бог старшей школы", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9053c28bceb0.jpg", "year": 2011, "type": "Манхва", "chapters": 568, "genres": ["Экшен", "Фэнтези", "Боевые искусства"]},
+  'noblesse':{"title": "Дворянство", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/249bb1e6158c.jpeg", "year": 2007, "type": "Манхва", "chapters": 544, "genres": ["Экшен", "Сверхъестественное", "Мистика"]},
+  'kingsavatar':{"title": "Повелитель", "poster": "https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9e53743a5b13.jpg", "year": 2011, "type": "Маньхуа", "chapters": 640, "genres": ["Экшен", "Спорт", "Комедия"]},
+};
+const MG_ST={watching:'Читаю',planned:'Буду читать',watched:'Прочитано',onhold:'Отложено',dropped:'Бросил'};
+/* состояние чтения — общее хранилище раздела «Манга» */
+/* демо-дефолты — те же, что сеет раздел «Манга» (MG_DEFAULT):
+   слияние в памяти, в хранилище пишем только по действию */
+const MG_DEFAULT={
+  pos:{aot:{ch:57,page:8}},
+  read:{
+    aot:Array.from({length:56},(_,i)=>i+1),
+    fmab:Array.from({length:116},(_,i)=>i+1),
+    slamdunk:Array.from({length:276},(_,i)=>i+1),
+    nausicaa:Array.from({length:59},(_,i)=>i+1),
+    monster:Array.from({length:162},(_,i)=>i+1),
+    deathnote:Array.from({length:33},(_,i)=>i+1),
+  },
+  rating:{aot:10,fmab:9,monster:10},
+  fav:{},
+  status:{aot:'watching',fmab:'watched',solo:'planned',deathnote:'onhold',csm:'watching',slamdunk:'watched',nausicaa:'watched',monster:'watched'},
+  added:{},
+};
+let MG;
+try{MG=Object.assign({},MG_DEFAULT,JSON.parse(localStorage.getItem('kuvion_manga_v1')||'{}'));}
+catch(e){MG=Object.assign({},MG_DEFAULT);}
+['pos','read','rating','fav','status','added'].forEach(k=>{if(!MG[k])MG[k]={};});
+function mgStoreSave(){try{localStorage.setItem('kuvion_manga_v1',JSON.stringify(MG));}catch(e){}}
+const mgToday=()=>new Date().toISOString().slice(0,10);
+/* дата, когда манга попала в список; у старых демо-отметок даты
+   не было — синтезируем стабильную (детерминированную от id) */
+const mgPseudoAdded=id=>{
+  let h=0;for(const c of id)h=(h*31+c.charCodeAt(0))>>>0;
+  const d=new Date(2025,4,1+h%500);
+  return d.toISOString().slice(0,10);
+};
+const mgPluralCh=n=>{const a=n%10,b=n%100;return a===1&&b!==11?'глава':(a>=2&&a<=4&&(b<10||b>=20)?'главы':'глав')};
+
+/* ---------- подборки: сохранённые пользователем ----------
+   Кнопка «Сохранить» на странице «Подборки» пишет хранилище
+   kuvion_collsaved_v1 (массив {id, at}); здесь показываем saved
+   демо-подборки других пользователей. Свои подборки доступны
+   владельцу на странице «Подборки» — во вкладке только чужие. */
+const CS_KEY='kuvion_collsaved_v1';
+function csList(){try{const a=JSON.parse(localStorage.getItem(CS_KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&x.id):[]}catch(e){return[]}}
+function csRemove(id){try{localStorage.setItem(CS_KEY,JSON.stringify(csList().filter(x=>x.id!==id)))}catch(e){}}
+const COLL_POSTERS={
+  tlou:'078136c3e9d7.jpg',stranger:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d7aa7aa98ff8.jpg',
+  hotd:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/28853c314411.jpg',squid:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d69134429911.jpg',
+  dark:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0d1c6d89dfa4.jpg',chernobyl:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9eefa807d02a.jpg',
+  deathnote:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/dbae99da2de3.jpeg',psychopass:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/139d2fea5700.jpg',
+  interstellar:'85bb955e60e9.jpg',dune2:'d4500e7dac80.jpg',br2049:'71b996fefac1.jpg',
+  martian:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9257150c70e5.jpg',walle:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/a4c63836c432.jpg',
+  inception:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/f77c053f518d.jpeg',aot:'9a35191d1d09.jpg',
+  fmab:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0b4034f752c6.jpg',monster:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/bbf81394593e.jpg',
+  eva:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/18cd40b094d3.jpg',fireflies:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/4ce765f0c314.jpg',
+  rezero:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d3687f77d518.jpg',matrix:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/55b87ebaa5b2.jpg',
+  darkknight:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/82a5f83fce15.jpg',pulp:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b015d90fa0de.jpeg',
+  bebop:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9f9b3348ec9e.jpg',yourname:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0b6a6b5e4164.jpeg',
+  spirited:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/1bea669ab3af.jpg',howl:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/fab348fd8713.jpg',
+  mononoke:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/3ff66b83d9c0.jpg',coco:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/e18e3257cac8.jpg',
+  severance:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b22e1179a791.jpg',breaking:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/895101998087.jpg',
+  oppenheimer:'a1fd704339d9.jpg',
+};
+const COLL_DEMO=[
+  {id:'c-horror',name:'Хоррор, от которого не отвести глаз',author:'kira',likes:341,made:'2026-08-14',
+   titles:['tlou','stranger','hotd','squid','dark','chernobyl','deathnote','psychopass']},
+  {id:'c-space',name:'Космос: тишина и бесконечность',author:'vega',likes:287,made:'2026-09-02',
+   titles:['interstellar','dune2','br2049','martian','walle','inception']},
+  {id:'c-punch',name:'Аниме, после которого нужно отойти',author:'tsuki',likes:412,made:'2026-07-19',
+   titles:['aot','fmab','monster','eva','deathnote','psychopass','fireflies','rezero']},
+  {id:'c-noir',name:'Неон, дождь и нуар',author:'mirror',likes:198,made:'2026-10-01',
+   titles:['br2049','matrix','darkknight','pulp','bebop','psychopass']},
+  {id:'c-cozy',name:'Тёплый вечер: кино для отдыха',author:'yuki',likes:265,made:'2026-09-25',
+   titles:['yourname','spirited','howl','mononoke','coco','walle']},
+  {id:'c-detective',name:'Детективы, где нельзя моргнуть',author:'coldcase',likes:176,made:'2026-10-11',
+   titles:['deathnote','monster','dark','severance','breaking','chernobyl']},
+];
+const mlCollPoster=id=>{
+  if(id&&TITLES[id]&&TITLES[id].poster)return TITLES[id].poster;
+  /* остальное (в т.ч. манга с суффиксом -m) знает поисковый индекс */
+  if(id){
+    const s=typeof SDB!=='undefined'?SDB.find(x=>x.id===id):null;
+    if(s)return s.poster;
+  }
+  const p=id?COLL_POSTERS[id]:null;
+  if(!p)return null;
+  return p.indexOf('http')===0?p:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/'+p;
+};
+const fmtKC=n=>{
+  n=n||0;
+  if(n<1000)return String(n);
+  const s=(n/1000).toFixed(1).replace('.',',');
+  return (s.endsWith(',0')?s.slice(0,-2):s)+'K';
+};
+const pluralC=n=>{const a=n%10,b=n%100;return a===1&&b!==11?'подборка':(a>=2&&a<=4&&(b<10||b>=20)?'подборки':'подборок')};
+
+const ML_TABS=[
+  ['all','Все'],['watching','Смотрю'],['planned','Буду смотреть'],['watched','Просмотрено'],
+  ['onhold','Отложено'],['dropped','Брошено'],['manga','Манга'],['colls','Подборки'],['fav','Избранное'],
+];
+const ML_SORTS={
+  added:(a,b)=>b.e.added.localeCompare(a.e.added),
+  title:(a,b)=>a.t.title.localeCompare(b.t.title,'ru'),
+  score:(a,b)=>((b.e.score||-1)-(a.e.score||-1))||b.e.added.localeCompare(a.e.added),
+  year:(a,b)=>(b.t.year-a.t.year)||b.e.added.localeCompare(a.e.added),
+};
+const ML_SORT_OPTS=[
+  ['added','Сначала добавленные'],
+  ['title','По названию'],
+  ['score','По моей оценке'],
+  ['year','По году выхода'],
+];
+const mlState={tab:'all',sort:'added'};
+const ML_MON=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const pluralT=n=>{const a=n%10,b=n%100;return a===1&&b!==11?'тайтл':(a>=2&&a<=4&&(b<10||b>=20)?'тайтла':'тайтлов')};
+const byPop=()=>Object.values(TITLES).slice().sort((a,b)=>b.pop-a.pop);
+
+const mlRows=()=>MYLIST.map(e=>({e,t:TITLES[e.id],kind:'title'})).filter(r=>r.t);
+/* манга в списке: записи со статусом или закладкой */
+const mlMangaRows=()=>Object.keys(MGDATA)
+  .filter(id=>MG.status[id]||MG.fav[id])
+  .map(id=>{
+    const d=MGDATA[id];
+    const read=(MG.read[id]||[]).length;
+    const pos=MG.pos[id];
+    return {kind:'manga',e:{
+      id,manga:true,
+      st:MG.status[id]||null,
+      fav:!!MG.fav[id],
+      score:MG.rating[id]||0,
+      added:(MG.added[id])||mgPseudoAdded(id),
+      ep:pos?pos.ch:read,of:d.chapters,
+    },t:d};
+  });
+/* свои подборки — из общего хранилища kuvion_colls_v1 (созданные
+   на страницах тайтла и манги), демо других пользователей — COLL_DEMO */
+const mlUserColls=()=>{
+  let list=null;
+  try{list=JSON.parse(localStorage.getItem('kuvion_colls_v1')||'null')}catch(e){}
+  return Array.isArray(list)?list:[];
+};
+const mlCollRows=()=>csList()
+  .map(s=>{
+    const c=COLL_DEMO.find(x=>x.id===s.id)||mlUserColls().find(x=>x.id===s.id);
+    if(!c)return null;
+    return {kind:'coll',e:{id:c.id,coll:true,added:s.at,fav:true},t:{
+      title:c.name,author:c.author||'danil',likes:c.likes||0,made:c.made||'2026-01-01',titles:c.titles||[],
+      year:Number(String(c.made||'2026').slice(0,4))||2026,
+    }};
+  })
+  .filter(Boolean);
+const mlAllRows=()=>mlRows().concat(mlMangaRows());
+const mlFiltered=()=>{
+  if(mlState.tab==='colls')return mlCollRows().slice().sort(ML_SORTS[mlState.sort]);
+  let rows=mlAllRows();
+  if(mlState.tab==='fav')rows=rows.filter(r=>r.e.fav);
+  else if(mlState.tab==='manga')rows=rows.filter(r=>r.kind==='manga');
+  else if(mlState.tab!=='all')rows=rows.filter(r=>r.e.st===mlState.tab);
+  return rows.slice().sort(ML_SORTS[mlState.sort]);
+};
+const fmtAdded=s=>{const d=new Date(s+'T00:00:00');return `${d.getDate()} ${ML_MON[d.getMonth()]}`;};
+
+function renderTabs(){
+  const mRows=mlMangaRows();
+  const cRows=mlCollRows();
+  const cnt=k=>k==='all'?MYLIST.length+mRows.length
+    :k==='manga'?mRows.length
+    :k==='colls'?cRows.length
+    :(k==='fav'?MYLIST.filter(e=>e.fav).length+mRows.filter(r=>r.e.fav).length
+                 :MYLIST.filter(e=>e.st===k).length+mRows.filter(r=>r.e.st===k).length);
+  $('#mlTabs').innerHTML=ML_TABS.map(([k,lab])=>
+    `<button class="mt-pill${k===mlState.tab?' is-cur':''}" role="tab" aria-selected="${k===mlState.tab}" data-tab="${k}">`+
+    `${lab}<span class="mt-cnt">${cnt(k)}</span></button>`).join('');
+}
+
+function rowProgress(e){
+  /* прогресс показываем только там, где есть данные: полоса
+     «серия N из M» у «смотрю»/«отложено», тихая пометка у
+     «брошено». Данных нет (например, «буду смотреть») — не
+     показываем ничего: заглушки вроде «ещё не начинали»
+     только засоряют список. Когда появится источник времени
+     просмотра — сюда же добавим часы, той же логикой:
+     есть данные — показываем. */
+  if(e.manga){
+    if((e.st==='watching'||e.st==='onhold')&&e.of){
+      const pct=Math.min(100,Math.round((e.ep||0)/e.of*100));
+      return `<div class="mlr-prog"><div class="mlp-bar"><i style="width:${pct}%"></i></div>`+
+        `<span class="mlp-txt">Глава ${e.ep||0} из ${e.of}</span></div>`;
+    }
+    if(e.st==='dropped'&&e.of)return `<p class="mlr-note">глава ${e.ep||0} из ${e.of} — брошено</p>`;
+    return '';
+  }
+  if((e.st==='watching'||e.st==='onhold')&&e.of){
+    const pct=Math.min(100,Math.round((e.ep||0)/e.of*100));
+    return `<div class="mlr-prog"><div class="mlp-bar"><i style="width:${pct}%"></i></div>`+
+      `<span class="mlp-txt">Серия ${e.ep||0} из ${e.of}</span></div>`;
+  }
+  if(e.st==='dropped'&&e.of)return `<p class="mlr-note">серия ${e.ep||0} из ${e.of} — брошено</p>`;
+  return '';
+}
+
+function renderList(){
+  const rows=mlFiltered();
+  const tabLab=(ML_TABS.find(x=>x[0]===mlState.tab)||[,''])[1];
+  $('#mlShown').textContent=mlState.tab==='all'
+    ?`${rows.length} ${pluralT(rows.length)}`
+    :mlState.tab==='colls'
+    ?`${tabLab} · ${rows.length} ${pluralC(rows.length)}`
+    :`${tabLab} · ${rows.length} ${pluralT(rows.length)}`;
+  if(!rows.length){
+    const mgEmpty=mlState.tab==='manga';
+    const clEmpty=mlState.tab==='colls';
+    $('#mlList').innerHTML=`<div class="ml-empty">`+
+      `<h3>Здесь пока пусто</h3>`+
+      `<p>${mgEmpty
+        ?'Вы ещё не отметили ни одной манги. Ставьте статусы «Читаю», «Буду читать» и закладки в разделе «Манга» — всё появится здесь.'
+        :clEmpty
+        ?'Вы не сохранили ни одной подборки. Нажимайте «Сохранить» на понравившихся — они будут всегда под рукой здесь.'
+        :`В категории «${tabLab}» нет ни одного тайтла. Отмечайте тайтлы в каталоге и на страницах — они появятся здесь.`}</p>`+
+      `<a class="btn btn-ghost" href="${mgEmpty?'/manga/':clEmpty?'/collections/':'/catalog/'}">${mgEmpty?'Открыть раздел «Манга»':clEmpty?'Смотреть подборки':'Найти, что смотреть'}</a></div>`;
+    return;
+  }
+  $('#mlList').innerHTML=rows.map(({e,t,kind})=>{
+    if(kind==='coll'){
+      const n=(t.titles||[]).length;
+      const cells=Array.from({length:Math.max(1,Math.min(4,n))},(_,i)=>{
+        const p=mlCollPoster(t.titles[i]);
+        return p?`<img src="${p}" alt="" loading="lazy">`:'<span class="mlc-fill"></span>';
+      }).join('');
+      return `<article class="mlr" data-id="${e.id}" data-kind="coll" data-title="${t.title}" tabindex="0" role="button" aria-label="${t.title}, подборка">`+
+        `<span class="mlr-poster mlr-collage" data-n="${Math.max(1,Math.min(4,n))}">${cells}</span>`+
+        `<div class="mlr-main">`+
+        `<div class="mlr-top"><h3 class="mlr-title">${t.title}</h3></div>`+
+        `<p class="mlr-sub">${t.author} · ${n} ${pluralT(n)}</p>`+
+        `<p class="mlr-note">собрана ${fmtAdded(t.made)} · ${fmtKC(t.likes)} нравится</p>`+
+        `</div>`+
+        `<div class="mlr-side">`+
+        `<div class="mlr-info"><span class="mlr-added">сохранена ${fmtAdded(e.added)}</span></div>`+
+        `<div class="mlr-actions">`+
+        `<button class="mlr-btn mlr-fav is-on" aria-label="Убрать из сохранённых" aria-pressed="true">${I.bookmark}</button>`+
+        `</div></div></article>`;
+    }
+    const st=kind==='manga'?MG_ST[e.st]:STATUS[e.st];
+    return `<article class="mlr" data-id="${e.id}" data-kind="${kind}" data-title="${t.title}" tabindex="0" role="button" aria-label="${t.title}${st?', '+st:''}">`+
+      `<span class="mlr-poster"><img src="${t.poster}" alt="" loading="lazy"></span>`+
+      `<div class="mlr-main">`+
+      `<div class="mlr-top"><h3 class="mlr-title">${t.title}</h3>`+
+      (st?`<span class="status-chip status-chip--${e.st}"><span class="sc-dot"></span><span class="sc-t">${st}</span></span>`:'')+`</div>`+
+      `<p class="mlr-sub">${t.year} · ${t.type}${kind==='manga'?' · '+t.chapters+' '+mgPluralCh(t.chapters):''}</p>`+
+      rowProgress(e)+
+      `<p class="mlr-genres" title="${t.genres.join(' · ')}">${t.genres.join(' · ')}</p></div>`+
+      `<div class="mlr-side">`+
+      `<div class="mlr-info">${e.score?`<span class="ml-score">${I.star}<b>${e.score}</b><small>/10</small></span>`:''}`+
+      `<span class="mlr-added">в списке с ${fmtAdded(e.added)}</span></div>`+
+      `<div class="mlr-actions">`+
+      `<button class="mlr-btn mlr-fav${e.fav?' is-on':''}" aria-label="${e.fav?'Убрать из избранного':'Добавить в избранное'}" aria-pressed="${!!e.fav}">${I.bookmark}</button>`+
+      `<button class="mlr-btn mlr-menu" aria-label="Действия с тайтлом" aria-haspopup="menu">${I.dots}</button>`+
+      `</div></div></article>`;
+  }).join('');
+}
+
+/* статистика в голове: тайтлы, эпизоды и приблизительные часы —
+   всё считается из данных, а не пишется руками. Средней оценки
+   здесь нет: число о коллекции говорит больше, чем спорное
+   «среднее по оценкам» (оценка 6 у брошенного и 10 у любимого
+   фильма смешиваются в бессмыслицу). */
+function renderStats(){
+  const rows=mlRows();
+  const mRows=mlMangaRows();
+  const eps=rows.reduce((a,{e})=>a+(e.ep||0),0);
+  const mins=rows.reduce((a,{e,t})=>{
+    const per=t.type==='Фильм'?110:(t.type==='Аниме'?24:50);   /* хронометраж на глаз, для макета */
+    return a+(e.ep||0)*per;
+  },0);
+  const cRows=mlCollRows();
+  const total=MYLIST.length+mRows.length;
+  const mCh=mRows.reduce((a,{e})=>a+(e.ep||0),0);
+  $('#mlStats').textContent=`${total} ${pluralT(total)} · ${eps} эпизодов ≈ ${Math.round(mins/60)} ч${mCh?` · ${mCh} ${mgPluralCh(mCh)}`:''}${cRows.length?` · ${cRows.length} ${pluralC(cRows.length)}`:''}`;
+}
+
+function renderMyList(){renderTabs();renderList();renderStats();}
+
+/* ---------- вкладки и сортировка ---------- */
+$('#mlTabs').addEventListener('click',e=>{
+  const b=e.target.closest('.mt-pill');
+  if(!b||b.dataset.tab===mlState.tab)return;
+  mlState.tab=b.dataset.tab;
+  renderTabs();
+  renderList();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+/* ---------- сортировка: панель как у фильтров каталога ----------
+   Кнопка — «призрак» без контуров (копия .ct-btn каталога),
+   панель — та же «стекляшка» (.fdd): fixed, позицию считает JS
+   от кнопки, флип вверх, если не влезает. Закрытие — клик мимо,
+   скролл и Escape; выбранный пункт отмечен галочкой. */
+const MLS={open:false};
+const mlsBtn=$('#mlSortBtn'),mlsPop=$('#mlSortPop');
+function renderSortCur(){
+  $('#mlSortCur').textContent=(ML_SORT_OPTS.find(o=>o[0]===mlState.sort)||[,''])[1];
+}
+function renderSortPop(){
+  mlsPop.innerHTML=`<p class="sm-head">Сортировка</p>`+   /* тот же заголовок, что у панелей каталога */
+    ML_SORT_OPTS.map(([k,lab])=>
+    `<button class="sm-item${k===mlState.sort?' is-cur':''}" data-sort="${k}" role="menuitem">`+
+    `<span class="sm-label">${lab}</span>`+
+    (k===mlState.sort?I.checkSm:'')+`</button>`).join('');
+  renderSortCur();
+}
+function openSortPop(){
+  if(MLS.open)return;
+  MLS.open=true;
+  renderSortPop();
+  mlsPop.classList.remove('hidden');
+  mlsBtn.classList.add('is-open');
+  mlsBtn.setAttribute('aria-expanded','true');
+  /* та же геометрия, что у выпадающих панелей каталога: по левому
+     краю кнопки, ниже на 10px; не влезает — раскрывается вверх;
+     на узких экранах не выходит за края */
+  const r=mlsBtn.getBoundingClientRect();
+  const w=mlsPop.offsetWidth,h=mlsPop.offsetHeight;
+  let x=Math.max(10,Math.min(r.left,innerWidth-w-10));
+  let y=r.bottom+10;
+  if(y+h>innerHeight-10)y=Math.max(10,r.top-h-10);
+  mlsPop.style.left=Math.round(x)+'px';
+  mlsPop.style.top=Math.round(y)+'px';
+}
+function closeSortPop(){
+  if(!MLS.open)return;
+  MLS.open=false;
+  mlsPop.classList.add('hidden');
+  mlsBtn.classList.remove('is-open');
+  mlsBtn.setAttribute('aria-expanded','false');
+}
+mlsBtn.addEventListener('click',()=>MLS.open?closeSortPop():openSortPop());
+mlsPop.addEventListener('click',e=>{
+  const it=e.target.closest('.sm-item');
+  if(!it)return;
+  mlState.sort=it.dataset.sort;
+  closeSortPop();
+  renderSortCur();   /* подпись на кнопке — сразу, не при следующем открытии */
+  renderList();
+});
+document.addEventListener('pointerdown',e=>{
+  if(!MLS.open)return;
+  if(e.target.closest('.ml-sortwrap'))return;
+  closeSortPop();
+},true);
+addEventListener('keydown',e=>{if(e.key==='Escape')closeSortPop();});
+addEventListener('scroll',()=>closeSortPop(),{passive:true});
+renderSortPop();
+
+/* ---------- строки: клик и клавиатура — как карточки каталога ---------- */
+const mlOpenTitle=row=>{
+  if(row.dataset.kind==='coll'){location.href='/collections/?c='+encodeURIComponent(row.dataset.id);return;}
+  if(row.dataset.kind==='manga'){location.href='/manga/?m='+row.dataset.id;return;}
+  if(row.dataset.id==='aot'){location.href='/title/';return;}
+  toast('Страница тайтла — в разработке (демо-макет)');
+};
+$('#mlList').addEventListener('click',e=>{
+  if(e.target.closest('button'))return;
+  const row=e.target.closest('.mlr');
+  if(row)mlOpenTitle(row);
+});
+$('#mlList').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const row=e.target.closest('.mlr');
+  if(!row||e.target.closest('button'))return;
+  e.preventDefault();
+  mlOpenTitle(row);
+});
+
+/* ---------- избранное — прямо в строке ---------- */
+$('#mlList').addEventListener('click',e=>{
+  const fav=e.target.closest('.mlr-fav');
+  if(!fav)return;
+  const rowEl=fav.closest('.mlr');
+  if(rowEl.dataset.kind==='coll'){
+    /* подборка: закладка в строке снимает сохранение */
+    csRemove(rowEl.dataset.id);
+    toast('Подборка убрана из «Моего списка»');
+    renderTabs();renderList();
+    return;
+  }
+  if(rowEl.dataset.kind==='manga'){
+    /* закладка манги — пишем в хранилище раздела «Манга» */
+    const id=rowEl.dataset.id;
+    MG.fav[id]=!MG.fav[id];
+    if(!MG.fav[id]){delete MG.fav[id];if(!MG.status[id])delete MG.added[id];}
+    else if(!MG.status[id])MG.added[id]=MG.added[id]||mgToday();
+    mgStoreSave();
+    fav.classList.toggle('is-on',!!MG.fav[id]);
+    fav.setAttribute('aria-pressed',String(!!MG.fav[id]));
+    toast(MG.fav[id]?'Добавлено в избранное':'Убрано из избранного');
+    if(mlState.tab==='fav'){renderTabs();renderList();}
+    return;
+  }
+  const entry=MYLIST.find(x=>x.id===rowEl.dataset.id);
+  if(!entry)return;
+  entry.fav=!entry.fav;
+  fav.classList.toggle('is-on',entry.fav);
+  fav.setAttribute('aria-pressed',String(!!entry.fav));
+  toast(entry.fav?'Добавлено в избранное':'Убрано из избранного');
+  if(mlState.tab==='fav'){renderTabs();renderList();}   /* в «Избранном» строка уходит сразу */
+});
+
+/* ---------- меню строки «⋮»: статус, избранное, удаление ----------
+   Дисциплина как у статусного меню каталога: открывается у кнопки,
+   закрывается кликом мимо и на скролле; элементы .sm-* — общие. */
+const MLM={open:false,entry:null,trigger:null};
+const mlmEl=$('#mlMenu');
+const ML_DOT={watching:'var(--ok)',planned:'var(--info)',watched:'rgba(255,255,255,.75)',onhold:'var(--warn)',dropped:'var(--bad)'};
+function buildMlItems(e){
+  const items=e.manga
+    ?[['watching','Читаю'],['planned','Буду читать'],['watched','Прочитано'],['onhold','Отложено'],['dropped','Бросил']]
+    :[['watching','Смотрю'],['planned','Буду смотреть'],['watched','Просмотрено'],['onhold','Отложено'],['dropped','Брошено']];
+  let html=`<p class="sm-head">${e.manga?'Состояние манги':'Состояние тайтла'}</p>`;
+  html+=items.map(([k,label])=>
+    `<button class="sm-item${e.st===k?' is-cur':''}" data-mst="${k}" role="menuitem">`+
+    `<span class="sm-dot" style="background:${ML_DOT[k]}"></span>`+
+    `<span class="sm-label">${label}</span>`+
+    (e.st===k?I.checkSm:'')+`</button>`).join('');
+  html+=`<div class="sm-sep"></div>`+
+    `<button class="sm-item" data-mfav="1" role="menuitem">`+
+    `<span class="mlm-ic">${I.bookmark}</span><span class="sm-label">${e.fav?'Убрать из избранного':'В избранное'}</span></button>`+
+    `<button class="sm-item sm-item--clear" data-mrm="1" role="menuitem">`+
+    `<span class="sm-x">${I.xSm}</span><span class="sm-label">Убрать из списка</span></button>`;
+  return html;
+}
+function openRowMenu(btn){
+  const row=btn.closest('.mlr');
+  const entry=row.dataset.kind==='manga'
+    ?(mlMangaRows().find(r=>r.e.id===row.dataset.id)||{}).e
+    :MYLIST.find(x=>x.id===row.dataset.id);
+  if(!entry)return;
+  MLM.open=true;MLM.entry=entry;MLM.trigger=btn;
+  mlmEl.innerHTML=buildMlItems(entry);
+  mlmEl.classList.remove('hidden');
+  const r=btn.getBoundingClientRect();
+  const w=mlmEl.offsetWidth,h=mlmEl.offsetHeight;
+  let x=r.left+r.width/2-w/2;
+  x=Math.max(10,Math.min(x,innerWidth-w-10));
+  let y=r.top-h-8;                           /* предпочитаем открыть над кнопкой */
+  if(y<10)y=Math.min(r.bottom+8,innerHeight-h-10);
+  mlmEl.style.left=Math.round(x)+'px';
+  mlmEl.style.top=Math.round(y)+'px';
+}
+function closeRowMenu(){
+  if(!MLM.open)return;
+  mlmEl.classList.add('hidden');mlmEl.innerHTML='';
+  MLM.open=false;MLM.entry=null;MLM.trigger=null;
+}
+$('#mlList').addEventListener('click',e=>{
+  const btn=e.target.closest('.mlr-menu');
+  if(!btn)return;
+  if(MLM.open){closeRowMenu();return;}
+  openRowMenu(btn);
+});
+mlmEl.addEventListener('click',e=>{
+  const it=e.target.closest('.sm-item');
+  if(!it||!MLM.entry)return;
+  const entry=MLM.entry;
+  if(entry.manga){
+    /* манга: пишем в общее хранилище раздела «Манга» */
+    if(it.dataset.mst){
+      if(!MG.status[entry.id])MG.added[entry.id]=MG.added[entry.id]||mgToday();
+      MG.status[entry.id]=it.dataset.mst;
+      toast('Перемещено в «'+MG_ST[it.dataset.mst]+'»');
+    }else if(it.dataset.mfav){
+      MG.fav[entry.id]=!MG.fav[entry.id];
+      if(!MG.fav[entry.id]){delete MG.fav[entry.id];if(!MG.status[entry.id])delete MG.added[entry.id];}
+      toast(MG.fav[entry.id]?'Добавлено в избранное':'Убрано из избранного');
+    }else if(it.dataset.mrm){
+      delete MG.status[entry.id];
+      delete MG.fav[entry.id];
+      delete MG.added[entry.id];
+      toast('Убрано из списка');
+    }
+    mgStoreSave();
+    closeRowMenu();
+    renderMyList();
+    return;
+  }
+  if(it.dataset.mst){
+    entry.st=it.dataset.mst;
+    if(entry.st==='watched')entry.ep=entry.of||entry.ep;   /* досматриваем до конца */
+    toast('Перемещено в «'+STATUS[entry.st]+'»');
+  }else if(it.dataset.mfav){
+    entry.fav=!entry.fav;
+    toast(entry.fav?'Добавлено в избранное':'Убрано из избранного');
+  }else if(it.dataset.mrm){
+    const i=MYLIST.indexOf(entry);
+    if(i>-1)MYLIST.splice(i,1);
+    toast('Убрано из списка');
+  }
+  closeRowMenu();
+  renderMyList();
+});
+document.addEventListener('pointerdown',e=>{
+  if(!MLM.open)return;
+  if(mlmEl.contains(e.target))return;
+  if(MLM.trigger&&MLM.trigger.contains(e.target))return;
+  closeRowMenu();
+},true);
+/* дисциплина поповеров: скролл страницы закрывает меню */
+addEventListener('scroll',()=>closeRowMenu(),{passive:true});
+
+/* ---------- вкладки: липкая строка-хром ---------- */
+const mlBar=$('#mlTabsBar');
+const mlStuck=()=>mlBar.classList.toggle('is-stuck',
+  mlBar.getBoundingClientRect().top<=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h'))+1);
+addEventListener('scroll',mlStuck,{passive:true});
+addEventListener('resize',mlStuck);
+mlStuck();
+
+/* растворение у края прокручиваемых вкладок (узкие экраны) */
+const mlTabsEl=$('#mlTabs');
+const mlFade=()=>mlTabsEl.classList.toggle('at-end',mlTabsEl.scrollLeft+mlTabsEl.clientWidth>=mlTabsEl.scrollWidth-4);
+mlTabsEl.addEventListener('scroll',mlFade,{passive:true});
+addEventListener('resize',mlFade);
+mlFade();
+
+/* ---------- гостевое состояние: вход и регистрация ---------- */
+$('#mlgLogin').addEventListener('click',()=>openAuth('login'));
+$('#mlgReg').addEventListener('click',()=>openAuth('register'));
+
+/* ---------- гость / пользователь ---------- */
+function setUser(mode){
+  const guest=mode==='guest';
+  closeStatusMenu();
+  document.body.classList.toggle('is-guest',guest);
+  $('#userArea').style.display=guest?'none':'';
+  $('#userDivider').style.display=guest?'none':'';
+  $('#avatarWrap').style.display=guest?'none':'';
+  $('#loginBtn').classList.toggle('hidden',!guest);
+  /* «Мой список» — страница аккаунта: гостю показываем приветствие */
+  closeRowMenu();
+  $('#mlMain').classList.toggle('hidden',guest);
+  $('#mlGuest').classList.toggle('hidden',!guest);
+  $$('#userSeg button').forEach(b=>b.classList.toggle('is-on',b.dataset.user===mode));
+}
+
+</script>
+<script src="/assets/kuvion-auth.js"></script>
+<script>
+"use strict";
+/* ---------- подтверждение выхода ---------- */
+$('#logoutBtn').addEventListener('click',()=>{
+  hidePreview();
+  closeAllDd();
+  $('#logoutModal').classList.remove('hidden');
+});
+$('#logoutCancel').addEventListener('click',()=>$('#logoutModal').classList.add('hidden'));
+$('#logoutConfirm').addEventListener('click',()=>{
+  $('#logoutModal').classList.add('hidden');
+  setUser('guest');
+  toast('Вы вышли из аккаунта');
+});
+safeOverlayClose($('#logoutModal'),()=>$('#logoutModal').classList.add('hidden'));
+
+/* ---------- инициализация ---------- */
+renderMyList();
+setUser('user');
+
+/* навигация по макетам: главная и меню */
+$('#mobHomeBtn').addEventListener('click',()=>{location.href='/';});
+$('#mobMenuBtn').addEventListener('click',()=>openDrawer());
+
+/* шапка: фон при скролле */
+window.addEventListener('scroll',()=>$('#appHeader').classList.toggle('scrolled',scrollY>40),{passive:true});
+
+/* дропдауны: закрытие по клику вне — с защитой от выделения текста */
+$('#bellBtn').addEventListener('click',e=>{e.stopPropagation();toggleDd('bellDd',e.currentTarget);});
+$('#avatarBtn').addEventListener('click',e=>{e.stopPropagation();toggleDd('acctDd',e.currentTarget);});
+safeOutsideClose($('#bellDd'),[$('#bellBtn')],closeAllDd);
+safeOutsideClose($('#acctDd'),[$('#avatarBtn')],closeAllDd);
+
+/* ---------- уведомления: живая лента v2 ----------
+   Было (v1): движок с шестью демо-событиями и кнопкой «Показать
+   ещё» в дропдауне. Стало: демо-набор охватывает два месяца
+   (группы «Сегодня / Вчера / На этой неделе / Ранее»), а внизу
+   дропдауна вместо «Показать ещё» — строка «Все уведомления · N»,
+   открывающая отдельную страницу /notifications/ (тот же
+   паттерн, что у «Все результаты» в поиске). Состояние
+   «прочитано» — по-прежнему честное, в localStorage
+   (kuvion_notifs_v1), и общее для дропдауна и страницы.
+   Движок один на все страницы; после каждого рендера он зовёт
+   хук nfsAfterRender — его определяет только страница
+   уведомлений, остальные страницы не замечают. */
+const NT_KEY='kuvion_notifs_v1';
+const NT_IC={
+  ep:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5.5v13a1 1 0 0 0 1.53.85l10.2-6.5a1 1 0 0 0 0-1.7L8.53 4.65A1 1 0 0 0 7 5.5Z"/></svg>',
+  ch:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+  reply:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>',
+  like:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',
+  plus:'<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9Z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9Z"/></svg>',
+  sys:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+};
+/* миниатюры серий — те же постеры, что в каталоге */
+const NT_THUMB={
+  aot:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9a35191d1d09.jpg',
+  jjk:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/235414089ff8.jpg',
+  tlou:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/078136c3e9d7.jpg',
+  frieren:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/c458046a4f08.jpg',
+};
+
+/* демо-набор: ts — сколько часов назад от якоря «сейчас»
+   (5 ноября 2026, как у комментариев); read:1 — прочитанные
+   при первом визите. Непрочитанных в свежем профиле три:
+   серия, глава и Kuvion+; у серий — постер-миниатюра, у глав
+   и служебных событий — цветная иконка */
+const NT_DEMO=[
+  {id:'n-ep-aot19',k:'ep',ts:2,
+   title:'Вышла новая серия',text:'«Атака титанов» — 4 сезон, серия 19',
+   thumb:NT_THUMB.aot,href:'/title/'},
+  {id:'n-ch-csm',k:'ch',ts:5,
+   title:'Вышла новая глава',text:'«Человек-бензопила» — глава 209',
+   href:'/manga/?m=csm'},
+  {id:'n-ep-jjk',k:'ep',ts:9,read:1,
+   title:'Вышла новая серия',text:'«Магическая битва» — 2 сезон, серия 11',
+   thumb:NT_THUMB.jjk,href:'/catalog/'},
+  {id:'n-sys-plus',k:'plus',ts:26,
+   title:'Kuvion+',text:'Ранний доступ к главам манги — на три дня раньше бесплатного релиза',
+   href:'/plus/'},
+  {id:'n-ep-tlou',k:'ep',ts:30,read:1,
+   title:'Вышла новая серия',text:'«Последние из нас» — 2 сезон, серия 3',
+   thumb:NT_THUMB.tlou,href:'/catalog/'},
+  {id:'n-ep-aot18',k:'ep',ts:50,read:1,
+   title:'Вышла новая серия',text:'«Атака титанов» — 4 сезон, серия 18',
+   thumb:NT_THUMB.aot,href:'/title/'},
+  {id:'n-sys-manga',k:'sys',ts:74,read:1,
+   title:'Манга уже на Kuvion',text:'Читайте любимые тайтлы в новой читалке — манга, манхва и маньхуа',
+   href:'/manga/'},
+  {id:'n-ch-op',k:'ch',ts:96,read:1,
+   title:'Вышла новая глава',text:'«Ван Пис» — глава 1129',
+   href:'/manga/?m=onepiece'},
+  {id:'n-ch-csm208',k:'ch',ts:120,read:1,
+   title:'Вышла новая глава',text:'«Человек-бензопила» — глава 208',
+   href:'/manga/?m=csm'},
+  {id:'n-sys-dune',k:'sys',ts:880,read:1,
+   title:'Новый тайтл в каталоге',text:'«Дюна: Часть вторая» — уже доступна к просмотру',
+   href:'/catalog/'},
+  {id:'n-ep-frieren',k:'ep',ts:900,read:1,
+   title:'Вышла новая серия',text:'«Провожающая в последний путь Фрирен» — 2 сезон, серия 12',
+   thumb:NT_THUMB.frieren,href:'/catalog/'},
+  {id:'n-sys-hi',k:'sys',ts:1400,read:1,
+   title:'Добро пожаловать в Kuvion',text:'Соберите первый список и оцените просмотренное — так заработают рекомендации',
+   href:'/profile/'},
+];
+
+/* живые события: ответ и лайк на самый свежий свой комментарий
+   (появляются, только если вы уже писали на странице тайтла) */
+function ntMine(){
+  let arr=null;
+  try{arr=JSON.parse(localStorage.getItem('kuvion_tcomments_v1')||'null')}catch(e){}
+  if(!Array.isArray(arr)||!arr.length)return [];
+  /* цель — самый свежий корневой комментарий: на ответ никто
+     не «отвечает» (один уровень вложенности), уведомление о
+     ответе на ответ не соберётся */
+  const m=arr.find(x=>!x.parent)||arr[0];
+  const ntEsc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const cut=ntEsc(String(m.text||'').replace(/\s+/g,' ').trim().slice(0,54));
+  return [
+    {id:'n-reply-'+m.id,k:'reply',ts:3,
+     title:'Новый ответ',text:'kira ответил(а) на ваш комментарий «'+cut+'…»',
+     href:'/title/?cmt='+encodeURIComponent(m.id)},
+    {id:'n-like-'+m.id,k:'like',ts:8,
+     title:'Ваш комментарий оценили',text:'vega и ещё 3 человека поставили лайк комментарию «'+cut+'…»',
+     href:'/title/?cmt='+encodeURIComponent(m.id)},
+  ];
+}
+
+/* состояние: набор прочитанных id */
+let NT_READ=new Set(),NT_TOP=5;
+try{
+  const s=JSON.parse(localStorage.getItem(NT_KEY)||'null');
+  if(s&&Array.isArray(s.read))s.read.forEach(id=>NT_READ.add(id));
+}catch(e){}
+function ntSave(){try{localStorage.setItem(NT_KEY,JSON.stringify({read:[...NT_READ]}))}catch(e){}}
+function ntList(){return ntMine().concat(NT_DEMO).sort((a,b)=>a.ts-b.ts)}
+
+function ntWhen(h){
+  const pl=(n,a,b,c)=>{const m=n%10,k=n%100;return m===1&&k!==11?a:(m>=2&&m<=4&&(k<10||k>=20)?b:c)};
+  if(h<=0)return 'только что';
+  if(h<24)return h+' '+pl(h,'час','часа','часов')+' назад';
+  const d=Math.round(h/24);
+  if(d===1)return 'вчера';
+  if(d<7)return d+' '+pl(d,'день','дня','дней')+' назад';
+  if(d<31){const w=Math.round(d/7);return w===1?'неделю назад':w+' '+pl(w,'неделю','недели','недель')+' назад'}
+  const mo=Math.round(d/30);
+  return mo===1?'месяц назад':mo+' '+pl(mo,'месяц','месяца','месяцев')+' назад';
+}
+function ntItemHTML(n){
+  const read=!!n.read||NT_READ.has(n.id);
+  const media=n.thumb
+    ?`<img class="n-thumb" src="${n.thumb}" alt="" loading="lazy">`
+    :`<span class="n-icon" aria-hidden="true">${NT_IC[n.k]}</span>`;
+  return `<a class="notif notif--${n.k}${read?' is-read':''}" href="${n.href}" data-id="${n.id}">`+
+    media+
+    `<div style="min-width:0">`+
+    `<p class="n-title">${n.title}</p>`+
+    `<p class="n-text">${n.text}</p>`+
+    `<p class="n-time">${ntWhen(n.ts)}</p></div>`+
+    (read?'':'<span class="n-dot"></span>')+
+    `</a>`;
+}
+function ntRender(){
+  const list=ntList();
+  $('#bellList').innerHTML=list.slice(0,NT_TOP).map(ntItemHTML).join('');
+  const unread=list.filter(n=>!n.read&&!NT_READ.has(n.id)).length;
+  const badge=$('#bellBadge');
+  if(unread){badge.textContent=unread;badge.classList.remove('is-hidden')}
+  else badge.classList.add('is-hidden');
+  /* «Все уведомления · N»: полная лента живёт на отдельной
+     странице; при короткой ленте строка не нужна */
+  const all=$('#bellAll');
+  if(all){
+    all.style.display=list.length>NT_TOP?'':'none';
+    const n=$('#bellAllN');
+    if(n)n.textContent=list.length;
+  }
+  /* страница уведомлений (если мы на ней) перерисовывается следом */
+  if(typeof nfsAfterRender==='function')nfsAfterRender();
+}
+
+/* «Отметить прочитанными»: помним выбор между визитами */
+$('#bellClear').addEventListener('click',()=>{
+  ntList().forEach(n=>NT_READ.add(n.id));
+  ntSave();ntRender();
+  toast('Уведомления отмечены прочитанными');
+});
+/* клик по уведомлению: помечаем прочитанным и уходим по ссылке */
+$('#bellList').addEventListener('click',e=>{
+  const a=e.target.closest('.notif');
+  if(!a)return;
+  NT_READ.add(a.dataset.id);
+  ntSave();
+});
+ntRender();
+
+/* вход: все кнопки-триггеры */
+$('#loginBtn').addEventListener('click',()=>openAuth('login'));
+$('#drawerLogin').addEventListener('click',()=>{closeDrawer();openAuth('login');});
+
+/* бургер */
+const openDrawer=()=>{hidePreview();$('#drawer').classList.add('open');$('#drawerOverlay').classList.remove('hidden');};
+const closeDrawer=()=>{$('#drawer').classList.remove('open');$('#drawerOverlay').classList.add('hidden');};
+$('#btnBurger').addEventListener('click',openDrawer);
+$('#drawerClose').addEventListener('click',closeDrawer);
+safeOverlayClose($('#drawerOverlay'),closeDrawer);
+
+
+/* горячие клавиши */
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openSearch();return;}
+  if(e.key!=='Escape')return;
+  if(!$('#searchOverlay').classList.contains('hidden')){closeSearch();return;}
+  hidePreview();
+  closeStatusMenu();
+  closeAllDd();
+  closeAuth();
+  $('#logoutModal').classList.add('hidden');
+  closeDrawer();
+});
+
+/* заглушки и действия на карточках — делегирование */
+document.addEventListener('click',e=>{
+  const dots=e.target.closest('.card-dots');
+  if(dots){
+    e.preventDefault();e.stopPropagation();
+    if(SM.open){closeStatusMenu();return;}
+    const card=dots.closest('.poster-card');
+    if(card)openStatusMenu(dots,card.dataset.id,card);
+    return;
+  }
+  const card=e.target.closest('.poster-card,.cw-card');
+  if(card){
+    hidePreview();
+    /* для «Атаки титанов» страница-макет уже готова — ведём на неё */
+    if(card.dataset.id==='aot'){location.href='/title/';return;}
+    toast('Страница «'+card.dataset.title+'» — в разработке');
+    return;
+  }
+  const sr=e.target.closest('.sr-item');
+  if(sr){
+    sovSaveRecent(sovInput.value);
+    closeSearch();closeAllDd();
+    if(sr.dataset.local==='1'){showManga(sr.dataset.srid);return;}
+    if(sr.dataset.href){location.href=sr.dataset.href;return;}
+    toast('Страница «'+sr.dataset.title+'» — в разработке');return;
+  }
+  const stub=e.target.closest('[data-stub]');
+  if(stub){
+    e.preventDefault();
+    if(stub.closest('.dd'))closeAllDd();
+    if(stub.closest('#drawer'))closeDrawer();
+    /* навигация между готовыми макетами — по-настоящему */
+    if(stub.dataset.stub==='Каталог'){location.href='/catalog/';return;}
+    if(stub.dataset.stub==='Аниме'){location.href='/catalog/?type=anime';return;}
+    if(stub.dataset.stub==='Случайное'){location.href='/catalog/?random=1';return;}
+    if(stub.dataset.stub==='Главная'){location.href='/';return;}
+    if(stub.dataset.stub==='Расписание'){location.href='/schedule/';return;}
+    toast('«'+stub.dataset.stub+'» — в разработке');
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const card=e.target.closest?.('.poster-card,.cw-card');
+  if(card){toast('Страница «'+card.dataset.title+'» — в разработке');}
+});
+</script>
+<script>
+/* ---- reveal рядов: секции ниже первого экрана мягко всплывают при
+   попадании в экран (один раз); видимое при загрузке не трогаем;
+   после показа классы снимаются — финальная разметка чистая;
+   при prefers-reduced-motion и без JS всё видно как раньше ---- */
+(function(){
+  try{
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    setTimeout(function(){
+      var SEL='.ml-head,#mlTabsBar,#mlMain';
+      var els=[].slice.call(document.querySelectorAll(SEL)).filter(function(el){
+        var s=getComputedStyle(el);
+        return s.display!=='none'&&s.visibility!=='hidden'&&el.getBoundingClientRect().height>0;
+      });
+      if(!els.length||!('IntersectionObserver' in window))return;
+      var H=window.innerHeight||document.documentElement.clientHeight;
+      var marked=els.filter(function(el){
+        return el.getBoundingClientRect().top>=H;
+      });
+      if(!marked.length)return;
+      var io=new IntersectionObserver(function(es){
+        es.forEach(function(e){
+          if(!e.isIntersecting)return;
+          var el=e.target;
+          io.unobserve(el);
+          el.classList.add('rv-in');
+          setTimeout(function(){el.classList.remove('rv-hide','rv-in');},750);
+        });
+      },{rootMargin:'0px 0px -10% 0px',threshold:0});
+      marked.forEach(function(el){el.classList.add('rv-hide');io.observe(el);});
+    },60);
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
