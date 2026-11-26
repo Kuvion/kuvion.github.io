@@ -1717,6 +1717,8 @@ if(__cs==='s'||__cs==='l'){
 </nav>
 
 <!-- ================= ЛАБОРАТОРИЯ ================= -->
+<script src="/assets/kuvion-data.js"></script>
+
 <script>
 'use strict';
 /* ================================================================
@@ -1744,66 +1746,11 @@ const I={
 };
 
 /* ---------- тестовые данные ---------- */
-const STATUS={watching:'Смотрю',planned:'Буду смотреть',watched:'Просмотрено',onhold:'Отложено',dropped:'Брошено'};
-const T=(id,title,year,type,genres,rating,poster,extra={})=>({id,title,year,type,genres,rating,poster:CDN+poster,...extra});
-
-const TITLES={
-  interstellar:T('interstellar','Интерстеллар',2014,'Фильм',['Фантастика','Драма'],8.6,'85bb955e60e9.jpg',{
-    wide:CDN+'1290a963615d.jpg',wide2:CDN+'ec06a3bbfb4e.jpg',wide3:CDN+'2bdc37cad2cd.jpg',status:'watched',
-    desc:'Команда исследователей отправляется через червоточину в космосе, чтобы найти новый дом для человечества.'}),
-  dune2:T('dune2','Дюна: Часть вторая',2024,'Фильм',['Фантастика','Приключения'],8.5,'d4500e7dac80.jpg',{
-    wide:CDN+'12422b422cee.jpg',wide2:CDN+'c7f684d95f5b.jpeg',wide3:CDN+'4cb1149f3eaf.jpg',wide4:CDN+'86e0bf71e647.jpg',status:'planned',isNew:true,
-    desc:'Пол Атрейдес объединяется с Чани и фрименами в войне против дома Харконненов, пытаясь предотвратить ужасное будущее, которое видит только он.'}),
-  br2049:T('br2049','Бегущий по лезвию 2049',2017,'Фильм',['Фантастика','Нуар'],8.0,'71b996fefac1.jpg',{
-    wide:CDN+'9cc1a8a277d3.png',wide2:CDN+'de002094f2aa.jpg',wide3:CDN+'1662efa80442.jpg',
-    desc:'Служащий Лос-Анджелеса К, новый блейд-раннер, раскрывает тайну, спрятанную десятилетиями, способную погрузить мир в хаос.'}),
-  oppenheimer:T('oppenheimer','Оппенгеймер',2023,'Фильм',['Драма','История'],8.3,'a1fd704339d9.jpg',{
-    wide:CDN+'9e0a5f93f220.jpg',isNew:true,
-    desc:'История жизни физика-теоретика Роберта Оппенгеймера, возглавившего разработку атомной бомбы.'}),
-  aot:T('aot','Атака титанов',2013,'Аниме',['Экшен','Драма'],9.0,'9a35191d1d09.jpg',{
-    wide:CDN+'7e53c74c6dda.jpg',wide2:CDN+'5b0f4111e774.jpg',status:'watching',
-    desc:'Человечество сражается за выживание за огромными стенами, защищающими от гигантских пожирателей людей — титанов.'}),
-  aotFinal:T('aotFinal','Атака титанов: Финальный сезон',2023,'Аниме',['Экшен','Драма'],9.1,'bbc4ed32da5c.jpg',{
-    wide:CDN+'be104465fb7f.jpg',isNew:true,
-    desc:'Последняя глава истории Эрена Йегера и битвы за судьбу человечества за стенами.'}),
-  jjk:T('jjk','Магическая битва',2020,'Аниме',['Экшен','Сёнэн'],8.6,'235414089ff8.jpg',{
-    wide:CDN+'ba2f5e6b7ab4.jpg',
-    desc:'Школьник Юдзи Итадори проглатывает проклятый палец и становится сосудом для древнего проклятия.'}),
-  onepiece:T('onepiece','Ван Пис',1999,'Аниме',['Приключения','Сёнэн'],9.0,'136bb118e1b5.jpg',{
-    wide:CDN+'556492005b92.jpg',
-    desc:'Мальчишка из резинки Люффи собирает команду пиратов и отправляется за легендарным сокровищем — Ван Пис.'}),
-  onepieceRed:T('onepieceRed','Ван Пис: Фильм Ред',2022,'Аниме',['Приключения','Экшен'],8.5,'6e4fc8a0fbe9.png',{
-    desc:'Люффи и его команда отправляются на музыкальный фестиваль, где встречают мировую звезду Уту.'}),
-  tlou:T('tlou','Последние из нас',2023,'Сериал',['Драма','Хоррор'],8.7,'078136c3e9d7.jpg',{
-    wide:CDN+'4cc4e52e05d7.jpeg',wide2:CDN+'20165b080b81.jpg',isNew:true,
-    desc:'Через двадцать лет после пандемии контрабандист Джоэл получает задание вывести из города 14-летнюю Элли.'}),
-  spiderverse:T('spiderverse','Человек-паук: Паутина вселенных',2023,'Мультфильм',['Экшен','Приключения'],8.6,'401cfa55ea89.jpg',{
-    wide:CDN+'5d05fbe9bf0c.jpeg',isNew:true,
-    desc:'Майлз Моралес отправляется в путешествие по мультивселенной, где встречает команду людей-пауков.'}),
-  arcane:T('arcane','Аркейн',2021,'Сериал',['Фэнтези','Драма'],9.0,'2023ce392d04.jpg',{
-    wide:CDN+'70d04bc79f91.jpg',
-    desc:'История двух сестёр, Вай и Джинкс, на фоне конфликта утопического Пилтовера и подземного Зауна.'}),
-  arcane2:T('arcane2','Аркейн: Сезон 2',2024,'Сериал',['Фэнтези','Драма'],9.2,'5379c8a0c07a.jpg',{
-    wide:CDN+'81d0d4679ff5.jpg',isNew:true,
-    desc:'Вай и Джинкс оказываются по разные стороны баррикад, когда Пилтовер и Заун стоят на грани войны.'}),
-};
-
-/* hero: теперь 5 слайдов */
-const HERO=[TITLES.dune2,TITLES.br2049,TITLES.interstellar,TITLES.aot,TITLES.tlou];
-const CONTINUE=[
-  {t:TITLES.aot,sub:'4 сезон · Серия 24',pct:78,left:'Осталось 9 мин'},
-  {t:TITLES.jjk,sub:'2 сезон · Серия 18',pct:45,left:'Осталось 22 мин'},
-  {t:TITLES.dune2,sub:'Фильм · 2024',pct:40,left:'Осталось 1 ч 39 мин',img:'wide2'},
-  {t:TITLES.tlou,sub:'1 сезон · Серия 5',pct:12,left:'Осталось 48 мин'},
-  {t:TITLES.interstellar,sub:'Фильм · 2014',pct:78,left:'Осталось 31 мин',img:'wide2'},
-  {t:TITLES.br2049,sub:'Фильм · 2017',pct:4,left:'Только начали',img:'wide2'},
-];
-const ROWS={
-  trend:[TITLES.interstellar,TITLES.dune2,TITLES.oppenheimer,TITLES.tlou,TITLES.spiderverse,TITLES.arcane,TITLES.aot,TITLES.jjk,TITLES.onepiece],
-  anime:[TITLES.aot,TITLES.aotFinal,TITLES.jjk,TITLES.onepiece,TITLES.onepieceRed],
-  new:[TITLES.dune2,TITLES.arcane2,TITLES.spiderverse,TITLES.oppenheimer,TITLES.tlou,TITLES.aotFinal],
-};
-
+/* данные страницы — из единого слоя kuvion-data (DATA-ENTRY).
+   Демо-данные правятся в scripts/kuvion-data/db.js, не здесь.
+   Боевой API: KuvionData.api.plus().then(данные => { … }) — см. KVUION-DATA-блок. */
+const KUV=KuvionData.page('plus');
+const STATUS=KUV.status,TITLES=KUV.titles,HERO=KUV.hero,CONTINUE=KUV.cont,ROWS=KUV.rows;
 /* ---------- тосты ---------- */
 function toast(msg){
   const el=document.createElement('div');

@@ -2150,6 +2150,8 @@ if(__cs==='s'||__cs==='l'){
   });
 }}catch(e){}
 </script>
+<script src="/assets/kuvion-data.js"></script>
+
 <script>
 /* ---------- ПОДБОРКИ: общие данные (Kuvion) ----------
    Подборка — публичная коллекция тайтлов: название, описание от
@@ -2161,94 +2163,12 @@ if(__cs==='s'||__cs==='l'){
    «Подборки», вкладка «Подборки» в профиле и поповер «В подборку»
    на странице тайтла: везде одно и то же состояние. В проде это
    запросы к бэкенду. */
-const COLL_KEY='kuvion_colls_v1';
+/* данные страницы — из единого слоя kuvion-data (DATA-ENTRY).
+   Демо-данные правятся в scripts/kuvion-data/db.js, не здесь.
+   Боевой API: KuvionData.api.colls().then(данные => { … }) — см. KVUION-DATA-блок. */
+const KVCL=KuvionData.page('colls');
+const COLL_KEY=KVCL.key,COLL_POSTERS=KVCL.posters,COLL_DEMO=KVCL.demo,COLL_SEED=KVCL.seed;
 
-/* постеры для коллажей: страница тайтла несёт урезанный набор
-   TITLES, поэтому обложки демо-подборок живут прямо в данных */
-const COLL_POSTERS={
-  tlou:'078136c3e9d7.jpg',
-  stranger:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d7aa7aa98ff8.jpg',
-  hotd:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/28853c314411.jpg',
-  squid:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d69134429911.jpg',
-  dark:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0d1c6d89dfa4.jpg',
-  chernobyl:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9eefa807d02a.jpg',
-  deathnote:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/dbae99da2de3.jpeg',
-  psychopass:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/139d2fea5700.jpg',
-  interstellar:'85bb955e60e9.jpg',
-  dune2:'d4500e7dac80.jpg',
-  br2049:'71b996fefac1.jpg',
-  martian:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9257150c70e5.jpg',
-  walle:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/a4c63836c432.jpg',
-  inception:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/f77c053f518d.jpeg',
-  aot:'9a35191d1d09.jpg',
-  fmab:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0b4034f752c6.jpg',
-  monster:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/bbf81394593e.jpg',
-  eva:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/18cd40b094d3.jpg',
-  fireflies:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/4ce765f0c314.jpg',
-  rezero:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/d3687f77d518.jpg',
-  matrix:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/55b87ebaa5b2.jpg',
-  darkknight:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/82a5f83fce15.jpg',
-  pulp:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b015d90fa0de.jpeg',
-  bebop:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/9f9b3348ec9e.jpg',
-  yourname:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/0b6a6b5e4164.jpeg',
-  spirited:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/1bea669ab3af.jpg',
-  howl:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/fab348fd8713.jpg',
-  mononoke:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/3ff66b83d9c0.jpg',
-  coco:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/e18e3257cac8.jpg',
-  severance:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/b22e1179a791.jpg',
-  breaking:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/895101998087.jpg',
-  oppenheimer:'a1fd704339d9.jpg',
-};
-
-/* демо-подборки других пользователей — только чтение; у каждой
-   есть просмотры (для строки метрик) */
-const COLL_DEMO=[
-  {id:'c-horror',name:'Хоррор, от которого не отвести глаз',
-   desc:'Не дешёвые скримеры, а медленное ощущение, что с миром что-то не так. Десять хорроров для ночного марафона — свет можно не выключать, всё равно не поможет.',
-   author:'kira',likes:341,views:5240,made:'2026-08-14',vis:'public',
-   titles:['tlou','stranger','hotd','squid','dark','chernobyl','deathnote','psychopass']},
-  {id:'c-space',name:'Космос: тишина и бесконечность',
-   desc:'От камерных драм на корабле до эпопей о судьбах цивилизаций. Смотреть в наушниках, не торопясь и желательно ночью.',
-   author:'vega',likes:287,views:3180,made:'2026-09-02',vis:'public',
-   titles:['interstellar','dune2','br2049','martian','walle','inception']},
-  {id:'c-punch',name:'Аниме, после которого нужно отойти',
-   desc:'Тайтлы, что бьют по голове и долго не отпускают: боль, смерть героев и вопросы без ответов. Не для фонового просмотра.',
-   author:'tsuki',likes:412,views:7940,made:'2026-07-19',vis:'public',
-   titles:['aot','fmab','monster','eva','deathnote','psychopass','fireflies','rezero']},
-  {id:'c-noir',name:'Неон, дождь и нуар',
-   desc:'Города, которые не спят, детективы с прошлым и синтвейв в кадре. Атмосфера важнее сюжета — и здесь она идеальная.',
-   author:'mirror',likes:198,views:2410,made:'2026-10-01',vis:'public',
-   titles:['br2049','matrix','darkknight','pulp','bebop','psychopass']},
-  {id:'c-cozy',name:'Тёплый вечер: кино для отдыха',
-   desc:'Без трагедий и концов света. Истории, после которых на душе спокойно, — как раз под плед и чашку чая.',
-   author:'yuki',likes:265,views:3870,made:'2026-09-25',vis:'public',
-   titles:['yourname','spirited','howl','mononoke','coco','walle']},
-  {id:'c-detective',name:'Детективы, где нельзя моргнуть',
-   desc:'Каждая деталь — улика. Загадки, которые честно раскрываются в конце, а не высасываются из пальца.',
-   author:'coldcase',likes:176,views:1960,made:'2026-10-11',vis:'public',
-   titles:['deathnote','monster','dark','severance','breaking','chernobyl']},
-];
-
-/* стартовые подборки danil — редактируемые, сеются при первом
-   визите и дальше живут в localStorage как собственные */
-const COLL_SEED=[
-  {id:'c-thrillers',name:'Психологические триллеры',
-   desc:'Мой рабочий список: истории, где напряжение держит не монстр, а человек и его решения. Дополняю по мере находок.',
-   author:'danil',user:true,likes:89,views:1240,made:'2026-10-20',vis:'public',
-   titles:['severance','dark','monster','psychopass','breaking','eva']},
-  {id:'c-ten',name:'Заслуженные десятки',
-   desc:'Всё, что я оценил на 10 из 10 за время на Kuvion. Список короткий не потому, что я жадный — просто планка высокая.',
-   author:'danil',user:true,likes:143,views:2380,made:'2026-06-30',vis:'public',
-   titles:['fmab','oppenheimer','interstellar','breaking','mononoke','aot']},
-  {id:'c-ghibli',name:'Мир Гибли',
-   desc:'Кино, в котором хочется жить: замки, духи и леса студии Ghibli. Пересматриваю, когда вокруг слишком шумно.',
-   author:'danil',user:true,likes:67,views:940,made:'2026-08-30',vis:'public',
-   titles:['howl','spirited','mononoke','fireflies']},
-  {id:'c-time',name:'Загадки времени',
-   desc:'Петли, парадоксы и истории, где время — главный герой. Смотреть внимательно: каждая деталь сработает в финале.',
-   author:'danil',user:true,likes:118,views:1670,made:'2026-09-21',vis:'public',
-   titles:['inception','dark','interstellar','yourname','matrix']},
-];
 
 function collLoad(){
   let list=null;
@@ -2274,9 +2194,7 @@ function collPoster(id){
   const p=COLL_POSTERS[id];
   if(!p)return null;
   return p.indexOf('http')===0?p:'https://z-cdn.chatglm.cn/image-search-mcp/images-ppt/'+p;
-}
-
-/* ---------- общие хелперы рендера ----------
+}/* ---------- общие хелперы рендера ----------
    Используются на странице «Подборки» и во вкладке «Подборки»
    профиля. TITLES берётся со страницы-хоста (обложка коллажа
    предпочитает постер из её датасета, иначе — из COLL_POSTERS). */
@@ -3229,125 +3147,16 @@ const I={
 };
 
 /* ---------- тестовые данные ---------- */
-const STATUS={watching:'Смотрю',planned:'Буду смотреть',watched:'Просмотрено',onhold:'Отложено',dropped:'Брошено'};
-const T=(id,title,year,type,genres,rating,poster,extra={})=>({id,title,year,type,genres,rating,poster:CDN+poster,...extra});
-
-const TITLES={
-  interstellar:T('interstellar','Интерстеллар',2014,'Фильм',['Фантастика','Драма'],8.6,'85bb955e60e9.jpg',{
-    wide:CDN+'1290a963615d.jpg',wide2:CDN+'ec06a3bbfb4e.jpg',wide3:CDN+'2bdc37cad2cd.jpg',status:'watched',
-    desc:'Команда исследователей отправляется через червоточину в космосе, чтобы найти новый дом для человечества.'}),
-  dune2:T('dune2','Дюна: Часть вторая',2024,'Фильм',['Фантастика','Приключения'],8.5,'d4500e7dac80.jpg',{
-    wide:CDN+'12422b422cee.jpg',wide2:CDN+'c7f684d95f5b.jpeg',wide3:CDN+'4cb1149f3eaf.jpg',wide4:CDN+'86e0bf71e647.jpg',status:'planned',isNew:true,
-    desc:'Пол Атрейдес объединяется с Чани и фрименами в войне против дома Харконненов, пытаясь предотвратить ужасное будущее, которое видит только он.'}),
-  br2049:T('br2049','Бегущий по лезвию 2049',2017,'Фильм',['Фантастика','Нуар'],8.0,'71b996fefac1.jpg',{
-    wide:CDN+'9cc1a8a277d3.png',wide2:CDN+'de002094f2aa.jpg',wide3:CDN+'1662efa80442.jpg',
-    desc:'Служащий Лос-Анджелеса К, новый блейд-раннер, раскрывает тайну, спрятанную десятилетиями, способную погрузить мир в хаос.'}),
-  oppenheimer:T('oppenheimer','Оппенгеймер',2023,'Фильм',['Драма','История'],8.3,'a1fd704339d9.jpg',{
-    wide:CDN+'9e0a5f93f220.jpg',isNew:true,
-    desc:'История жизни физика-теоретика Роберта Оппенгеймера, возглавившего разработку атомной бомбы.'}),
-  aot:T('aot','Атака титанов',2013,'Аниме',['Экшен','Драма'],9.0,'9a35191d1d09.jpg',{
-    wide:CDN+'7e53c74c6dda.jpg',wide2:CDN+'5b0f4111e774.jpg',status:'watching',
-    desc:'Человечество сражается за выживание за огромными стенами, защищающими от гигантских пожирателей людей — титанов.'}),
-  aotFinal:T('aotFinal','Атака титанов: Финальный сезон',2023,'Аниме',['Экшен','Драма'],9.1,'bbc4ed32da5c.jpg',{
-    wide:CDN+'be104465fb7f.jpg',isNew:true,
-    desc:'Последняя глава истории Эрена Йегера и битвы за судьбу человечества за стенами.'}),
-  /* остальные сезоны и связанные тайтлы — для «Хронологии» */
-  aotS2:T('aotS2','Атака титанов 2',2017,'Аниме',['Экшен','Драма'],8.4,'5d424d8b5adf.jpg',{
-    desc:'Разведкорпус сталкивается со Зверем-титаном, а внутри стен обнаруживается предатель.'}),
-  aotS3:T('aotS3','Атака титанов 3',2018,'Аниме',['Экшен','Драма'],8.7,'9163ab8366ab.jpg',{
-    desc:'Разгадка тайны подвала и битва за Шиганшину приводят разведкорпус к морю.'}),
-  aotOva:T('aotOva','Атака титанов: Леви',2014,'Аниме',['Экшен','Драма'],7.8,'7f78ee1abbbd.jpg',{
-    desc:'OVA-приквел о прошлом Ливая — от трущоб до разведкорпуса.'}),
-  aotChron:T('aotChron','Атака титанов: Хроника',2020,'Аниме',['Экшен','Драма'],7.4,'678d178d0c6e.jpeg',{
-    desc:'Фильм-пересказ событий первых трёх сезонов одним фильмом.'}),
-  jjk:T('jjk','Магическая битва',2020,'Аниме',['Экшен','Сёнэн'],8.6,'235414089ff8.jpg',{
-    wide:CDN+'ba2f5e6b7ab4.jpg',
-    desc:'Школьник Юдзи Итадори проглатывает проклятый палец и становится сосудом для древнего проклятия.'}),
-  onepiece:T('onepiece','Ван Пис',1999,'Аниме',['Приключения','Сёнэн'],9.0,'136bb118e1b5.jpg',{
-    wide:CDN+'556492005b92.jpg',
-    desc:'Мальчишка из резинки Люффи собирает команду пиратов и отправляется за легендарным сокровищем — Ван Пис.'}),
-  onepieceRed:T('onepieceRed','Ван Пис: Фильм Ред',2022,'Аниме',['Приключения','Экшен'],8.5,'6e4fc8a0fbe9.png',{
-    desc:'Люффи и его команда отправляются на музыкальный фестиваль, где встречают мировую звезду Уту.'}),
-  tlou:T('tlou','Последние из нас',2023,'Сериал',['Драма','Хоррор'],8.7,'078136c3e9d7.jpg',{
-    wide:CDN+'4cc4e52e05d7.jpeg',wide2:CDN+'20165b080b81.jpg',isNew:true,
-    desc:'Через двадцать лет после пандемии контрабандист Джоэл получает задание вывести из города 14-летнюю Элли.'}),
-  spiderverse:T('spiderverse','Человек-паук: Паутина вселенных',2023,'Мультфильм',['Экшен','Приключения'],8.6,'401cfa55ea89.jpg',{
-    wide:CDN+'5d05fbe9bf0c.jpeg',isNew:true,
-    desc:'Майлз Моралес отправляется в путешествие по мультивселенной, где встречает команду людей-пауков.'}),
-  arcane:T('arcane','Аркейн',2021,'Сериал',['Фэнтези','Драма'],9.0,'2023ce392d04.jpg',{
-    wide:CDN+'70d04bc79f91.jpg',
-    desc:'История двух сестёр, Вай и Джинкс, на фоне конфликта утопического Пилтовера и подземного Зауна.'}),
-  arcane2:T('arcane2','Аркейн: Сезон 2',2024,'Сериал',['Фэнтези','Драма'],9.2,'5379c8a0c07a.jpg',{
-    wide:CDN+'81d0d4679ff5.jpg',isNew:true,
-    desc:'Вай и Джинкс оказываются по разные стороны баррикад, когда Пилтовер и Заун стоят на грани войны.'}),
-  demonslayer:T('demonslayer','Клинок, рассекающий демонов',2019,'Аниме',['Экшен','Сёнэн'],8.6,'ad8da0992638.jpg',{
-    desc:'Танджиро Камадо становится охотником на демонов, чтобы вернуть сестре человеческий облик.'}),
-  chainsaw:T('chainsaw','Человек-бензопила',2022,'Аниме',['Экшен','Комедия'],8.5,'f701ec72af22.jpg',{
-    desc:'Дэндзи превращает долги и верного пса-демона в новую жизнь охотника на дьяволов.'}),
-  deathnote:T('deathnote','Тетрадь смерти',2006,'Аниме',['Триллер','Драма'],9.0,'24e5f2b5d82c.jpg',{
-    desc:'Школьник находит тетрадь, убивающую по имени, и начинает войну характеров с гениальным детективом.'}),
-};
-
+/* данные страницы — из единого слоя kuvion-data (DATA-ENTRY).
+   Демо-данные правятся в scripts/kuvion-data/db.js, не здесь.
+   Боевой API: KuvionData.api.title().then(данные => { … }) — см. KVUION-DATA-блок. */
+const KUV=KuvionData.page('title');
+const STATUS=KUV.status,TITLES=KUV.titles;
 /* ---------- данные страницы тайтла («Атака титанов») ---------- */
-const TP=TITLES.aot;
-
-/* кадры: галерея + превью серий */
-const STILLS=[
-  CDN+'78bad6d9e0a3.jpg',CDN+'4e0313267f90.jpg',CDN+'b1e6cdd5049b.jpg',
-  CDN+'ba1394a42650.png',CDN+'33f88ffeb2f3.jpg',CDN+'7a2f8fc5973a.jpg',
-  CDN+'7e53c74c6dda.jpg',CDN+'5b0f4111e774.jpg',CDN+'be104465fb7f.jpg',
-];
-/* персонажи и сэйю — полный список (демо-данные) */
-const CHARS=[
-  {name:'Эрен Йегер',role:'Главный герой',va:'Юки Кадзи',img:CDN+'0f6fbc82685d.png'},
-  {name:'Микаса Аккерман',role:'Главная героиня',va:'Юи Исикава',img:CDN+'e60f7f455999.jpg'},
-  {name:'Армин Арлерт',role:'Главный герой',va:'Марина Иноуэ',img:CDN+'95ee80d02d83.jpg'},
-  {name:'Ливай Аккерман',role:'Капитан разведкорпуса',va:'Хироси Камия',img:CDN+'85df1aec098e.jpg'},
-  {name:'Эрвин Смит',role:'Командир разведкорпуса',va:'Дайсукэ Оно',img:CDN+'6a818aaae139.jpg'},
-  {name:'Ханджи Зое',role:'Командир разведкорпуса',va:'Роми Пак',img:CDN+'c66e31bf5ccc.jpg'},
-  {name:'Райнер Браун',role:'Воин Марлии',va:'Ёсимаса Хосоя',img:CDN+'4af5aa4fb9fd.jpg'},
-  {name:'Хистория Рейсс',role:'Королева стен',va:'Сиори Миками',img:CDN+'d04d2af4b182.jpg'},
-  {name:'Жан Кирштейн',role:'Разведкорпус',va:'Кисё Танияма',img:CDN+'0e25bccf0f82.jpg'},
-  {name:'Конни Спрингер',role:'Разведкорпус',va:'Хиро Симоно',img:CDN+'a2e7e03cdda5.jpeg'},
-  {name:'Саша Блюз',role:'Разведкорпус',va:'Ю Кобаяси',img:CDN+'ba58b77f913e.jpg'},
-  {name:'Энни Леонхарт',role:'Воин Марлии',va:'Ю Симамура',img:CDN+'c87fd28e15d1.jpg'},
-  {name:'Зик Йегер',role:'Зверь-титан',va:'Такэхито Коясу',img:CDN+'56fcaf85d305.jpg'},
-  {name:'Габи Браун',role:'Кандидат в воины',va:'Нао Тояма',img:CDN+'bf1e779d02b7.jpg'},
-];
-/* демо-режим «фильм/сериал»: актёры и роли (тестовые данные «Дюны 2»).
-   В проде блок наполнится кастом с бэкенда — формат карточки тот же:
-   фото, имя, роль (персонаж); строки сэйю у живых актёров нет */
-const CAST_PEOPLE=[
-  {name:'Тимоти Шаламе',role:'Пол Атрейдес',img:CDN+'88757a931df1.jpg'},
-  {name:'Зендея',role:'Чани',img:CDN+'404aa49e0aad.jpg'},
-  {name:'Ребекка Фергюсон',role:'Леди Джессика',img:CDN+'eeb378efc7b2.jpg'},
-  {name:'Остин Батлер',role:'Фейд-Раута',img:CDN+'73eb8a5b8e59.jpg'},
-  {name:'Флоренс Пью',role:'Принцесса Ирулан',img:CDN+'6e84b9aa36cc.jpg'},
-  {name:'Хавьер Бардем',role:'Стилгар',img:CDN+'e80a84d8315c.jpg'},
-  {name:'Джош Бролин',role:'Гурни Халлек',img:CDN+'32963b47d534.jpg'},
-  {name:'Стеллан Скарсгард',role:'Барон Харконнен',img:CDN+'ff5d239c6227.jpg'},
-  {name:'Дэйв Батиста',role:'Зверь Раббан',img:CDN+'17f5a72a348c.jpg'},
-  {name:'Леа Сейду',role:'Леди Марго',img:CDN+'9e20ce5d5642.jpg'},
-];
-/* хронология: сезоны — отдельные карточки + связанные тайтлы */
-const CHRONOLOGY=[
-  {t:TITLES.aot,kind:'Сезон 1',current:true},
-  {t:TITLES.aotS2,kind:'Сезон 2'},
-  {t:TITLES.aotS3,kind:'Сезон 3'},
-  {t:TITLES.aotFinal,kind:'Сезон 4'},
-  {t:TITLES.aotOva,kind:'OVA'},
-  {t:TITLES.aotChron,kind:'Фильм'},
-];
-/* сезоны: счётчики настоящие, названия серий тестовые (макет) */
-const SEASONS=[
-  {n:1,year:2013,count:25,titles:['К падению Шиганшины','В тот день','Первый шаг','Ночь перед контратакой','Рёв','Мир, который увидела девочка','Маленький клинок','Я слышу биение твоего сердца','Куда ведёт ответ','Ответ','Идол','Рана','Уязвимые места','Снова в строю','Особый отряд','Что должно быть сделано','Формирование дальнего рейда','Ответный огонь','Улыбка','Одержимость','Разбор полётов','Разрушенная стена','Судьба разведкорпуса','Милосердие','Стена и ров']},
-  {n:2,year:2017,count:12,titles:['Зверь-титан','Я снова дома','Юг','Солдат','Ответ','Воин','Закрытая дверь','Внешний край леса','Беглецы','Дети','Погоня','Крик']},
-  {n:3,year:2018,count:22,titles:['Смута','Гром','Старая история','Доверие','Тень','Нож','Жажда власти','Вне стен','Порядок','Друзья','Ответчик','Ночная битва','Город в тумане','Один против всех','Пламя надежды','Идеальный удар','Герой','Месть','Полночь','Возвращение','Координата','Врата мира']},
-  {n:4,year:2020,tag:'Финальный',count:28,titles:['Другой берег','Дети леса','Стражи стены','Из тени','Объявление войны','Военный совет','Нападение','Удар в спину','Два брата','Прошлое желание','Мошенник','Герои','Узники','Молчание','Одна вина','Выше и дальше','Судьба человечества','Гордый воин','Незваные гости','Воспоминания будущего','От рая до ада','Тысяча жизней','Солнце встаёт','Решение','Грешники','Планы на небеса','Кошмар','К свободе']},
-];
-const SIMILAR=[TITLES.aotFinal,TITLES.jjk,TITLES.demonslayer,TITLES.chainsaw,TITLES.deathnote,TITLES.onepiece,TITLES.onepieceRed];
-const POPULAR=[TITLES.dune2,TITLES.aot,TITLES.interstellar,TITLES.arcane2];
-
+/* данные страницы — из единого слоя kuvion-data (DATA-ENTRY).
+   Демо-данные правятся в scripts/kuvion-data/db.js, не здесь.
+   Боевой API: KuvionData.api.title().then(данные => { … }) — см. KVUION-DATA-блок. */
+const TP=KUV.tp,STILLS=KUV.stills,CHARS=KUV.chars,CAST_PEOPLE=KUV.castPeople,CHRONOLOGY=KUV.chronology,SEASONS=KUV.seasons,SIMILAR=KUV.similar,POPULAR=KUV.popular;
 /* ---------- тосты ---------- */
 function toast(msg){
   const el=document.createElement('div');

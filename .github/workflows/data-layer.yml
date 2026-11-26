@@ -1,0 +1,38 @@
+name: data-layer
+
+# Слой данных kuvion-data: применяет data/patch_site.py к страницам сайта.
+# Срабатывает при изменении data/** (payload демо-данных или скрипт)
+# и вручную (Actions -> data-layer -> Run workflow).
+
+on:
+  push:
+    branches: [main]
+    paths: ['data/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply data layer
+        run: |
+          if [ ! -f data/patch_site.py ]; then
+            echo "data/patch_site.py ещё не запушен — пропускаю"
+            exit 0
+          fi
+          python3 data/patch_site.py --root .
+      - name: Commit if changed
+        run: |
+          git config user.name "kuvion-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "изменений нет"
+          else
+            git commit -m "data: слой kuvion-data применён к страницам"
+            git push
+          fi
