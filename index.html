@@ -1582,7 +1582,7 @@ function cwCard(c){
 /* ---------- hero ---------- */
 function buildHero(){
   $('#heroSlides').innerHTML=HERO.map((t,i)=>`
-    <div class="hero-slide${i===0?' is-active':''}">
+    <div class="hero-slide${i===0?' is-active':''}" data-id="${t.id}">
       <img class="hero-bg" src="${t.wide}" alt="">
       <div class="hero-shade hero-shade--bottom"></div>
       <div class="hero-shade hero-shade--left"></div>
@@ -2032,8 +2032,13 @@ $('#pvVMute').addEventListener('click',()=>{
   },{passive:false});
   volUI();
 })();
-$('#pvPlay').addEventListener('click',()=>toast('Плеер — в разработке (демо-макет)'));
-$('#pvWatchBtn').addEventListener('click',()=>toast('Плеер — в разработке (демо-макет)'));
+/* «Смотреть» из превью: у «Атаки титанов» ведём на готовую страницу */
+const pvGoWatch=()=>{
+  if(PVD.card&&PVD.card.dataset.id==='aot'){location.href='/title/';return;}
+  toast('Плеер — в разработке (демо-макет)');
+};
+$('#pvPlay').addEventListener('click',pvGoWatch);
+$('#pvWatchBtn').addEventListener('click',pvGoWatch);
 $('#pvFav').addEventListener('click',()=>{
   const t=TITLES[PVD.card?.dataset.id];
   if(t)t.fav=!t.fav;
@@ -2388,7 +2393,13 @@ document.addEventListener('click',e=>{
     return;
   }
   const hw=e.target.closest('[data-hero-watch]');
-  if(hw){toast('Плеер — в разработке (демо-макет)');return;}
+  if(hw){
+    /* у тайтла с готовой страницей (затычка «Атаки титанов») кнопка
+       «Смотреть» ведёт на страницу тайтла, а не в заглушку плеера */
+    const slide=hw.closest('.hero-slide');
+    if(slide&&slide.dataset.id==='aot'){location.href='/title/';return;}
+    toast('Плеер — в разработке (демо-макет)');return;
+  }
   const hf=e.target.closest('[data-hero-fav]');
   if(hf){
     const on=hf.classList.toggle('is-on');
@@ -2428,7 +2439,10 @@ document.addEventListener('click',e=>{
 document.addEventListener('keydown',e=>{
   if(e.key!=='Enter')return;
   const card=e.target.closest?.('.poster-card,.cw-card');
-  if(card){toast('Страница «'+card.dataset.title+'» — в разработке');}
+  if(card){
+    if(card.dataset.id==='aot'){location.href='/title/';return;}
+    toast('Страница «'+card.dataset.title+'» — в разработке');
+  }
 });
 </script>
 <script>

@@ -3,6 +3,8 @@ name: data-layer
 # Слой данных kuvion-data: применяет data/patch_site.py к страницам сайта.
 # Срабатывает при изменении data/** (payload демо-данных или скрипт)
 # и вручную (Actions -> data-layer -> Run workflow).
+# Если payload'ов ещё нет (сайт в старом состоянии), сначала работает
+# data/extract_payloads.py — первичная загрузка данных из секций страниц.
 
 on:
   push:
@@ -23,6 +25,10 @@ jobs:
           if [ ! -f data/patch_site.py ]; then
             echo "data/patch_site.py ещё не запушен — пропускаю"
             exit 0
+          fi
+          if [ ! -f data/payloads/home.js ]; then
+            echo "payload'ы отсутствуют — первичная загрузка из страниц (extract_payloads.py)"
+            python3 data/extract_payloads.py --root .
           fi
           python3 data/patch_site.py --root .
       - name: Commit if changed
